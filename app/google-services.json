@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "869852688410",
+    "project_id": "pocketplanner-b9422",
+    "storage_bucket": "pocketplanner-b9422.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:869852688410:android:c90f142cee46a6fae4e1a3",
+        "android_client_info": {
+          "package_name": "com.example.pocketplanner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1ejTrTU5RYr9IP3nYLPOsrmvgmr79RyM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
