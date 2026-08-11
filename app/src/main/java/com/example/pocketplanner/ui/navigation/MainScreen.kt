@@ -76,8 +76,13 @@ fun MainScreen() {
             }
 
             composable<HomeRoute> {
-                // Placeholder for now! We will build this in Step 1G
-                Text("Your Trips Will Appear Here!")
+                // Grab the currently logged-in user from Firebase
+                val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                if (currentUser != null) {
+                    com.example.pocketplanner.ui.itinerary.TripsScreen(userId = currentUser.uid)
+                } else {
+                    Text("Error: Not logged in!")
+                }
             }
 
             composable<ProfileRoute> {

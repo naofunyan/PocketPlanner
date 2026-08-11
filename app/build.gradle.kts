@@ -10,6 +10,15 @@ plugins {
     alias(libs.plugins.google.services)
 }
 
+import java.util.Properties
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+val vertexApiKey = localProperties.getProperty("VERTEX_API_KEY") ?: ""
+
 android {
     namespace = "com.example.pocketplanner"
     compileSdk = 34
@@ -25,6 +34,7 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        buildConfigField("String", "VERTEX_API_KEY", "\"$vertexApiKey\"")
     }
 
     buildTypes {
@@ -45,6 +55,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -65,6 +76,7 @@ dependencies {
 
     // Hilt (Dependency Injection)
     implementation(libs.hilt.android)
+    implementation(libs.google.firebase.vertexai)
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
@@ -80,7 +92,6 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore.ktx)
-    implementation(libs.firebase.vertexai)
 
     // Location Services
     implementation(libs.play.services.location)
