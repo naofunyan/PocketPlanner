@@ -3,6 +3,7 @@ package com.example.pocketplanner.data.di
 import android.content.Context
 import androidx.room.Room
 import com.example.pocketplanner.data.local.AppDatabase
+import com.example.pocketplanner.data.local.dao.ExpenseDao
 import com.example.pocketplanner.data.local.dao.PlaceDao
 import com.example.pocketplanner.data.local.dao.TripDao
 import dagger.Module
@@ -23,7 +24,9 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "pocketplanner.db"
-        ).build()
+        )
+        .fallbackToDestructiveMigration()
+        .build()
     }
 
     @Provides
@@ -36,5 +39,10 @@ object DatabaseModule {
     @Singleton
     fun providePlaceDao(database: AppDatabase): PlaceDao {
         return database.placeDao()
+    }
+
+    @Provides
+    fun provideExpenseDao(database: AppDatabase): ExpenseDao {
+        return database.expenseDao()
     }
 }

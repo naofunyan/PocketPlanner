@@ -9,6 +9,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -18,6 +21,7 @@ fun ItineraryScreen(
     tripId: String,
     onNavigateBack: () -> Unit,
     onDayClick: (dayNumber: Int) -> Unit,
+    onExpenseClick: () -> Unit,
     viewModel: ItineraryViewModel = hiltViewModel()
 ) {
     // Observe the specific trip from the DB
@@ -33,6 +37,13 @@ fun ItineraryScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = onExpenseClick,
+                icon = { Icon(Icons.Default.AttachMoney, "Expenses") },
+                text = { Text("Expenses") }
             )
         }
     ) { innerPadding ->

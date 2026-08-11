@@ -15,6 +15,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.pocketplanner.ui.auth.LoginScreen
+import com.example.pocketplanner.ui.expense.ExpenseScreen
 import com.example.pocketplanner.ui.itinerary.DayPlanScreen
 import com.example.pocketplanner.ui.itinerary.ItineraryScreen
 
@@ -107,7 +108,18 @@ fun MainScreen() {
                     onNavigateBack = { navController.popBackStack() },
                     onDayClick = { dayNumber ->
                         navController.navigate(DayPlanRoute(itinerary.tripId, dayNumber))
+                    },
+                    onExpenseClick = {
+                        navController.navigate(ExpenseRoute(itinerary.tripId))
                     }
+                )
+            }
+
+            composable<ExpenseRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<ExpenseRoute>()
+                ExpenseScreen(
+                    tripId = route.tripId,
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
 

@@ -16,4 +16,7 @@ data class DayPlanRoute(val tripId: String, val dayNumber: Int)
 data class ItineraryRoute(val tripId: String)
 
 @Serializable
+data class ExpenseRoute(val tripId: String)
+
+@Serializable
 object ProfileRoute
