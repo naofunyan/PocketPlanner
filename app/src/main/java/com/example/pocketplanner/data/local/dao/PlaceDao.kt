@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PlaceDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPlace(place: PlaceEntity)
+    suspend fun insertPlaces(places: List<PlaceEntity>)
 
     @Query("SELECT * FROM places WHERE tripId = :tripId AND dayNumber = :dayNumber ORDER BY name ASC")
     fun getPlacesForDay(tripId: String, dayNumber: Int): Flow<List<PlaceEntity>>

@@ -19,7 +19,8 @@ import java.util.*
 @Composable
 fun TripsScreen(
     viewModel: ItineraryViewModel = hiltViewModel(),
-    userId: String // We pass the logged-in user's ID here
+    userId: String, // We pass the logged-in user's ID here
+    onTripClick: (tripId: String) -> Unit = {}
 ) {
     // Tell the ViewModel to load trips for this user as soon as the screen opens
     LaunchedEffect(userId) {
@@ -28,6 +29,11 @@ fun TripsScreen(
 
     // Observe the list of trips from the ViewModel
     val trips by viewModel.trips.collectAsState()
+
+    // State for the Create Trip Popup
+    var showCreateDialog by remember { mutableStateOf(false) }
+    var destinationInput by remember { mutableStateOf("") }
+    var daysInput by remember { mutableStateOf("5") }
 
     Scaffold(
         topBar = {
@@ -38,10 +44,7 @@ fun TripsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {
-                    // For now, we hardcode a test prompt. Later, we'll build a "Create Trip" popup!
-                    viewModel.generateTripWithAI(userId, "Tokyo, Japan", 5)
-                },
+                onClick = { showCreateDialog = true },
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Create Trip", tint = MaterialTheme.colorScheme.onPrimary)
@@ -61,18 +64,66 @@ fun TripsScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(trips) { trip ->
-                    TripCard(trip = trip)
+                    TripCard(trip = trip, onClick = { onTripClick(trip.id) })
                 }
             }
         }
     }
+
+    // The Create Trip Dialog
+    if (showCreateDialog) {
+        AlertDialog(
+            onDismissRequest = { showCreateDialog = false },
+            title = { Text("Plan a New Trip") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Where do you want to go?")
+                    OutlinedTextField(
+                        value = destinationInput,
+                        onValueChange = { destinationInput = it },
+                        placeholder = { Text("e.g. Paris, France") },
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text("How many days?")
+                    OutlinedTextField(
+                        value = daysInput,
+                        onValueChange = { daysInput = it },
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val days = daysInput.toIntOrNull() ?: 5
+                        if (destinationInput.isNotBlank()) {
+                            viewModel.generateTripWithAI(userId, destinationInput, days)
+                            showCreateDialog = false
+                            destinationInput = "" // Reset for next time
+                            daysInput = "5"
+                        }
+                    }
+                ) {
+                    Text("Generate with AI ✨")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCreateDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TripCard(trip: TripEntity) {
+fun TripCard(trip: TripEntity, onClick: () -> Unit = {}) {
     val dateFormatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
 
     Card(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)

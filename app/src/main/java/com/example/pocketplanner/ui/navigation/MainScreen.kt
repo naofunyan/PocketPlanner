@@ -13,7 +13,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.example.pocketplanner.ui.auth.LoginScreen
+import com.example.pocketplanner.ui.itinerary.DayPlanScreen
+import com.example.pocketplanner.ui.itinerary.ItineraryScreen
 
 @Composable
 fun MainScreen() {
@@ -79,10 +82,33 @@ fun MainScreen() {
                 // Grab the currently logged-in user from Firebase
                 val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
                 if (currentUser != null) {
-                    com.example.pocketplanner.ui.itinerary.TripsScreen(userId = currentUser.uid)
+                    com.example.pocketplanner.ui.itinerary.TripsScreen(
+                        userId = currentUser.uid,
+                        onTripClick = { tripId -> navController.navigate(ItineraryRoute(tripId)) }
+                    )
                 } else {
                     Text("Error: Not logged in!")
                 }
+            }
+
+            composable<DayPlanRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<DayPlanRoute>()
+                DayPlanScreen(
+                    tripId = route.tripId,
+                    dayNumber = route.dayNumber,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<ItineraryRoute> { backStackEntry ->
+                val itinerary = backStackEntry.toRoute<ItineraryRoute>()
+                ItineraryScreen(
+                    tripId = itinerary.tripId,
+                    onNavigateBack = { navController.popBackStack() },
+                    onDayClick = { dayNumber ->
+                        navController.navigate(DayPlanRoute(itinerary.tripId, dayNumber))
+                    }
+                )
             }
 
             composable<ProfileRoute> {

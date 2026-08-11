@@ -20,6 +20,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 import com.example.pocketplanner.BuildConfig
+import com.example.pocketplanner.data.local.entity.PlaceEntity
 
 @HiltViewModel
 class ItineraryViewModel @Inject constructor(
@@ -47,16 +48,45 @@ class ItineraryViewModel @Inject constructor(
         }
     }
 
+    fun getPlacesForDay(tripId: String, dayNumber: Int) = tripRepository.getPlacesForDay(tripId, dayNumber)
+    fun getTrip(tripId: String) = tripRepository.getTrip(tripId)
+
     fun generateTripWithAI(userId: String, destination: String, days: Int) {
         viewModelScope.launch {
             try {
-                val prompt = "Plan a $days day trip to $destination. Give me a 2 sentence summary of what the vibe will be."
-                
-                // Call Vertex AI REST API directly (Bypasses Firebase & AI Studio completely!)
+                // 1. The new prompt asking for JSON
+                val prompt = """
+                    Plan a $days day trip to $destination.
+                    Return ONLY valid JSON in this exact format:
+                    {
+                      "days": [
+                        {
+                          "dayNumber": 1,
+                          "places": [
+                            {
+                              "name": "Ben Thanh Market",
+                              "lat": 10.7725,
+                              "lng": 106.6981,
+                              "category": "Market",
+                              "estimatedCost": 200000.0,
+                              "notes": "Great for souvenirs."
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                """.trimIndent()
+
+                // 2. Call Gemini
                 val aiResponseText = generateWithRest(prompt)
 
+                // 3. Clean the response (Gemini sometimes wraps JSON in markdown blocks)
+                val cleanJson = aiResponseText.removePrefix("```json").removeSuffix("```").trim()
+
+                // 4. Create the Trip
+                val tripId = UUID.randomUUID().toString()
                 val newTrip = TripEntity(
-                    id = UUID.randomUUID().toString(),
+                    id = tripId,
                     userId = userId,
                     destination = destination,
                     startDate = System.currentTimeMillis(),
@@ -66,7 +96,37 @@ class ItineraryViewModel @Inject constructor(
                 )
                 tripRepository.createTrip(newTrip)
 
-                println("Gemini Says: $aiResponseText")
+                // 5. Parse the JSON and save Places
+                val jsonObject = JSONObject(cleanJson)
+                val daysArray = jsonObject.getJSONArray("days")
+
+                val placesList = mutableListOf<PlaceEntity>()
+
+                for (i in 0 until daysArray.length()) {
+                    val dayObj = daysArray.getJSONObject(i)
+                    val dayNum = dayObj.getInt("dayNumber")
+                    val placesArray = dayObj.getJSONArray("places")
+
+                    for (j in 0 until placesArray.length()) {
+                        val placeObj = placesArray.getJSONObject(j)
+                        placesList.add(
+                            PlaceEntity(
+                                id = UUID.randomUUID().toString(),
+                                tripId = tripId,
+                                dayNumber = dayNum,
+                                name = placeObj.getString("name"),
+                                lat = placeObj.getDouble("lat"),
+                                lng = placeObj.getDouble("lng"),
+                                category = placeObj.getString("category"),
+                                estimatedCost = placeObj.optDouble("estimatedCost", 0.0),
+                                notes = placeObj.optString("notes", "")
+                            )
+                        )
+                    }
+                }
+
+                // Save to database
+                tripRepository.savePlaces(placesList)
 
             } catch (e: Exception) {
                 e.printStackTrace()
