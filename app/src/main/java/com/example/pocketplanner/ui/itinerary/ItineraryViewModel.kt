@@ -30,6 +30,9 @@ class ItineraryViewModel @Inject constructor(
     private val _trips = MutableStateFlow<List<TripEntity>>(emptyList())
     val trips: StateFlow<List<TripEntity>> = _trips.asStateFlow()
 
+    private val _isGenerating = MutableStateFlow(false)
+    val isGenerating: StateFlow<Boolean> = _isGenerating.asStateFlow()
+
     // --- VERTEX AI REST API CONFIG ---
     // Securely reading the API Key from local.properties -> BuildConfig
     private val apiKey = BuildConfig.VERTEX_API_KEY
@@ -54,6 +57,7 @@ class ItineraryViewModel @Inject constructor(
     fun generateTripWithAI(userId: String, destination: String, days: Int) {
         viewModelScope.launch {
             try {
+                _isGenerating.value = true
                 // 1. The new prompt asking for JSON
                 val prompt = """
                     Plan a $days day trip to $destination.
@@ -130,6 +134,8 @@ class ItineraryViewModel @Inject constructor(
 
             } catch (e: Exception) {
                 e.printStackTrace()
+            } finally {
+                _isGenerating.value = false
             }
         }
     }

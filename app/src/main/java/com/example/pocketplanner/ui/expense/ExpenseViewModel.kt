@@ -19,6 +19,8 @@ class ExpenseViewModel @Inject constructor(
 ) : ViewModel() {
 
     fun getExpenses(tripId: String): Flow<List<ExpenseEntity>> = expenseRepository.getExpenses(tripId)
+    
+    fun getTrip(tripId: String): Flow<com.example.pocketplanner.data.local.entity.TripEntity?> = tripRepository.getTrip(tripId)
 
     // Combine Trip Budget and Total Spent into one state for the UI
     fun getBudgetOverview(tripId: String): Flow<BudgetState> {

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,6 +27,44 @@ class AuthViewModel @Inject constructor(
                 _uiState.value = AuthState.Success
             } else {
                 _uiState.value = AuthState.Error(result.exceptionOrNull()?.message ?: "Login Failed")
+            }
+        }
+    }
+
+    fun register(username: String, email: String, pass: String, confirmPass: String) {
+        if (!username.matches(Regex("^[a-zA-Z0-9]+$"))) {
+            _uiState.value = AuthState.Error("Username must be alphanumeric.")
+            return
+        }
+        if (pass.length < 8 || !pass.matches(Regex(".*\\d.*"))) {
+            _uiState.value = AuthState.Error("Password must be at least 8 characters and contain a number.")
+            return
+        }
+        if (pass != confirmPass) {
+            _uiState.value = AuthState.Error("Passwords do not match.")
+            return
+        }
+        if (email.isBlank()) {
+            _uiState.value = AuthState.Error("Email cannot be empty.")
+            return
+        }
+
+        _uiState.value = AuthState.Loading
+        viewModelScope.launch {
+            val result = authRepository.signUp(email, pass)
+            if (result.isSuccess) {
+                val user = result.getOrNull()
+                try {
+                    val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                        .setDisplayName(username)
+                        .build()
+                    user?.updateProfile(profileUpdates)?.await()
+                } catch (e: Exception) {
+                    // Ignore profile update errors for now, the user was still created
+                }
+                _uiState.value = AuthState.Success
+            } else {
+                _uiState.value = AuthState.Error(result.exceptionOrNull()?.message ?: "Registration Failed")
             }
         }
     }

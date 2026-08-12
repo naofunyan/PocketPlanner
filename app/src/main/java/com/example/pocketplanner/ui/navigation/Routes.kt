@@ -4,10 +4,25 @@ import kotlinx.serialization.Serializable
 
 // The screens our app has
 @Serializable
+object WelcomeRoute
+
+@Serializable
 object LoginRoute
 
 @Serializable
+object SignUpRoute
+
+@Serializable
 object HomeRoute // Where we show the list of trips
+
+@Serializable
+object ExploreRoute
+
+@Serializable
+object SearchRoute
+
+@Serializable
+data class CreateTripDetailsRoute(val destinations: String)
 
 @Serializable
 data class DayPlanRoute(val tripId: String, val dayNumber: Int)
@@ -17,6 +32,9 @@ data class ItineraryRoute(val tripId: String)
 
 @Serializable
 data class ExpenseRoute(val tripId: String)
+
+@Serializable
+data class TrackingRoute(val tripId: String)
 
 @Serializable
 object ProfileRoute
