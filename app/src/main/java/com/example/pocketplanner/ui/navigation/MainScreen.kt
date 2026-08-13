@@ -49,7 +49,8 @@ fun MainScreen() {
                         currentDestination?.route?.contains("CreateTripDetailsRoute") == false &&
                         currentDestination?.route?.contains("ItineraryRoute") == false &&
                         currentDestination?.route?.contains("ExpenseRoute") == false &&
-                        currentDestination?.route?.contains("TrackingRoute") == false
+                        currentDestination?.route?.contains("TrackingRoute") == false &&
+                        currentDestination?.route?.contains("ChatRoute") == false
 
     Scaffold(
         bottomBar = {
@@ -133,26 +134,27 @@ fun MainScreen() {
                             )
                         }
                     }
-
-                    Surface(
-                        modifier = Modifier.size(72.dp),
-                        shape = androidx.compose.foundation.shape.CircleShape,
-                        color = Color.White,
-                        shadowElevation = 8.dp
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxSize().clickable { /* TODO: AI Call */ }
+                        Surface(
+                            modifier = Modifier.size(72.dp),
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            color = Color.White,
+                            shadowElevation = 8.dp
                         ) {
-                            Icon(
-                                androidx.compose.material.icons.Icons.Filled.AutoAwesome, 
-                                contentDescription = "AI Call",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(32.dp) // Made icon slightly larger since text is gone
-                            )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clickable { navController.navigate(ChatRoute) } // <-- ADD THIS
+                            ) {
+                                Icon(
+                                    androidx.compose.material.icons.Icons.Filled.AutoAwesome,
+                                    contentDescription = "AI Call",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
                         }
-                    }
                 } // End Row
                 } // End Box
             }
@@ -283,6 +285,12 @@ fun MainScreen() {
                     onNavigateBack = { navController.popBackStack() },
                     onPlanClick = { navController.popBackStack() },
                     onExpenseClick = { navController.navigate(ExpenseRoute(args.tripId)) }
+                )
+            }
+
+            composable<ChatRoute> {
+                com.example.pocketplanner.ui.chat.ChatScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
 

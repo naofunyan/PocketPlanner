@@ -37,4 +37,7 @@ data class ExpenseRoute(val tripId: String)
 data class TrackingRoute(val tripId: String)
 
 @Serializable
+object ChatRoute
+
+@Serializable
 object ProfileRoute
