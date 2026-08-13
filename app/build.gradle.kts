@@ -99,6 +99,10 @@ dependencies {
     // Location Services
     implementation(libs.play.services.location)
 
+    // ML Kit for Language ID & Translation
+    implementation("com.google.mlkit:language-id:17.0.6")
+    implementation("com.google.mlkit:translate:17.0.3")
+
     // Testing (fixes KAPT @Test annotation errors)
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
