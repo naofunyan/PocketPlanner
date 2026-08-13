@@ -25,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.pocketplanner.ui.components.OfflineBannerWrapper
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pocketplanner.ui.auth.LoginScreen
 import com.example.pocketplanner.ui.auth.SignUpScreen
@@ -32,6 +33,7 @@ import com.example.pocketplanner.ui.auth.WelcomeScreen
 import com.example.pocketplanner.ui.expense.ExpenseScreen
 import com.example.pocketplanner.ui.itinerary.DayPlanScreen
 import com.example.pocketplanner.ui.itinerary.ItineraryScreen
+import com.example.pocketplanner.ui.components.OfflineBannerWrapper
 
 import android.annotation.SuppressLint
 
@@ -54,8 +56,9 @@ fun MainScreen() {
                         currentDestination?.route?.contains("ChatRoute") == false &&
                         currentDestination?.route?.contains("ExploreDetailsRoute") == false
 
-    Scaffold(
-        bottomBar = {
+    OfflineBannerWrapper {
+        Scaffold(
+            bottomBar = {
             if (showBottomBar) {
                 Box(
                     modifier = Modifier
@@ -342,6 +345,7 @@ fun MainScreen() {
             }
         }
     }
+}
 }
 
 @Composable

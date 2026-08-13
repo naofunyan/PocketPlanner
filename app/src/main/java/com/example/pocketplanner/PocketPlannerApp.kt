@@ -1,14 +1,19 @@
 package com.example.pocketplanner
 
 import android.app.Application
-import com.google.firebase.Firebase
-import com.google.firebase.initialize
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 @HiltAndroidApp
-class PocketPlannerApp : Application() {
-    override fun onCreate() {
-        super.onCreate()
-        Firebase.initialize(this)
-    }
+class PocketPlannerApp : Application(), Configuration.Provider {
+
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 }
