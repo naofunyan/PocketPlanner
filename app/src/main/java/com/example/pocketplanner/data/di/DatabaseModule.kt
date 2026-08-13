@@ -45,4 +45,9 @@ object DatabaseModule {
     fun provideExpenseDao(database: AppDatabase): ExpenseDao {
         return database.expenseDao()
     }
+
+    @Provides
+    fun provideTrackingPointDao(database: AppDatabase): com.example.pocketplanner.data.local.dao.TrackingPointDao {
+        return database.trackingPointDao()
+    }
 }

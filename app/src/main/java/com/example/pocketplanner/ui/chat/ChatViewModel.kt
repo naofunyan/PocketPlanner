@@ -31,6 +31,7 @@ class ChatViewModel @Inject constructor(
     private var userLanguage: String = "en"
 
     // --- VERTEX AI REST API CONFIG ---
+    // Securely reading the API Key from local.properties -> BuildConfig
     private val apiKey = BuildConfig.VERTEX_API_KEY
     private val projectId = "pocketplanner-b9422"
     private val region = "us-central1"
@@ -164,6 +165,8 @@ class ChatViewModel @Inject constructor(
         connection.requestMethod = "POST"
         connection.setRequestProperty("Content-Type", "application/json")
         connection.doOutput = true
+        connection.connectTimeout = 15000
+        connection.readTimeout = 30000
 
         val requestBody = JSONObject().apply {
             put("contents", JSONArray(chatHistory))

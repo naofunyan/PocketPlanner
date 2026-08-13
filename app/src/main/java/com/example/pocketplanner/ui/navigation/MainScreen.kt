@@ -25,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pocketplanner.ui.auth.LoginScreen
 import com.example.pocketplanner.ui.auth.SignUpScreen
 import com.example.pocketplanner.ui.auth.WelcomeScreen
@@ -250,12 +251,28 @@ fun MainScreen() {
 
             composable<CreateTripDetailsRoute> { backStackEntry ->
                 val args = backStackEntry.toRoute<CreateTripDetailsRoute>()
+                val itineraryViewModel: com.example.pocketplanner.ui.itinerary.ItineraryViewModel = hiltViewModel()
+                val isGenerating by itineraryViewModel.isGenerating.collectAsState()
+                val context = androidx.compose.ui.platform.LocalContext.current
+
                 com.example.pocketplanner.ui.itinerary.CreateTripDetailsScreen(
                     destinations = args.destinations,
+                    isGenerating = isGenerating,
                     onNavigateBack = { navController.popBackStack() },
-                    onCreateTrip = { 
-                        // Right now just navigate back to home
-                        navController.popBackStack(HomeRoute, inclusive = false)
+                    onCreateTrip = { days ->
+                        val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                        val userId = currentUser?.uid ?: "test_user_id"
+                        itineraryViewModel.generateTripWithAI(
+                            userId = userId, 
+                            destination = args.destinations, 
+                            days = days, 
+                            onSuccess = {
+                                navController.popBackStack(HomeRoute, inclusive = false)
+                            },
+                            onError = { error ->
+                                android.widget.Toast.makeText(context, "Error: $error", android.widget.Toast.LENGTH_LONG).show()
+                            }
+                        )
                     }
                 )
             }

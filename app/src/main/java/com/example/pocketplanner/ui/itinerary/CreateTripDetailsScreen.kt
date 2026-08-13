@@ -37,8 +37,9 @@ import java.util.Locale
 @Composable
 fun CreateTripDetailsScreen(
     destinations: String,
+    isGenerating: Boolean,
     onNavigateBack: () -> Unit,
-    onCreateTrip: () -> Unit
+    onCreateTrip: (Int) -> Unit
 ) {
     var tripName by remember { mutableStateOf("") }
     var isTrackerEnabled by remember { mutableStateOf(true) }
@@ -86,16 +87,31 @@ fun CreateTripDetailsScreen(
                     .padding(bottom = 16.dp)
             ) {
                 Button(
-                    onClick = onCreateTrip,
+                    onClick = {
+                        if (!isGenerating) {
+                            val days = if (startDatePickerState.selectedDateMillis != null && endDatePickerState.selectedDateMillis != null) {
+                                val ms = endDatePickerState.selectedDateMillis!! - startDatePickerState.selectedDateMillis!!
+                                (ms / (1000 * 60 * 60 * 24)).toInt() + 1
+                            } else 3
+                            onCreateTrip(days)
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF005b9f)),
-                    shape = RoundedCornerShape(28.dp)
+                    shape = RoundedCornerShape(28.dp),
+                    enabled = !isGenerating
                 ) {
-                    Icon(Icons.Filled.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Create Trip", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    if (isGenerating) {
+                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Generating...", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    } else {
+                        Icon(Icons.Filled.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Create Trip", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    }
                 }
             }
         }

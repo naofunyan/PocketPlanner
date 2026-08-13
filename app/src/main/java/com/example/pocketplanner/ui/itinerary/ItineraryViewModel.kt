@@ -54,7 +54,7 @@ class ItineraryViewModel @Inject constructor(
     fun getPlacesForDay(tripId: String, dayNumber: Int) = tripRepository.getPlacesForDay(tripId, dayNumber)
     fun getTrip(tripId: String) = tripRepository.getTrip(tripId)
 
-    fun generateTripWithAI(userId: String, destination: String, days: Int) {
+    fun generateTripWithAI(userId: String, destination: String, days: Int, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             try {
                 _isGenerating.value = true
@@ -132,8 +132,15 @@ class ItineraryViewModel @Inject constructor(
                 // Save to database
                 tripRepository.savePlaces(placesList)
 
+                withContext(Dispatchers.Main) {
+                    onSuccess()
+                }
+
             } catch (e: Exception) {
                 e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    onError(e.message ?: "Unknown error occurred")
+                }
             } finally {
                 _isGenerating.value = false
             }
@@ -146,6 +153,8 @@ class ItineraryViewModel @Inject constructor(
         connection.requestMethod = "POST"
         connection.setRequestProperty("Content-Type", "application/json")
         connection.doOutput = true
+        connection.connectTimeout = 15000
+        connection.readTimeout = 60000 // Increased to 60 seconds for large JSON responses
 
         // Build the JSON payload exactly how Vertex AI expects it
         val requestBody = JSONObject().apply {
