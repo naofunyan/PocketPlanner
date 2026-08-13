@@ -3,6 +3,7 @@ package com.example.pocketplanner.data.di
 import android.content.Context
 import androidx.room.Room
 import com.example.pocketplanner.data.local.AppDatabase
+import com.example.pocketplanner.data.local.dao.AlertDao
 import com.example.pocketplanner.data.local.dao.ExpenseDao
 import com.example.pocketplanner.data.local.dao.PlaceDao
 import com.example.pocketplanner.data.local.dao.TripDao
@@ -49,5 +50,10 @@ object DatabaseModule {
     @Provides
     fun provideTrackingPointDao(database: AppDatabase): com.example.pocketplanner.data.local.dao.TrackingPointDao {
         return database.trackingPointDao()
+    }
+
+    @Provides
+    fun provideAlertDao(appDatabase: AppDatabase): AlertDao {
+        return appDatabase.alertDao()
     }
 }

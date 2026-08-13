@@ -121,11 +121,18 @@ fun MainScreen() {
                                 }
                             )
 
+                            val isAlerts = currentDestination?.hierarchy?.any { it.route?.contains("AlertsRoute") == true } == true
                             BottomNavTab(
                                 icon = Icons.Filled.Notifications,
                                 label = "Alerts",
-                                isSelected = false,
-                                onClick = { /* TODO */ }
+                                isSelected = isAlerts,
+                                onClick = {
+                                    navController.navigate(AlertsRoute) {
+                                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
                             )
 
                             BottomNavTab(
@@ -238,6 +245,10 @@ fun MainScreen() {
                         navController.navigate(SearchRoute)
                     }
                 )
+            }
+
+            composable<AlertsRoute> {
+                com.example.pocketplanner.ui.alerts.AlertsScreen()
             }
 
             composable<SearchRoute> {

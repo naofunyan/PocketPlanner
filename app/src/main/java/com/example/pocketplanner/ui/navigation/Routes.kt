@@ -43,4 +43,7 @@ object ChatRoute
 data class ExploreDetailsRoute(val destinationId: String)
 
 @Serializable
+object AlertsRoute
+
+@Serializable
 object ProfileRoute

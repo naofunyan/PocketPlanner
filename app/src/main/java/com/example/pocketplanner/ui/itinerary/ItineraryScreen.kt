@@ -35,6 +35,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import java.text.SimpleDateFormat
 import java.util.*
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.NotificationsActive
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,8 +52,16 @@ fun ItineraryScreen(
     viewModel: ItineraryViewModel = hiltViewModel()
 ) {
     val trip by viewModel.getTrip(tripId).collectAsState(initial = null)
-    
+
     var selectedDay by remember { mutableIntStateOf(1) }
+    
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
+            viewModel.enableProximityAlerts(tripId)
+        }
+    }
     
     // Fetch places for the currently selected day
     val places by viewModel.getPlacesForDay(tripId, selectedDay).collectAsState(initial = emptyList())
@@ -83,6 +96,26 @@ fun ItineraryScreen(
                     shape = CircleShape
                 ) {
                     Icon(Icons.Filled.Add, contentDescription = "Add Place")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                FloatingActionButton(
+                    onClick = { 
+                        val perms = mutableListOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                        )
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            perms.add(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                        permissionLauncher.launch(perms.toTypedArray())
+                    },
+                    containerColor = Color(0xFF005b9f), // Blue
+                    contentColor = Color.White,
+                    shape = CircleShape
+                ) {
+                    Icon(Icons.Filled.NotificationsActive, contentDescription = "Enable Geofence Alerts")
                 }
             }
         }

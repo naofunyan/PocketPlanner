@@ -22,9 +22,13 @@ import javax.inject.Inject
 import com.example.pocketplanner.BuildConfig
 import com.example.pocketplanner.data.local.entity.PlaceEntity
 
+import com.example.pocketplanner.core.location.GeofenceManager
+import kotlinx.coroutines.flow.firstOrNull
+
 @HiltViewModel
 class ItineraryViewModel @Inject constructor(
-    private val tripRepository: TripRepository
+    private val tripRepository: TripRepository,
+    private val geofenceManager: GeofenceManager
 ) : ViewModel() {
 
     private val _trips = MutableStateFlow<List<TripEntity>>(emptyList())
@@ -143,6 +147,24 @@ class ItineraryViewModel @Inject constructor(
                 }
             } finally {
                 _isGenerating.value = false
+            }
+        }
+    }
+
+    fun enableProximityAlerts(tripId: String) {
+        viewModelScope.launch {
+            val days = (1..10)
+            val allPlaces = mutableListOf<com.example.pocketplanner.data.local.entity.PlaceEntity>()
+            
+            for (day in days) {
+                val placesForDay = tripRepository.getPlacesForDay(tripId, day).firstOrNull()
+                if (placesForDay != null) {
+                    allPlaces.addAll(placesForDay)
+                }
+            }
+            
+            if (allPlaces.isNotEmpty()) {
+                geofenceManager.addGeofencesForPlaces(allPlaces)
             }
         }
     }
