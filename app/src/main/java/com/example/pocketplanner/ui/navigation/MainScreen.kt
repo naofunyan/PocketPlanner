@@ -103,7 +103,7 @@ fun MainScreen() {
                                 isSelected = isHome,
                                 onClick = {
                                     navController.navigate(HomeRoute) {
-                                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                        popUpTo<HomeRoute> { saveState = true }
                                         launchSingleTop = true
                                         restoreState = true
                                     }
@@ -117,7 +117,7 @@ fun MainScreen() {
                                 isSelected = isExplore,
                                 onClick = {
                                     navController.navigate(ExploreRoute) {
-                                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                        popUpTo(HomeRoute) { saveState = true }
                                         launchSingleTop = true
                                         restoreState = true
                                     }
@@ -131,7 +131,7 @@ fun MainScreen() {
                                 isSelected = isAlerts,
                                 onClick = {
                                     navController.navigate(AlertsRoute) {
-                                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                        popUpTo(HomeRoute) { saveState = true }
                                         launchSingleTop = true
                                         restoreState = true
                                     }
@@ -220,15 +220,13 @@ fun MainScreen() {
             composable<HomeRoute> {
                 // Grab the currently logged-in user from Firebase
                 val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-                if (currentUser != null) {
-                    com.example.pocketplanner.ui.itinerary.TripsScreen(
-                        userId = currentUser.uid,
-                        onTripClick = { tripId -> navController.navigate(ItineraryRoute(tripId)) },
-                        onAddTripClick = { navController.navigate(SearchRoute) }
-                    )
-                } else {
-                    Text("Error: Not logged in!")
-                }
+                val uid = currentUser?.uid ?: "guest"
+                
+                com.example.pocketplanner.ui.itinerary.TripsScreen(
+                    userId = uid,
+                    onTripClick = { tripId -> navController.navigate(ItineraryRoute(tripId)) },
+                    onAddTripClick = { navController.navigate(SearchRoute) }
+                )
             }
 
             composable<ExploreRoute> {
