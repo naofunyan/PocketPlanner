@@ -40,4 +40,7 @@ data class TrackingRoute(val tripId: String)
 object ChatRoute
 
 @Serializable
+data class ExploreDetailsRoute(val destinationId: String)
+
+@Serializable
 object ProfileRoute

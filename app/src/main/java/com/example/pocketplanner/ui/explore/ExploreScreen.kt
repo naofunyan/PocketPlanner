@@ -3,6 +3,7 @@ package com.example.pocketplanner.ui.explore
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -18,20 +19,27 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun ExploreScreen(onSearchClick: () -> Unit = {}) {
+fun ExploreScreen(
+    onSearchClick: () -> Unit = {}, // Not needed anymore for navigation, keeping to avoid breaking callers
+    onNavigateToDetails: (String) -> Unit = {}
+) {
     val listState = rememberLazyListState()
-    val mockDestinations = listOf(
+    var searchQuery by remember { mutableStateOf("") }
+    
+    val allDestinations = listOf(
         Destination(
             id = "1",
             title = "Grand Canyon",
@@ -59,76 +67,94 @@ fun ExploreScreen(onSearchClick: () -> Unit = {}) {
         )
     )
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
-            
-            // 1. The Scrollable Content
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = innerPadding.calculateBottomPadding()),
-                contentPadding = PaddingValues(top = innerPadding.calculateTopPadding() + 24.dp, bottom = 180.dp) // Large bottom padding for floating bar + nav pill
-            ) {
+    val displayedDestinations = allDestinations.filter {
+        it.title.contains(searchQuery, ignoreCase = true) || 
+        it.description.contains(searchQuery, ignoreCase = true)
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Search bar pinned at the top
+        val statusBarsTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(top = statusBarsTop + 16.dp, bottom = 16.dp)
+        ) {
+            TopSearchBar(
+                query = searchQuery,
+                onQueryChange = { searchQuery = it }
+            )
+        }
+
+        TopSegmentedControl()
+        Spacer(modifier = Modifier.height(16.dp))
+
+        CategoryRow()
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Scrollable destination cards
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 120.dp) // Revert back to normal bottom padding
+        ) {
+            if (displayedDestinations.isEmpty()) {
                 item {
-                    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                        TopTogglePill()
-                        Spacer(modifier = Modifier.height(24.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(48.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("No destinations found.", color = Color.Gray)
                     }
                 }
-                
-                item {
-                    CategoryRow()
-                    Spacer(modifier = Modifier.height(16.dp))
+            } else {
+                items(displayedDestinations) { dest ->
+                    ExploreCard(destination = dest, onNavigateToDetails = onNavigateToDetails)
                 }
-
-                items(mockDestinations) { dest ->
-                    ExploreCard(destination = dest)
-                }
-            }
-
-            // 2. The Floating Search Bar at the bottom
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    // The top edge of the floating pill is exactly 96dp from the bottom (24dp padding + 72dp pill).
-                    // We set padding to 104dp so the search bar sits just 8dp above the navbar pill.
-                    .padding(bottom = 104.dp)
-            ) {
-                FloatingSearchBar(onClick = onSearchClick)
             }
         }
     }
 }
 
 @Composable
-fun TopTogglePill() {
+fun TopSegmentedControl() {
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        shape = CircleShape,
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
     ) {
-        Row(modifier = Modifier.padding(4.dp)) {
-            // Discover (Selected)
+        Row(
+            modifier = Modifier
+                .padding(4.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
             Surface(
-                color = MaterialTheme.colorScheme.primary,
-                shape = CircleShape
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(8.dp),
+                shadowElevation = 1.dp,
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = "Discover",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier.padding(vertical = 10.dp),
+                    textAlign = TextAlign.Center
                 )
             }
-            // Saved (Unselected)
             Text(
                 text = "Saved",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 10.dp),
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -142,7 +168,7 @@ fun CategoryRow() {
         Pair("🏙️", "City"),
         Pair("🏖️", "Beach")
     )
-    
+
     LazyRow(
         contentPadding = PaddingValues(horizontal = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -150,7 +176,7 @@ fun CategoryRow() {
         items(categories.size) { index ->
             val cat = categories[index]
             val isSelected = index == 0
-            
+
             Surface(
                 color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
                 border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant) else null,
@@ -163,7 +189,7 @@ fun CategoryRow() {
                     Text(text = cat.first)
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = cat.second, 
+                        text = cat.second,
                         color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.labelMedium
                     )
@@ -174,17 +200,17 @@ fun CategoryRow() {
 }
 
 @Composable
-fun ExploreCard(destination: Destination) {
+fun ExploreCard(destination: Destination, onNavigateToDetails: (String) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 12.dp),
+            .padding(horizontal = 24.dp, vertical = 12.dp)
+            .clickable { onNavigateToDetails(destination.id) },
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column {
-            // Top Image Half
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -196,8 +222,7 @@ fun ExploreCard(destination: Destination) {
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-                
-                // Floating Heart Icon
+
                 Surface(
                     shape = CircleShape,
                     color = Color.White.copy(alpha = 0.8f),
@@ -214,11 +239,10 @@ fun ExploreCard(destination: Destination) {
                     )
                 }
 
-                // Trending Badge
                 if (destination.badge != null) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFFE65100).copy(alpha = 0.9f), // Orange
+                        color = Color(0xFFE65100).copy(alpha = 0.9f),
                         modifier = Modifier
                             .align(Alignment.BottomStart)
                             .padding(16.dp)
@@ -233,7 +257,6 @@ fun ExploreCard(destination: Destination) {
                 }
             }
 
-            // Bottom Text Half
             Column(modifier = Modifier.padding(20.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -244,8 +267,7 @@ fun ExploreCard(destination: Destination) {
                         text = destination.title,
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                     )
-                    
-                    // Star Rating
+
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
@@ -260,9 +282,9 @@ fun ExploreCard(destination: Destination) {
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 Text(
                     text = destination.description,
                     style = MaterialTheme.typography.bodyMedium,
@@ -270,9 +292,9 @@ fun ExploreCard(destination: Destination) {
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -291,9 +313,9 @@ fun ExploreCard(destination: Destination) {
                             modifier = Modifier.padding(bottom = 2.dp)
                         )
                     }
-                    
+
                     Button(
-                        onClick = { /* TODO */ },
+                        onClick = { onNavigateToDetails(destination.id) }, // <--- WE TRIGGER THE NAVIGATION HERE
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
                     ) {
@@ -309,8 +331,12 @@ fun ExploreCard(destination: Destination) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FloatingSearchBar(onClick: () -> Unit = {}) {
+fun TopSearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit
+) {
     Surface(
         shape = CircleShape,
         color = Color.White,
@@ -318,7 +344,6 @@ fun FloatingSearchBar(onClick: () -> Unit = {}) {
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
-            .clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier
@@ -332,17 +357,30 @@ fun FloatingSearchBar(onClick: () -> Unit = {}) {
                 tint = Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
-            
-            Spacer(modifier = Modifier.width(12.dp))
-            
-            Text(
-                text = "Search destinations...",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            TextField(
+                value = query,
+                onValueChange = onQueryChange,
+                placeholder = {
+                    Text(
+                        text = "Search destinations...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
+                },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = MaterialTheme.colorScheme.primary
+                ),
+                singleLine = true,
                 modifier = Modifier.weight(1f)
             )
-            
-            // Blue circular arrow button
+
             Surface(
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primary,

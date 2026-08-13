@@ -50,7 +50,8 @@ fun MainScreen() {
                         currentDestination?.route?.contains("ItineraryRoute") == false &&
                         currentDestination?.route?.contains("ExpenseRoute") == false &&
                         currentDestination?.route?.contains("TrackingRoute") == false &&
-                        currentDestination?.route?.contains("ChatRoute") == false
+                        currentDestination?.route?.contains("ChatRoute") == false &&
+                        currentDestination?.route?.contains("ExploreDetailsRoute") == false
 
     Scaffold(
         bottomBar = {
@@ -221,7 +222,20 @@ fun MainScreen() {
 
             composable<ExploreRoute> {
                 com.example.pocketplanner.ui.explore.ExploreScreen(
-                    onSearchClick = { navController.navigate(SearchRoute) }
+                    onSearchClick = { navController.navigate(SearchRoute) },
+                    onNavigateToDetails = { destId -> navController.navigate(ExploreDetailsRoute(destId)) }
+                )
+            }
+
+            composable<ExploreDetailsRoute> { backStackEntry ->
+                val args = backStackEntry.toRoute<ExploreDetailsRoute>()
+                com.example.pocketplanner.ui.explore.ExploreDetailsScreen(
+                    destinationId = args.destinationId,
+                    onNavigateBack = { navController.popBackStack() },
+                    onAddToTrip = {
+                        // For now, bounce the user to the SearchScreen so they can start creating a trip!
+                        navController.navigate(SearchRoute)
+                    }
                 )
             }
 
