@@ -1,5 +1,7 @@
 package com.example.pocketplanner.ui.chat
 
+import android.graphics.Bitmap
+import android.util.Base64
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pocketplanner.BuildConfig
@@ -12,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -42,7 +45,7 @@ class ChatViewModel @Inject constructor(
             put("role", "user")
             put("parts", JSONArray().apply {
                 put(JSONObject().apply {
-                    put("text", "You are PocketPlanner, a friendly travel assistant for Vietnam. Keep your answers helpful and concise.")
+                    put("text", "You are PocketPlanner, a friendly travel assistant for Vietnam. Keep your answers helpful and concise. You can also analyze photos of landmarks, menus, and signs.")
                 })
             })
         })
@@ -56,14 +59,14 @@ class ChatViewModel @Inject constructor(
         })
 
         _messages.value = listOf(
-            ChatMessage(text = "Hello! I am PocketPlanner. How can I help you plan your trip today?", isFromUser = false)
+            ChatMessage(text = "Hello! I am PocketPlanner. How can I help you plan your trip today? You can even attach photos of Vietnamese menus or landmarks for me to analyze!", isFromUser = false)
         )
     }
 
-    fun sendMessage(userText: String) {
-        if (userText.isBlank()) return
+    fun sendMessage(userText: String, imageBitmap: Bitmap? = null) {
+        if (userText.isBlank() && imageBitmap == null) return
 
-        val userMessage = ChatMessage(text = userText, isFromUser = true)
+        val userMessage = ChatMessage(text = userText, isFromUser = true, imageBitmap = imageBitmap)
         val loadingMessage = ChatMessage(text = "AI is typing...", isFromUser = false, isLoading = true)
 
         _messages.value = _messages.value + userMessage + loadingMessage
@@ -71,26 +74,40 @@ class ChatViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // 1. Detect language
-                val detectedLang = translationManager.detectLanguage(userText)
-                if (detectedLang != null) {
-                    userLanguage = detectedLang
+                var englishPrompt = userText
+                if (userText.isNotBlank()) {
+                    val detectedLang = translationManager.detectLanguage(userText)
+                    if (detectedLang != null) {
+                        userLanguage = detectedLang
+                    }
+                    if (userLanguage != "en") {
+                        englishPrompt = translationManager.translate(userText, userLanguage, "en")
+                    }
                 }
 
-                // 2. Translate to English for Gemini
-                val englishPrompt = if (userLanguage != "en") {
-                    translationManager.translate(userText, userLanguage, "en")
-                } else {
-                    userText
+                // 2. Build Multi-modal Parts Array
+                val partsArray = JSONArray()
+
+                if (englishPrompt.isNotBlank()) {
+                    partsArray.put(JSONObject().apply {
+                        put("text", englishPrompt)
+                    })
                 }
 
-                // Append to REST chat history
-                chatHistory.add(JSONObject().apply {
-                    put("role", "user")
-                    put("parts", JSONArray().apply {
-                        put(JSONObject().apply {
-                            put("text", englishPrompt)
+                // If image exists, convert to Base64 and append it
+                if (imageBitmap != null) {
+                    val base64Image = encodeImageToBase64(imageBitmap)
+                    partsArray.put(JSONObject().apply {
+                        put("inlineData", JSONObject().apply {
+                            put("mimeType", "image/jpeg")
+                            put("data", base64Image)
                         })
                     })
+                }
+
+                chatHistory.add(JSONObject().apply {
+                    put("role", "user")
+                    put("parts", partsArray)
                 })
 
                 // 3. Ask Vertex AI via REST
@@ -116,13 +133,29 @@ class ChatViewModel @Inject constructor(
                 _messages.value = _messages.value.dropLast(1) + ChatMessage(text = finalResponse, isFromUser = false)
 
             } catch (e: Exception) {
-                // Remove the failed user prompt from history so we don't break the alternate user/model flow
                 if (chatHistory.isNotEmpty() && chatHistory.last().getString("role") == "user") {
                     chatHistory.removeAt(chatHistory.size - 1)
                 }
                 _messages.value = _messages.value.dropLast(1) + ChatMessage(text = "Error: ${e.localizedMessage}", isFromUser = false)
             }
         }
+    }
+
+    private fun encodeImageToBase64(bitmap: Bitmap): String {
+        // Resize bitmap to prevent massive payloads and OutOfMemory errors
+        val maxDimension = 1024
+        val scale = minOf(maxDimension.toFloat() / bitmap.width, maxDimension.toFloat() / bitmap.height)
+        val resizedBitmap = if (scale < 1f) {
+            Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).toInt(), (bitmap.height * scale).toInt(), true)
+        } else {
+            bitmap
+        }
+
+        val outputStream = ByteArrayOutputStream()
+        // Compress to JPEG to save space
+        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+        val byteArray = outputStream.toByteArray()
+        return Base64.encodeToString(byteArray, Base64.NO_WRAP)
     }
 
     private suspend fun generateWithRest(): String = withContext(Dispatchers.IO) {
