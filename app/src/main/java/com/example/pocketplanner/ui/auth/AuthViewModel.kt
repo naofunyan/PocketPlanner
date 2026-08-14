@@ -31,17 +31,13 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun register(username: String, email: String, pass: String, confirmPass: String) {
+    fun register(username: String, email: String, pass: String) {
         if (!username.matches(Regex("^[a-zA-Z0-9]+$"))) {
             _uiState.value = AuthState.Error("Username must be alphanumeric.")
             return
         }
         if (pass.length < 8 || !pass.matches(Regex(".*\\d.*"))) {
             _uiState.value = AuthState.Error("Password must be at least 8 characters and contain a number.")
-            return
-        }
-        if (pass != confirmPass) {
-            _uiState.value = AuthState.Error("Passwords do not match.")
             return
         }
         if (email.isBlank()) {

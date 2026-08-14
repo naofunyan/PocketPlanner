@@ -7,10 +7,7 @@ import kotlinx.serialization.Serializable
 object WelcomeRoute
 
 @Serializable
-object LoginRoute
-
-@Serializable
-object SignUpRoute
+data class AuthRoute(val initialIsLogin: Boolean = true)
 
 @Serializable
 object HomeRoute // Where we show the list of trips

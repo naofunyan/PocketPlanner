@@ -21,15 +21,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.pocketplanner.ui.components.OfflineBannerWrapper
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.pocketplanner.ui.auth.LoginScreen
-import com.example.pocketplanner.ui.auth.SignUpScreen
 import com.example.pocketplanner.ui.auth.WelcomeScreen
+
 import com.example.pocketplanner.ui.expense.ExpenseScreen
 import com.example.pocketplanner.ui.itinerary.DayPlanScreen
 import com.example.pocketplanner.ui.itinerary.ItineraryScreen
@@ -45,9 +49,9 @@ fun MainScreen() {
     // We only want to show the bottom bar if the user is NOT on the login/welcome screens
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    val showBottomBar = currentDestination?.route?.contains("LoginRoute") == false && 
-                        currentDestination?.route?.contains("WelcomeRoute") == false && 
-                        currentDestination?.route?.contains("SignUpRoute") == false &&
+    // We only show the bottom bar if the current route is NOT AuthRoute or WelcomeRoute
+    val showBottomBar = currentDestination?.route?.contains("AuthRoute") == false && 
+                        currentDestination?.route?.contains("WelcomeRoute") == false &&
                         currentDestination?.route?.contains("SearchRoute") == false &&
                         currentDestination?.route?.contains("CreateTripDetailsRoute") == false &&
                         currentDestination?.route?.contains("ItineraryRoute") == false &&
@@ -177,13 +181,44 @@ fun MainScreen() {
         NavHost(
             navController = navController,
             startDestination = WelcomeRoute,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            enterTransition = { fadeIn(animationSpec = tween(400)) },
+            exitTransition = { fadeOut(animationSpec = tween(400)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(400)) },
+            popExitTransition = { fadeOut(animationSpec = tween(400)) }
         ) {
-            composable<WelcomeRoute> {
+            composable<WelcomeRoute>(
+                exitTransition = { fadeOut(animationSpec = tween(300)) },
+                popEnterTransition = { fadeIn(animationSpec = tween(300)) }
+            ) {
                 WelcomeScreen(
-                    onNavigateToSignUp = { navController.navigate(SignUpRoute) },
-                    onNavigateToLogin = { navController.navigate(LoginRoute) },
-                    onNavigateToHome = {
+                    onNavigateToAuth = { navController.navigate(AuthRoute(initialIsLogin = true)) }
+                )
+            }
+
+            composable<AuthRoute>(
+                enterTransition = { 
+                    slideIntoContainer(
+                        towards = androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Up,
+                        animationSpec = tween(400)
+                    )
+                },
+                popExitTransition = { 
+                    slideOutOfContainer(
+                        towards = androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Down,
+                        animationSpec = tween(400)
+                    )
+                }
+            ) { backStackEntry ->
+                val authRoute = backStackEntry.toRoute<AuthRoute>()
+                com.example.pocketplanner.ui.auth.AuthScreen(
+                    initialIsLoginMode = authRoute.initialIsLogin,
+                    onAuthSuccess = {
+                        navController.navigate(HomeRoute) {
+                            popUpTo(WelcomeRoute) { inclusive = true }
+                        }
+                    },
+                    onGuestLogin = {
                         navController.navigate(HomeRoute) {
                             popUpTo(WelcomeRoute) { inclusive = true }
                         }
@@ -191,31 +226,6 @@ fun MainScreen() {
                 )
             }
 
-            composable<LoginRoute> {
-                LoginScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onNavigateToSignUp = { navController.navigate(SignUpRoute) },
-                    onLoginSuccess = {
-                        // When login succeeds, go to Home and remove Login from the backstack
-                        navController.navigate(HomeRoute) {
-                            popUpTo(LoginRoute) { inclusive = true }
-                        }
-                    }
-                )
-            }
-
-            composable<SignUpRoute> {
-                SignUpScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onNavigateToLogin = { navController.navigate(LoginRoute) },
-                    onSignUpSuccess = {
-                        // When sign up succeeds, go to Home and clear backstack
-                        navController.navigate(HomeRoute) {
-                            popUpTo(WelcomeRoute) { inclusive = true }
-                        }
-                    }
-                )
-            }
 
             composable<HomeRoute> {
                 // Grab the currently logged-in user from Firebase
