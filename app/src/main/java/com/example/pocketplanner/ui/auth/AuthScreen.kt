@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pocketplanner.R
+import kotlinx.coroutines.launch
 
 @Composable
 fun AuthScreen(
@@ -46,7 +47,10 @@ fun AuthScreen(
     var password by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var rememberMe by remember { mutableStateOf(false) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val credentialManager = remember { androidx.credentials.CredentialManager.create(context) }
+    val webClientId = androidx.compose.ui.res.stringResource(id = R.string.default_web_client_id)
 
     // Trigger navigation on success
     LaunchedEffect(uiState) {
@@ -186,32 +190,21 @@ fun AuthScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Options Row (Remember Me & Forgot Password)
+                // Options Row (Forgot Password)
                 AnimatedVisibility(visible = isLoginMode) {
-                    Row(
+                    Box(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        contentAlignment = Alignment.CenterEnd
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.offset(x = (-12).dp)
-                        ) {
-                            Checkbox(
-                                checked = rememberMe,
-                                onCheckedChange = { rememberMe = it },
-                                colors = CheckboxDefaults.colors(
-                                    checkedColor = MaterialTheme.colorScheme.primary,
-                                    uncheckedColor = Color.Gray
-                                )
-                            )
-                            Text(text = "Remember me", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
-                        }
                         Text(
                             text = "Forgot Password ?",
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.clickable { /* TODO */ }
+                            modifier = Modifier.clickable {
+                                viewModel.resetPassword(email) { success, message ->
+                                    android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_LONG).show()
+                                }
+                            }
                         )
                     }
                 }
@@ -265,7 +258,29 @@ fun AuthScreen(
 
                 // Google Button
                 OutlinedButton(
-                    onClick = { /* TODO: Google Sign-In */ },
+                    onClick = {
+                        val googleIdOption = com.google.android.libraries.identity.googleid.GetGoogleIdOption.Builder()
+                            .setFilterByAuthorizedAccounts(false)
+                            .setServerClientId(webClientId)
+                            .build()
+                        val request = androidx.credentials.GetCredentialRequest.Builder()
+                            .addCredentialOption(googleIdOption)
+                            .build()
+                            
+                        coroutineScope.launch {
+                            try {
+                                val result = credentialManager.getCredential(request = request, context = context)
+                                val credential = result.credential
+                                if (credential is androidx.credentials.CustomCredential && credential.type == com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                                    val googleIdTokenCredential = com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.createFrom(credential.data)
+                                    viewModel.signInWithGoogle(googleIdTokenCredential.idToken)
+                                }
+                            } catch (e: Exception) {
+                                android.util.Log.e("AuthScreen", "Google Sign-In Error", e)
+                                android.widget.Toast.makeText(context, "Google Sign-In failed or cancelled", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),

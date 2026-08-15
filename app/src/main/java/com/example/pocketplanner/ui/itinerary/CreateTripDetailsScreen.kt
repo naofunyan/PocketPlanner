@@ -9,7 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MoreVert
@@ -276,7 +276,7 @@ fun CreateTripDetailsScreen(
                                     color = Color.White,
                                     modifier = Modifier.padding(horizontal = 4.dp)
                                 ) {
-                                    Icon(Icons.Filled.ArrowForward, contentDescription = "To", tint = Color(0xFF001F3F), modifier = Modifier.size(20.dp))
+                                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "To", tint = Color(0xFF001F3F), modifier = Modifier.size(20.dp))
                                 }
 
                                 // End Date

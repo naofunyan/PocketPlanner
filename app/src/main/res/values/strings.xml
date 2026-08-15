@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">PocketPlanner</string>
+    <string name="default_web_client_id">869852688410-qc61rb1oe9ai4ohhumvvctsrmoqt7f9l.apps.googleusercontent.com</string>
 </resources>

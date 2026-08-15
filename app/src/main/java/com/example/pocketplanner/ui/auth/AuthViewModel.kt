@@ -31,6 +31,18 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun signInWithGoogle(idToken: String) {
+        _uiState.value = AuthState.Loading
+        viewModelScope.launch {
+            val result = authRepository.signInWithGoogle(idToken)
+            if (result.isSuccess) {
+                _uiState.value = AuthState.Success
+            } else {
+                _uiState.value = AuthState.Error(result.exceptionOrNull()?.message ?: "Google Sign-In Failed")
+            }
+        }
+    }
+
     fun register(username: String, email: String, pass: String) {
         if (!username.matches(Regex("^[a-zA-Z0-9]+$"))) {
             _uiState.value = AuthState.Error("Username must be alphanumeric.")
@@ -63,6 +75,22 @@ class AuthViewModel @Inject constructor(
                 _uiState.value = AuthState.Error(result.exceptionOrNull()?.message ?: "Registration Failed")
             }
         }
+    }
+
+    fun resetPassword(email: String, onResult: (Boolean, String) -> Unit) {
+        if (email.isBlank()) {
+            onResult(false, "Please enter your email address first.")
+            return
+        }
+
+        com.google.firebase.auth.FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    onResult(true, "Password reset email sent! Check your inbox.")
+                } else {
+                    onResult(false, task.exception?.message ?: "Failed to send reset email.")
+                }
+            }
     }
 }
 

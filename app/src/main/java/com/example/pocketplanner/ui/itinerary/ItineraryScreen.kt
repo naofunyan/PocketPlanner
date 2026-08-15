@@ -15,7 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.DirectionsWalk
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
@@ -392,7 +392,7 @@ fun ItineraryScreen(
                                                     verticalAlignment = Alignment.CenterVertically,
                                                     modifier = Modifier.padding(vertical = 16.dp)
                                                 ) {
-                                                    Icon(Icons.Filled.DirectionsWalk, contentDescription = "Walk", tint = Color.Gray, modifier = Modifier.size(16.dp))
+                                                    Icon(Icons.AutoMirrored.Filled.DirectionsWalk, contentDescription = "Walk", tint = Color.Gray, modifier = Modifier.size(16.dp))
                                                     Spacer(modifier = Modifier.width(8.dp))
                                                     Text("15 mins • 0.8 mi ", fontSize = 12.sp, color = Color.Gray)
                                                     Text("Directions >", fontSize = 12.sp, color = Color(0xFF0091EA), fontWeight = FontWeight.Bold)
