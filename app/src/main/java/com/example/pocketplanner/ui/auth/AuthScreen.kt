@@ -64,7 +64,7 @@ fun AuthScreen(
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(Color(0xFF0F172A), Color(0xFF1E293B))
+                    colors = listOf(Color(0xFF1976D2), Color(0xFF0D47A1))
                 )
             )
     ) {
@@ -100,7 +100,7 @@ fun AuthScreen(
             Text(
                 text = if (isLoginMode) "Enter your email and password to log in" else "Create an account to continue",
                 style = MaterialTheme.typography.bodyLarge,
-                color = Color.LightGray
+                color = Color.White.copy(alpha = 0.8f)
             )
         }
 
@@ -388,7 +388,7 @@ fun FormField(
                 }
             } else null,
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedBorderColor = Color.Gray,
                 focusedBorderColor = MaterialTheme.colorScheme.primary
             )
         )
