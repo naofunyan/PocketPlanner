@@ -102,7 +102,7 @@ fun MainScreen() {
                         ) {
                             val isHome = currentDestination?.hierarchy?.any { it.route?.contains("HomeRoute") == true } == true
                             BottomNavTab(
-                                icon = Icons.Filled.Home,
+                                iconResId = com.example.pocketplanner.R.drawable.navhome,
                                 label = "Home",
                                 isSelected = isHome,
                                 onClick = {
@@ -116,7 +116,7 @@ fun MainScreen() {
 
                             val isExplore = currentDestination?.hierarchy?.any { it.route?.contains("ExploreRoute") == true } == true
                             BottomNavTab(
-                                icon = Icons.Filled.Explore,
+                                iconResId = com.example.pocketplanner.R.drawable.navexplore,
                                 label = "Explore",
                                 isSelected = isExplore,
                                 onClick = {
@@ -128,13 +128,13 @@ fun MainScreen() {
                                 }
                             )
 
-                            val isAlerts = currentDestination?.hierarchy?.any { it.route?.contains("AlertsRoute") == true } == true
+                            val isExpense = currentDestination?.hierarchy?.any { it.route?.contains("ExpenseRoute") == true } == true
                             BottomNavTab(
-                                icon = Icons.Filled.Notifications,
-                                label = "Alerts",
-                                isSelected = isAlerts,
+                                iconResId = com.example.pocketplanner.R.drawable.navexpense,
+                                label = "Expense",
+                                isSelected = isExpense,
                                 onClick = {
-                                    navController.navigate(AlertsRoute) {
+                                    navController.navigate(ExpenseRoute("")) { // Navigate to global expense for now
                                         popUpTo(HomeRoute) { saveState = true }
                                         launchSingleTop = true
                                         restoreState = true
@@ -143,7 +143,7 @@ fun MainScreen() {
                             )
 
                             BottomNavTab(
-                                icon = Icons.Filled.Settings,
+                                iconResId = com.example.pocketplanner.R.drawable.navsettings,
                                 label = "Settings",
                                 isSelected = false,
                                 onClick = { /* TODO */ }
@@ -163,11 +163,11 @@ fun MainScreen() {
                                     .fillMaxSize()
                                     .clickable { navController.navigate(ChatRoute) } // <-- ADD THIS
                             ) {
-                                Icon(
-                                    androidx.compose.material.icons.Icons.Filled.AutoAwesome,
+                                androidx.compose.foundation.Image(
+                                    painter = androidx.compose.ui.res.painterResource(id = com.example.pocketplanner.R.drawable.navaction),
                                     contentDescription = "AI Call",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(32.dp)
+                                    modifier = Modifier.size(32.dp),
+                                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary)
                                 )
                             }
                         }
@@ -281,13 +281,16 @@ fun MainScreen() {
                     destinations = args.destinations,
                     isGenerating = isGenerating,
                     onNavigateBack = { navController.popBackStack() },
-                    onCreateTrip = { days ->
+                    onCreateTrip = { days, name, start, end ->
                         val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid ?: "test_user_id"
                         itineraryViewModel.generateTripWithAI(
                             userId = userId, 
                             destination = args.destinations, 
                             days = days, 
+                            name = name,
+                            startDate = start,
+                            endDate = end,
                             onSuccess = {
                                 navController.popBackStack(HomeRoute, inclusive = false)
                             },
@@ -357,7 +360,7 @@ fun MainScreen() {
 }
 
 @Composable
-fun BottomNavTab(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, isSelected: Boolean, onClick: () -> Unit) {
+fun BottomNavTab(iconResId: Int, label: String, isSelected: Boolean, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -367,11 +370,11 @@ fun BottomNavTab(icon: androidx.compose.ui.graphics.vector.ImageVector, label: S
         // Center the icon by providing consistent top padding, removing the active dot
         Spacer(modifier = Modifier.height(4.dp))
 
-        Icon(
-            imageVector = icon,
+        androidx.compose.foundation.Image(
+            painter = androidx.compose.ui.res.painterResource(id = iconResId),
             contentDescription = label,
-            tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(24.dp),
+            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray)
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(

@@ -1,6 +1,7 @@
 package com.example.pocketplanner.ui.itinerary
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,6 +34,14 @@ import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.*
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.LocationServices
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripsScreen(
@@ -40,13 +50,51 @@ fun TripsScreen(
     onTripClick: (tripId: String) -> Unit = {},
     onAddTripClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     LaunchedEffect(userId) {
         viewModel.loadTrips(userId)
     }
 
     val trips by viewModel.trips.collectAsState()
     val isGenerating by viewModel.isGenerating.collectAsState()
+    val weatherState by viewModel.weatherState.collectAsState()
     
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true || permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            try {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    if (location != null) {
+                        viewModel.fetchWeather(context, location.latitude, location.longitude)
+                    } else {
+                        viewModel.fetchWeather(context, 10.7626, 106.6602) // Default to Ho Chi Minh City
+                    }
+                }
+            } catch (e: SecurityException) { }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            try {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    if (location != null) {
+                        viewModel.fetchWeather(context, location.latitude, location.longitude)
+                    } else {
+                        viewModel.fetchWeather(context, 10.7626, 106.6602)
+                    }
+                }
+            } catch (e: SecurityException) { }
+        } else {
+            locationPermissionLauncher.launch(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+            )
+        }
+    }
+
     // User info for the header
     val currentUser = FirebaseAuth.getInstance().currentUser
     val userName = currentUser?.displayName?.takeIf { it.isNotBlank() } ?: "Explorer"
@@ -72,6 +120,8 @@ fun TripsScreen(
             // 1. Bottom Layer: Parallax Header
             HomeHeader(
                 userName = userName,
+                activeTrip = trips.firstOrNull(),
+                weatherState = weatherState,
                 topPadding = innerPadding.calculateTopPadding(),
                 modifier = Modifier
                     .onGloballyPositioned { headerHeightPx = it.size.height.toFloat() }
@@ -112,18 +162,76 @@ fun TripsScreen(
                                 .padding(32.dp), 
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("No trips planned yet!\nTap '+ Add trip' to use AI.", style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                text = "Kick things off by adding a future adventure",
+                                style = MaterialTheme.typography.bodyLarge,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
                         }
                     }
                 } else {
-                    items(trips) { trip ->
-                        // Wrap in white background so the list creates a solid scrolling sheet
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.background)
-                        ) {
-                            TripCard(trip = trip, onClick = { onTripClick(trip.id) })
+                    val now = System.currentTimeMillis()
+                    val activeTrips = trips.filter { now in it.startDate..it.endDate || it.status == "ACTIVE" }.sortedBy { it.startDate }
+                    val upcomingTrips = trips.filter { now < it.startDate && it.status != "ACTIVE" }.sortedBy { it.startDate }
+                    val pastTrips = trips.filter { now > it.endDate && it.status != "ACTIVE" }.sortedByDescending { it.endDate }
+
+                    if (activeTrips.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Active Trips",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.background)
+                                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        items(activeTrips) { trip ->
+                            Box(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
+                                TripCard(trip = trip, onClick = { onTripClick(trip.id) })
+                            }
+                        }
+                    }
+
+                    if (upcomingTrips.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Upcoming Trips",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.background)
+                                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        items(upcomingTrips) { trip ->
+                            Box(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
+                                TripCard(trip = trip, onClick = { onTripClick(trip.id) })
+                            }
+                        }
+                    }
+
+                    if (pastTrips.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Past Trips",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.background)
+                                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        items(pastTrips) { trip ->
+                            Box(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
+                                TripCard(trip = trip, onClick = { onTripClick(trip.id) })
+                            }
                         }
                     }
                 }
@@ -161,7 +269,46 @@ fun TripsScreen(
 }
 
 @Composable
-fun HomeHeader(userName: String, modifier: Modifier = Modifier, topPadding: androidx.compose.ui.unit.Dp = 0.dp) {
+fun HomeHeader(userName: String, activeTrip: TripEntity?, weatherState: WeatherState, modifier: Modifier = Modifier, topPadding: androidx.compose.ui.unit.Dp = 0.dp) {
+    val currentHour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+    val greetingText = when (currentHour) {
+        in 0..11 -> "Good morning"
+        in 12..17 -> "Good afternoon"
+        else -> "Good evening"
+    }
+
+    var countdownText by remember { mutableStateOf("Loading...") }
+
+    LaunchedEffect(activeTrip) {
+        if (activeTrip == null) {
+            countdownText = "You have no upcoming trips planned yet."
+        } else {
+            while (true) {
+                val now = System.currentTimeMillis()
+                val start = activeTrip.startDate
+                if (now >= start) {
+                    countdownText = "Your trip to ${activeTrip.destination} is happening right now!"
+                    break
+                } else {
+                    val diff = start - now
+                    val days = java.util.concurrent.TimeUnit.MILLISECONDS.toDays(diff)
+                    val hours = java.util.concurrent.TimeUnit.MILLISECONDS.toHours(diff) % 24
+                    val minutes = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(diff) % 60
+                    val seconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(diff) % 60
+                    
+                    val parts = mutableListOf<String>()
+                    if (days > 0) parts.add(String.format("%02d days", days))
+                    if (hours > 0 || days > 0) parts.add(String.format("%02d hours", hours))
+                    parts.add(String.format("%02d minutes", minutes))
+                    parts.add(String.format("%02d seconds", seconds))
+                    
+                    countdownText = "Your trip to ${activeTrip.destination} will begin in ${parts.joinToString(" ")}."
+                }
+                kotlinx.coroutines.delay(1000L)
+            }
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -174,17 +321,15 @@ fun HomeHeader(userName: String, modifier: Modifier = Modifier, topPadding: andr
         ) {
             // App Logo / Title
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Placeholder for Logo
-                Box(
-                    modifier = Modifier.size(32.dp).background(Color.White, RoundedCornerShape(16.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("🌍", fontSize = 16.sp)
-                }
-                Spacer(modifier = Modifier.width(12.dp))
+                Image(
+                    painter = androidx.compose.ui.res.painterResource(id = com.example.pocketplanner.R.drawable.logo),
+                    contentDescription = "PocketPlanner Logo",
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "PocketPlan",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    text = "PocketPlanner",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
@@ -193,23 +338,23 @@ fun HomeHeader(userName: String, modifier: Modifier = Modifier, topPadding: andr
 
             // Greeting
             Text(
-                text = "Good morning, $userName!",
+                text = "$greetingText, $userName!",
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onPrimary
             )
             
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Mock Countdown
+            // Live Countdown
             Text(
-                text = "Your trip to Tokyo will begin in 03 hours 10 minutes 10 seconds.",
+                text = countdownText,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Mock Weather Pill
+            // Weather Pill
             Surface(
                 color = Color.White.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(12.dp)
@@ -225,8 +370,19 @@ fun HomeHeader(userName: String, modifier: Modifier = Modifier, topPadding: andr
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
+                    
+                    val weatherString = when (weatherState) {
+                        is WeatherState.Loading -> "Fetching local weather..."
+                        is WeatherState.Success -> {
+                            val tempC = weatherState.temperature.toInt()
+                            val tempF = (weatherState.temperature * 9 / 5 + 32).toInt()
+                            "The weather in ${weatherState.city} is $tempC°C / $tempF°F, and will be ${weatherState.description}."
+                        }
+                        is WeatherState.Error -> "Weather data unavailable."
+                    }
+                    
                     Text(
-                        text = "The weather in Tokyo is 34 degrees C, and will be cloudy at night.",
+                        text = weatherString,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
@@ -252,9 +408,9 @@ fun ActionRow(onAddTripClick: () -> Unit) {
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                Icon(Icons.Filled.Add, contentDescription = "Add trip", modifier = Modifier.size(18.dp))
+                Icon(Icons.Filled.Add, contentDescription = "Add a trip", modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Add trip", style = MaterialTheme.typography.titleSmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold))
+                Text("Add a trip", style = MaterialTheme.typography.titleSmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold))
             }
         }
 
@@ -278,6 +434,18 @@ fun ActionRow(onAddTripClick: () -> Unit) {
 @Composable
 fun TripCard(trip: TripEntity, onClick: () -> Unit = {}) {
     val dateFormatter = SimpleDateFormat("MMM dd", Locale.getDefault())
+    val yearFormatter = SimpleDateFormat("yyyy", Locale.getDefault())
+    
+    val start = Date(trip.startDate)
+    val end = Date(trip.endDate)
+    val now = System.currentTimeMillis()
+    
+    // Add 1 to totalDays so a trip from Aug 15 to Aug 15 is 1 day.
+    val totalDays = ((trip.endDate - trip.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1
+    val daysSpent = if (now < trip.startDate) 0 else if (now > trip.endDate) totalDays else ((now - trip.startDate) / 86400000L).toInt() + 1
+    
+    val isTravelingNow = now in trip.startDate..trip.endDate
+
     // Generate a beautiful mock image based on the trip's ID so it stays consistent
     val mockImageUrl = "https://picsum.photos/seed/${trip.id}/800/400"
 
@@ -286,48 +454,106 @@ fun TripCard(trip: TripEntity, onClick: () -> Unit = {}) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 8.dp)
-            .height(200.dp),
+            .height(200.dp), // slightly adjusted height
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             // Background Image
             AsyncImage(
-                model = mockImageUrl,
+                model = trip.photoUrl ?: mockImageUrl,
                 contentDescription = trip.destination,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Dark gradient overlay so text is readable
+            // Dark gradient overlay
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f)),
-                            startY = 100f
+                            colors = listOf(Color.Black.copy(alpha = 0.2f), Color.Transparent, Color.Black.copy(alpha = 0.8f)),
+                            startY = 0f,
+                            endY = Float.POSITIVE_INFINITY
                         )
                     )
             )
+            
+            // "NOW TRAVELING" Badge (Top Left)
+            if (isTravelingNow || trip.status == "ACTIVE") {
+                Surface(
+                    color = Color(0xFF1E3A4B).copy(alpha = 0.9f),
+                    shape = RoundedCornerShape(percent = 50),
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "#NOWTRAVELING",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = Color.White
+                        )
+                    }
+                }
+            }
 
             // Text content anchored to bottom
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
+                    .fillMaxWidth()
                     .padding(16.dp)
             ) {
+                val titleText = trip.name.takeIf { it.isNotBlank() } ?: "Trip to ${trip.destination}"
                 Text(
-                    text = trip.destination,
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                    text = titleText,
+                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
                     color = Color.White
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "${dateFormatter.format(Date(trip.startDate))} - ${dateFormatter.format(Date(trip.endDate))} • Trip",
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = Color.White.copy(alpha = 0.8f)
-                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    // Stats Row
+                    Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                        // Date / Year
+                        Column {
+                            Text(
+                                text = "${dateFormatter.format(start)} - ${dateFormatter.format(end)}",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = Color.White
+                            )
+                            Text(
+                                text = yearFormatter.format(start),
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                color = Color.White.copy(alpha = 0.8f)
+                            )
+                        }
+                        
+                        // Days
+                        Column {
+                            Text(
+                                text = "$daysSpent/$totalDays",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = Color.White
+                            )
+                            Text(
+                                text = "DAYS",
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                color = Color.White.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                }
             }
         }
     }

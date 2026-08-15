@@ -39,7 +39,7 @@ fun CreateTripDetailsScreen(
     destinations: String,
     isGenerating: Boolean,
     onNavigateBack: () -> Unit,
-    onCreateTrip: (Int) -> Unit
+    onCreateTrip: (Int, String, Long, Long) -> Unit
 ) {
     var tripName by remember { mutableStateOf("") }
     var isTrackerEnabled by remember { mutableStateOf(true) }
@@ -92,8 +92,12 @@ fun CreateTripDetailsScreen(
                             val days = if (startDatePickerState.selectedDateMillis != null && endDatePickerState.selectedDateMillis != null) {
                                 val ms = endDatePickerState.selectedDateMillis!! - startDatePickerState.selectedDateMillis!!
                                 (ms / (1000 * 60 * 60 * 24)).toInt() + 1
-                            } else 3
-                            onCreateTrip(days)
+                            } else {
+                                3
+                            }
+                            val startMillis = startDatePickerState.selectedDateMillis ?: System.currentTimeMillis()
+                            val endMillis = endDatePickerState.selectedDateMillis ?: (startMillis + (days - 1) * 86400000L)
+                            onCreateTrip(days, tripName, startMillis, endMillis)
                         }
                     },
                     modifier = Modifier

@@ -58,7 +58,7 @@ class ItineraryViewModel @Inject constructor(
     fun getPlacesForDay(tripId: String, dayNumber: Int) = tripRepository.getPlacesForDay(tripId, dayNumber)
     fun getTrip(tripId: String) = tripRepository.getTrip(tripId)
 
-    fun generateTripWithAI(userId: String, destination: String, days: Int, onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun generateTripWithAI(userId: String, destination: String, days: Int, name: String, startDate: Long, endDate: Long, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             try {
                 _isGenerating.value = true
@@ -91,16 +91,21 @@ class ItineraryViewModel @Inject constructor(
                 // 3. Clean the response (Gemini sometimes wraps JSON in markdown blocks)
                 val cleanJson = aiResponseText.removePrefix("```json").removeSuffix("```").trim()
 
-                // 4. Create the Trip
+                // 4. Fetch Unsplash Photo
+                val photoUrl = fetchUnsplashPhoto(destination)
+
+                // 5. Create the Trip
                 val tripId = UUID.randomUUID().toString()
                 val newTrip = TripEntity(
                     id = tripId,
                     userId = userId,
+                    name = name,
                     destination = destination,
-                    startDate = System.currentTimeMillis(),
-                    endDate = System.currentTimeMillis() + (days * 86400000L),
+                    startDate = startDate,
+                    endDate = endDate,
                     budget = 5000000.0,
-                    status = "UPCOMING"
+                    status = "UPCOMING",
+                    photoUrl = photoUrl
                 )
                 tripRepository.createTrip(newTrip)
 
@@ -148,6 +153,37 @@ class ItineraryViewModel @Inject constructor(
             } finally {
                 _isGenerating.value = false
             }
+        }
+    }
+
+    private suspend fun fetchUnsplashPhoto(destination: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val unsplashKey = BuildConfig.UNSPLASH_API_KEY
+            if (unsplashKey.isBlank()) return@withContext null
+            
+            // Encode destination for URL
+            val query = java.net.URLEncoder.encode(destination, "UTF-8")
+            val url = URL("https://api.unsplash.com/search/photos?query=${query}&per_page=1&client_id=$unsplashKey")
+            
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connectTimeout = 10000
+            connection.readTimeout = 10000
+
+            if (connection.responseCode == 200) {
+                val responseString = connection.inputStream.bufferedReader().use { it.readText() }
+                val jsonObject = JSONObject(responseString)
+                val resultsArray = jsonObject.optJSONArray("results")
+                if (resultsArray != null && resultsArray.length() > 0) {
+                    val firstResult = resultsArray.getJSONObject(0)
+                    val urlsObj = firstResult.getJSONObject("urls")
+                    return@withContext urlsObj.getString("regular")
+                }
+            }
+            return@withContext null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return@withContext null
         }
     }
 
@@ -211,4 +247,69 @@ class ItineraryViewModel @Inject constructor(
             throw Exception("HTTP ${connection.responseCode}: $errorResponse")
         }
     }
+
+    // --- WEATHER API LOGIC ---
+    private val _weatherState = MutableStateFlow<WeatherState>(WeatherState.Loading)
+    val weatherState: StateFlow<WeatherState> = _weatherState.asStateFlow()
+
+    fun fetchWeather(context: android.content.Context, lat: Double, lng: Double) {
+        viewModelScope.launch {
+            try {
+                // 1. Get City Name using Geocoder
+                val city = withContext(Dispatchers.IO) {
+                    try {
+                        val geocoder = android.location.Geocoder(context, java.util.Locale.getDefault())
+                        val addresses = geocoder.getFromLocation(lat, lng, 1)
+                        addresses?.firstOrNull()?.let { address ->
+                            address.locality ?: address.subAdminArea ?: address.adminArea
+                        } ?: "Ho Chi Minh City"
+                    } catch (e: Exception) {
+                        "Ho Chi Minh City"
+                    }
+                }
+
+                // 2. Fetch from Open-Meteo (No API Key Required)
+                val weatherData = withContext(Dispatchers.IO) {
+                    val url = URL("https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lng&current_weather=true")
+                    val connection = url.openConnection() as HttpURLConnection
+                    connection.requestMethod = "GET"
+                    connection.connectTimeout = 10000
+                    connection.readTimeout = 10000
+
+                    if (connection.responseCode == 200) {
+                        val responseString = connection.inputStream.bufferedReader().use { it.readText() }
+                        JSONObject(responseString).getJSONObject("current_weather")
+                    } else {
+                        throw Exception("Weather API failed")
+                    }
+                }
+
+                val temp = weatherData.getDouble("temperature")
+                val code = weatherData.getInt("weathercode")
+                
+                // Map WMO Weather codes to descriptions
+                val description = when (code) {
+                    0 -> "clear skies"
+                    1, 2, 3 -> "partly cloudy"
+                    45, 48 -> "foggy"
+                    51, 53, 55 -> "drizzling"
+                    61, 63, 65 -> "raining"
+                    71, 73, 75 -> "snowing"
+                    95, 96, 99 -> "thunderstorms"
+                    else -> "variable"
+                }
+
+                _weatherState.value = WeatherState.Success(city, temp, description)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _weatherState.value = WeatherState.Error
+            }
+        }
+    }
+}
+
+sealed class WeatherState {
+    object Loading : WeatherState()
+    data class Success(val city: String, val temperature: Double, val description: String) : WeatherState()
+    object Error : WeatherState()
 }

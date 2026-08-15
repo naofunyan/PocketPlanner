@@ -16,7 +16,7 @@ import com.example.pocketplanner.data.local.entity.TrackingPointEntity
 // If we add more tables later, we just add them to the entities array and bump the version
 @Database(
     entities = [TripEntity::class, PlaceEntity::class, ExpenseEntity::class, TrackingPointEntity::class, AlertEntity::class],
-    version = 4, // Bump version
+    version = 7, // Bump version to clear DB
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
