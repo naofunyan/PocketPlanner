@@ -15,10 +15,11 @@ plugins {
 
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
-if (localPropertiesFile.exists()) {
-    localProperties.load(localPropertiesFile.inputStream())
+if (!localPropertiesFile.exists()) {
+    localPropertiesFile.createNewFile()
 }
-val vertexApiKey = localProperties.getProperty("VERTEX_API_KEY") ?: ""
+localProperties.load(localPropertiesFile.inputStream())
+val vertexApiKey = localProperties.getProperty("VERTEX_API_KEY") ?: System.getenv("VERTEX_API_KEY") ?: ""
 
 android {
     namespace = "com.example.pocketplanner"
