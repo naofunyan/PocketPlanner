@@ -45,7 +45,7 @@ class ItineraryViewModel @Inject constructor(
     // The region of your Google Cloud Project (usually us-central1)
     private val region = "us-central1"
     
-    private val endpointUrl = "https://$region-aiplatform.googleapis.com/v1/projects/$projectId/locations/$region/publishers/google/models/gemini-2.5-flash:generateContent?key=$apiKey"
+    private val endpointUrl = "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-3.7-flash:generateContent?key=$apiKey"
 
     fun loadTrips(userId: String) {
         viewModelScope.launch {
