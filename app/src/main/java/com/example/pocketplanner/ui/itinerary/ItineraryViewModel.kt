@@ -37,6 +37,13 @@ class ItineraryViewModel @Inject constructor(
     private val _isGenerating = MutableStateFlow(false)
     val isGenerating: StateFlow<Boolean> = _isGenerating.asStateFlow()
 
+    private val _coverPhotoUrl = MutableStateFlow<String?>(null)
+    val coverPhotoUrl: StateFlow<String?> = _coverPhotoUrl.asStateFlow()
+
+    // Map of Currency Code (e.g. "USD") to its rate relative to USD
+    private val _exchangeRates = MutableStateFlow<Map<String, Double>>(emptyMap())
+    val exchangeRates: StateFlow<Map<String, Double>> = _exchangeRates.asStateFlow()
+
     // --- VERTEX AI REST API CONFIG ---
     // Securely reading the API Key from local.properties -> BuildConfig
     private val apiKey = BuildConfig.VERTEX_API_KEY
@@ -55,29 +62,87 @@ class ItineraryViewModel @Inject constructor(
         }
     }
 
+    fun fetchInitialCoverPhoto(destination: String) {
+        viewModelScope.launch {
+            if (_coverPhotoUrl.value == null) {
+                _coverPhotoUrl.value = fetchUnsplashPhoto(destination)
+            }
+        }
+    }
+
+    fun fetchExchangeRates() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val url = URL("https://open.er-api.com/v6/latest/USD")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                
+                if (connection.responseCode == 200) {
+                    val response = connection.inputStream.bufferedReader().use { it.readText() }
+                    val jsonObject = JSONObject(response)
+                    if (jsonObject.getString("result") == "success") {
+                        val ratesObj = jsonObject.getJSONObject("rates")
+                        val ratesMap = mutableMapOf<String, Double>()
+                        val keys = ratesObj.keys()
+                        while (keys.hasNext()) {
+                            val key = keys.next()
+                            ratesMap[key] = ratesObj.getDouble(key)
+                        }
+                        _exchangeRates.value = ratesMap
+                    }
+                }
+                connection.disconnect()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     fun getPlacesForDay(tripId: String, dayNumber: Int) = tripRepository.getPlacesForDay(tripId, dayNumber)
     fun getTrip(tripId: String) = tripRepository.getTrip(tripId)
 
-    fun generateTripWithAI(userId: String, destination: String, days: Int, name: String, startDate: Long, endDate: Long, onSuccess: () -> Unit, onError: (String) -> Unit) {
+    fun generateTripWithAI(
+        userId: String, 
+        destination: String, 
+        days: Int, 
+        name: String, 
+        startDate: Long, 
+        endDate: Long, 
+        customPhotoUrl: String? = null,
+        budgetAmount: Double? = null,
+        budgetCurrency: String? = null,
+        onSuccess: () -> Unit, 
+        onError: (String) -> Unit
+    ) {
         viewModelScope.launch {
+            _isGenerating.value = true
             try {
-                _isGenerating.value = true
-                // 1. The new prompt asking for JSON
-                val prompt = """
-                    Plan a $days day trip to $destination.
-                    Return ONLY valid JSON in this exact format:
+                // 1. Build prompt
+                var prompt = """
+                    You are a professional travel planner. Create a $days day itinerary for a trip to "$destination".
+                    The user's trip is named "$name".
+                """.trimIndent()
+                
+                if (budgetAmount != null && budgetCurrency != null) {
+                    prompt += "\nThe user's budget for this trip is $budgetAmount $budgetCurrency. Please optimize the estimated costs for places accordingly."
+                }
+                
+                prompt += """
+                    
+                    Respond strictly in this JSON format:
+
                     {
                       "days": [
                         {
                           "dayNumber": 1,
                           "places": [
                             {
-                              "name": "Ben Thanh Market",
-                              "lat": 10.7725,
-                              "lng": 106.6981,
-                              "category": "Market",
-                              "estimatedCost": 200000.0,
-                              "notes": "Great for souvenirs."
+                              "name": "Eiffel Tower",
+                              "lat": 48.8584,
+                              "lng": 2.2945,
+                              "category": "Sightseeing",
+                              "estimatedCost": 25.0,
+                              "notes": "Book tickets in advance."
                             }
                           ]
                         }
@@ -92,10 +157,22 @@ class ItineraryViewModel @Inject constructor(
                 val cleanJson = aiResponseText.removePrefix("```json").removeSuffix("```").trim()
 
                 // 4. Fetch Unsplash Photo
-                val photoUrl = fetchUnsplashPhoto(destination)
+                val photoUrl = customPhotoUrl ?: _coverPhotoUrl.value ?: fetchUnsplashPhoto(destination)
 
                 // 5. Create the Trip
                 val tripId = UUID.randomUUID().toString()
+                
+                // Convert budget to VND for storage if provided
+                var budgetInVnd = 5000000.0 // Default 5M VND
+                if (budgetAmount != null && budgetCurrency != null) {
+                    val rates = _exchangeRates.value
+                    if (rates.isNotEmpty()) {
+                        val rateVnd = rates["VND"] ?: 25000.0
+                        val rateCurrency = rates[budgetCurrency] ?: 1.0
+                        budgetInVnd = budgetAmount * (rateVnd / rateCurrency)
+                    }
+                }
+                
                 val newTrip = TripEntity(
                     id = tripId,
                     userId = userId,
@@ -103,7 +180,7 @@ class ItineraryViewModel @Inject constructor(
                     destination = destination,
                     startDate = startDate,
                     endDate = endDate,
-                    budget = 5000000.0,
+                    budget = budgetInVnd,
                     status = "UPCOMING",
                     photoUrl = photoUrl
                 )

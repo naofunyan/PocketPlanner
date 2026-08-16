@@ -21,6 +21,7 @@ if (!localPropertiesFile.exists()) {
 localProperties.load(localPropertiesFile.inputStream())
 val vertexApiKey = localProperties.getProperty("VERTEX_API_KEY") ?: System.getenv("VERTEX_API_KEY") ?: ""
 val unsplashApiKey = localProperties.getProperty("UNSPLASH_API_KEY") ?: System.getenv("UNSPLASH_API_KEY") ?: ""
+val mapboxAccessToken = localProperties.getProperty("MAPBOX_ACCESS_TOKEN") ?: System.getenv("MAPBOX_ACCESS_TOKEN") ?: ""
 
 android {
     namespace = "com.example.pocketplanner"
@@ -39,6 +40,7 @@ android {
         }
         buildConfigField("String", "VERTEX_API_KEY", "\"$vertexApiKey\"")
         buildConfigField("String", "UNSPLASH_API_KEY", "\"$unsplashApiKey\"")
+        buildConfigField("String", "MAPBOX_ACCESS_TOKEN", "\"$mapboxAccessToken\"")
     }
 
     buildTypes {

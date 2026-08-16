@@ -275,13 +275,29 @@ fun MainScreen() {
                 val args = backStackEntry.toRoute<CreateTripDetailsRoute>()
                 val itineraryViewModel: com.example.pocketplanner.ui.itinerary.ItineraryViewModel = hiltViewModel()
                 val isGenerating by itineraryViewModel.isGenerating.collectAsState()
+                val coverPhotoUrl by itineraryViewModel.coverPhotoUrl.collectAsState()
+                val trips by itineraryViewModel.trips.collectAsState()
+                val exchangeRates by itineraryViewModel.exchangeRates.collectAsState()
                 val context = androidx.compose.ui.platform.LocalContext.current
+
+                androidx.compose.runtime.LaunchedEffect(args.destinations) {
+                    val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                    val userId = currentUser?.uid ?: "test_user_id"
+                    itineraryViewModel.loadTrips(userId)
+                    itineraryViewModel.fetchExchangeRates()
+                    // Use the first destination to find a relevant photo
+                    val firstDest = args.destinations.split(",").firstOrNull()?.trim() ?: args.destinations
+                    itineraryViewModel.fetchInitialCoverPhoto(firstDest)
+                }
 
                 com.example.pocketplanner.ui.itinerary.CreateTripDetailsScreen(
                     destinations = args.destinations,
                     isGenerating = isGenerating,
+                    coverPhotoUrl = coverPhotoUrl,
+                    existingTrips = trips,
+                    exchangeRates = exchangeRates,
                     onNavigateBack = { navController.popBackStack() },
-                    onCreateTrip = { days, name, start, end ->
+                    onCreateTrip = { days, name, start, end, customPhotoUrl, budgetAmt, budgetCurr ->
                         val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid ?: "test_user_id"
                         itineraryViewModel.generateTripWithAI(
@@ -291,7 +307,10 @@ fun MainScreen() {
                             name = name,
                             startDate = start,
                             endDate = end,
-                            onSuccess = {
+                            customPhotoUrl = customPhotoUrl,
+                            budgetAmount = budgetAmt,
+                            budgetCurrency = budgetCurr,
+                            onSuccess = { 
                                 navController.popBackStack(HomeRoute, inclusive = false)
                             },
                             onError = { error ->

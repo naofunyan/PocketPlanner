@@ -127,8 +127,9 @@ fun ItineraryScreen(
         } else {
             Box(modifier = Modifier.fillMaxSize()) {
                 // Background Cover Image (Top half)
+                val imageUrl = trip?.photoUrl ?: "https://images.unsplash.com/photo-1555921015-c2620a56f6c1?q=80&w=800&auto=format&fit=crop"
                 Image(
-                    painter = rememberAsyncImagePainter("https://images.unsplash.com/photo-1555921015-c2620a56f6c1?q=80&w=800&auto=format&fit=crop"),
+                    painter = rememberAsyncImagePainter(imageUrl),
                     contentDescription = "Cover",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
