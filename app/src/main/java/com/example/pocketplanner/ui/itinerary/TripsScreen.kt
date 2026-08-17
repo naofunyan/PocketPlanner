@@ -11,6 +11,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,6 +53,7 @@ fun TripsScreen(
     viewModel: ItineraryViewModel = hiltViewModel(),
     userId: String,
     onTripClick: (tripId: String) -> Unit = {},
+    onEditTripClick: (tripId: String) -> Unit = {},
     onAddTripClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -59,6 +65,8 @@ fun TripsScreen(
     val isGenerating by viewModel.isGenerating.collectAsState()
     val weatherState by viewModel.weatherState.collectAsState()
     
+    var showContextMenuForTrip by remember { mutableStateOf<TripEntity?>(null) }
+    
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -69,7 +77,7 @@ fun TripsScreen(
                     if (location != null) {
                         viewModel.fetchWeather(context, location.latitude, location.longitude)
                     } else {
-                        viewModel.fetchWeather(context, 10.7626, 106.6602) // Default to Ho Chi Minh City
+                        viewModel.fetchWeather(context, 10.7626, 106.6602) // Default to N/A
                     }
                 }
             } catch (e: SecurityException) { }
@@ -190,7 +198,7 @@ fun TripsScreen(
                         }
                         items(activeTrips) { trip ->
                             Box(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
-                                TripCard(trip = trip, onClick = { onTripClick(trip.id) })
+                                TripCard(trip = trip, onClick = { onTripClick(trip.id) }, onLongClick = { showContextMenuForTrip = trip })
                             }
                         }
                     }
@@ -210,7 +218,7 @@ fun TripsScreen(
                         }
                         items(upcomingTrips) { trip ->
                             Box(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
-                                TripCard(trip = trip, onClick = { onTripClick(trip.id) })
+                                TripCard(trip = trip, onClick = { onTripClick(trip.id) }, onLongClick = { showContextMenuForTrip = trip })
                             }
                         }
                     }
@@ -230,7 +238,7 @@ fun TripsScreen(
                         }
                         items(pastTrips) { trip ->
                             Box(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
-                                TripCard(trip = trip, onClick = { onTripClick(trip.id) })
+                                TripCard(trip = trip, onClick = { onTripClick(trip.id) }, onLongClick = { showContextMenuForTrip = trip })
                             }
                         }
                     }
@@ -244,7 +252,8 @@ fun TripsScreen(
         }
     }
 
-
+    
+    var tripToDelete by remember { mutableStateOf<com.example.pocketplanner.data.local.entity.TripEntity?>(null) }
 
     if (isGenerating) {
         AlertDialog(
@@ -264,6 +273,93 @@ fun TripsScreen(
                 }
             },
             confirmButton = {} // No buttons, user must wait
+        )
+    }
+
+    if (showContextMenuForTrip != null) {
+        androidx.compose.material3.ModalBottomSheet(
+            onDismissRequest = { showContextMenuForTrip = null },
+            containerColor = Color.White,
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+            windowInsets = androidx.compose.foundation.layout.WindowInsets(0)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp)
+            ) {
+                // Settings
+                androidx.compose.material3.ListItem(
+                    headlineContent = { Text("Trip Settings") },
+                    leadingContent = { Icon(Icons.Filled.Settings, contentDescription = null) },
+                    modifier = Modifier.clickable {
+                        val tripId = showContextMenuForTrip?.id
+                        showContextMenuForTrip = null
+                        if (tripId != null) {
+                            onEditTripClick(tripId)
+                        }
+                    }
+                )
+                // Share
+                androidx.compose.material3.ListItem(
+                    headlineContent = { Text("Share Trip") },
+                    leadingContent = { Icon(Icons.Filled.Share, contentDescription = null) },
+                    modifier = Modifier.clickable {
+                        val trip = showContextMenuForTrip
+                        showContextMenuForTrip = null
+                        if (trip != null) {
+                            val sendIntent: android.content.Intent = android.content.Intent().apply {
+                                action = android.content.Intent.ACTION_SEND
+                                putExtra(android.content.Intent.EXTRA_TEXT, "Check out my trip to ${trip.destination} from ${SimpleDateFormat("MMM d", Locale.getDefault()).format(Date(trip.startDate))} to ${SimpleDateFormat("MMM d", Locale.getDefault()).format(Date(trip.endDate))}!")
+                                type = "text/plain"
+                            }
+                            val shareIntent = android.content.Intent.createChooser(sendIntent, null)
+                            context.startActivity(shareIntent)
+                        }
+                    }
+                )
+                // Delete
+                androidx.compose.material3.ListItem(
+                    headlineContent = { Text("Delete Trip", color = Color.Red) },
+                    leadingContent = { Icon(Icons.Filled.Delete, contentDescription = null, tint = Color.Red) },
+                    modifier = Modifier.clickable {
+                        val trip = showContextMenuForTrip
+                        showContextMenuForTrip = null
+                        if (trip != null) {
+                            tripToDelete = trip
+                        }
+                    }
+                )
+            }
+        }
+    }
+
+    if (tripToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { tripToDelete = null },
+            title = { Text("Delete Trip?") },
+            text = { 
+                Column {
+                    Text("Are you sure you want to delete this trip?")
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text("All the steps for the trip, including pictures, locations, and text updates will be permanently deleted.", color = Color.DarkGray)
+                } 
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        tripToDelete?.id?.let { viewModel.deleteTrip(it) }
+                        tripToDelete = null
+                    }
+                ) {
+                    Text("Delete", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { tripToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
         )
     }
 }
@@ -430,9 +526,9 @@ fun ActionRow(onAddTripClick: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
-fun TripCard(trip: TripEntity, onClick: () -> Unit = {}) {
+fun TripCard(trip: TripEntity, onClick: () -> Unit = {}, onLongClick: () -> Unit = {}) {
     val dateFormatter = SimpleDateFormat("MMM dd", Locale.getDefault())
     val yearFormatter = SimpleDateFormat("yyyy", Locale.getDefault())
     
@@ -450,11 +546,14 @@ fun TripCard(trip: TripEntity, onClick: () -> Unit = {}) {
     val mockImageUrl = "https://picsum.photos/seed/${trip.id}/800/400"
 
     Card(
-        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 8.dp)
-            .height(200.dp), // slightly adjusted height
+            .height(200.dp) // slightly adjusted height
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -494,7 +593,7 @@ fun TripCard(trip: TripEntity, onClick: () -> Unit = {}) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "#NOWTRAVELING",
+                            text = "#now_travelling",
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                             color = Color.White
                         )

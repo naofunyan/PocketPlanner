@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.WorkOutline
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -58,11 +59,13 @@ fun CreateTripDetailsScreen(
     coverPhotoUrl: String? = null,
     existingTrips: List<TripEntity> = emptyList(),
     exchangeRates: Map<String, Double> = emptyMap(),
+    editTripId: String? = null,
+    existingTripData: TripEntity? = null,
     onNavigateBack: () -> Unit,
-    onCreateTrip: (days: Int, name: String, startMillis: Long, endMillis: Long, customPhotoUrl: String?, budgetAmt: Double?, budgetCurr: String?) -> Unit
+    onCreateTrip: (days: Int, name: String, startMillis: Long, endMillis: Long, customPhotoUrl: String?, budgetAmt: Double?, budgetCurr: String?, isTrackerEnabled: Boolean, trackingMode: String) -> Unit
 ) {
-    var tripName by remember { mutableStateOf("") }
-    var isTrackerEnabled by remember { mutableStateOf(true) }
+    var tripName by remember(existingTripData) { mutableStateOf(existingTripData?.name ?: "") }
+    var isTrackerEnabled by remember(existingTripData) { mutableStateOf(existingTripData?.isTrackerEnabled ?: true) }
     
     var showStartDatePicker by remember { mutableStateOf(false) }
     var showStartTimePicker by remember { mutableStateOf(false) }
@@ -70,11 +73,21 @@ fun CreateTripDetailsScreen(
     var showEndDatePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
     
-    val startDatePickerState = rememberDatePickerState()
-    val startTimePickerState = rememberTimePickerState(initialHour = 9, initialMinute = 0)
+    val startDatePickerState = rememberDatePickerState(initialSelectedDateMillis = existingTripData?.startDate)
     
-    val endDatePickerState = rememberDatePickerState()
-    val endTimePickerState = rememberTimePickerState(initialHour = 17, initialMinute = 0)
+    val startCal = existingTripData?.startDate?.let { java.util.Calendar.getInstance().apply { timeInMillis = it } }
+    val startTimePickerState = rememberTimePickerState(
+        initialHour = startCal?.get(java.util.Calendar.HOUR_OF_DAY) ?: 9, 
+        initialMinute = startCal?.get(java.util.Calendar.MINUTE) ?: 0
+    )
+    
+    val endDatePickerState = rememberDatePickerState(initialSelectedDateMillis = existingTripData?.endDate)
+    
+    val endCal = existingTripData?.endDate?.let { java.util.Calendar.getInstance().apply { timeInMillis = it } }
+    val endTimePickerState = rememberTimePickerState(
+        initialHour = endCal?.get(java.util.Calendar.HOUR_OF_DAY) ?: 17, 
+        initialMinute = endCal?.get(java.util.Calendar.MINUTE) ?: 0
+    )
     
     var customImageUri by remember { mutableStateOf<Uri?>(null) }
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -86,10 +99,24 @@ fun CreateTripDetailsScreen(
         }
     )
     
-    var budgetAmount by remember { mutableStateOf("") }
-    var selectedCurrency by remember { mutableStateOf("USD") }
+    var selectedCurrency by remember(existingTripData) { mutableStateOf("USD") }
+    var budgetAmount by remember(existingTripData, exchangeRates) { 
+        mutableStateOf(
+            if (existingTripData != null) {
+                if (exchangeRates.isNotEmpty()) {
+                    val rate = exchangeRates["VND"] ?: 25425.0
+                    val amountInUsd = existingTripData.budget / rate
+                    kotlin.math.round(amountInUsd).toInt().toString()
+                } else {
+                    ""
+                }
+            } else {
+                ""
+            }
+        )
+    }
     var currencyDropdownExpanded by remember { mutableStateOf(false) }
-    var trackingMode by remember { mutableStateOf("High Accuracy") }
+    var trackingMode by remember(existingTripData) { mutableStateOf(existingTripData?.trackingMode ?: "High Accuracy") }
     val currencies = listOf("USD", "EUR", "GBP", "JPY", "AUD", "SGD", "VND")
     
     val dateTimeFormatter = SimpleDateFormat("MMM d, h:mm a", Locale.getDefault())
@@ -117,10 +144,10 @@ fun CreateTripDetailsScreen(
     val startDateText = startMillis?.let { dateTimeFormatter.format(Date(it)) } ?: "Set date & time"
     val endDateText = endMillis?.let { dateTimeFormatter.format(Date(it)) } ?: "Optional"
 
-    val overlappingTripName = remember(startMillis, endMillis, existingTrips) {
+    val overlappingTripName = remember(startMillis, endMillis, existingTrips, editTripId) {
         if (startMillis == null || endMillis == null) return@remember null
         existingTrips.find { trip ->
-            startMillis <= trip.endDate && endMillis >= trip.startDate
+            trip.id != editTripId && startMillis <= trip.endDate && endMillis >= trip.startDate
         }?.name
     }
 
@@ -130,7 +157,7 @@ fun CreateTripDetailsScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "New trip",
+                        text = if (editTripId != null) "Edit trip" else "New trip",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF001F3F) // Dark Navy
@@ -176,7 +203,7 @@ fun CreateTripDetailsScreen(
                                 val bAmt = budgetAmount.toDoubleOrNull()
                                 val bCurr = if (bAmt != null) selectedCurrency else null
                                 val finalTripName = if (tripName.isNotBlank()) tripName else "Trip to $destinations"
-                                onCreateTrip(days, finalTripName, startMillis, finalEndMillis, photoUrlToPass, bAmt, bCurr)
+                                onCreateTrip(days, finalTripName, startMillis, finalEndMillis, photoUrlToPass, bAmt, bCurr, isTrackerEnabled, trackingMode)
                             }
                         },
                         enabled = startMillis != null && !isGenerating,
@@ -189,12 +216,19 @@ fun CreateTripDetailsScreen(
                         if (isGenerating) {
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text("Generating Trip...", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            val loadingText = if (editTripId != null) "Saving Settings..." else "Generating Trip..."
+                            Text(loadingText, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         } else {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Create Trip with AI", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Icon(painter = painterResource(id = R.drawable.ai), contentDescription = null, modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                if (editTripId != null) {
+                                    Text("Save Settings", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Icon(imageVector = Icons.Filled.Save, contentDescription = null, modifier = Modifier.size(24.dp), tint = Color.White)
+                                } else {
+                                    Text("Create Trip with AI", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Icon(painter = painterResource(id = R.drawable.ai), contentDescription = null, modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                }
                             }
                         }
                     }

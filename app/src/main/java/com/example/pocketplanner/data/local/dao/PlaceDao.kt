@@ -14,4 +14,10 @@ interface PlaceDao {
 
     @Query("SELECT * FROM places WHERE tripId = :tripId AND dayNumber = :dayNumber ORDER BY name ASC")
     fun getPlacesForDay(tripId: String, dayNumber: Int): Flow<List<PlaceEntity>>
+
+    @Query("SELECT * FROM places WHERE tripId = :tripId ORDER BY dayNumber ASC, name ASC")
+    fun getAllPlacesForTrip(tripId: String): Flow<List<PlaceEntity>>
+    
+    @Query("DELETE FROM places WHERE tripId = :tripId AND dayNumber > :maxDayNumber")
+    suspend fun deletePlacesForDaysGreaterThan(tripId: String, maxDayNumber: Int)
 }

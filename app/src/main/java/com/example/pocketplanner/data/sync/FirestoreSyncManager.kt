@@ -61,4 +61,22 @@ class FirestoreSyncManager @Inject constructor(
             Log.e("SyncManager", "Failed to pull trips: ${e.message}")
         }
     }
+
+    /**
+     * Deletes a trip from Firestore
+     */
+    suspend fun deleteTripFromCloud(tripId: String) {
+        val user = auth.currentUser
+        if (user == null) {
+            Log.e("SyncManager", "User not logged in, skipping cloud delete.")
+            return
+        }
+
+        try {
+            tripsCollection.document(tripId).delete().await()
+            Log.d("SyncManager", "Successfully deleted trip $tripId from cloud.")
+        } catch (e: Exception) {
+            Log.e("SyncManager", "Failed to delete trip from cloud: ${e.message}")
+        }
+    }
 }

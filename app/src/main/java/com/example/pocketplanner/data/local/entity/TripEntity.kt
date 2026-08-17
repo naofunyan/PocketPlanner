@@ -15,5 +15,7 @@ data class TripEntity(
     val currency: String = "VND",
     val status: String = "UPCOMING", // UPCOMING, ACTIVE, PAST
     val photoUrl: String? = null,
+    val isTrackerEnabled: Boolean = false,
+    val trackingMode: String = "Balanced",
     val isSyncedWithCloud: Boolean = false
 )

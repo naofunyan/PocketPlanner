@@ -22,6 +22,9 @@ object SearchRoute
 data class CreateTripDetailsRoute(val destinations: String)
 
 @Serializable
+data class EditTripDetailsRoute(val tripId: String)
+
+@Serializable
 data class DayPlanRoute(val tripId: String, val dayNumber: Int)
 
 @Serializable

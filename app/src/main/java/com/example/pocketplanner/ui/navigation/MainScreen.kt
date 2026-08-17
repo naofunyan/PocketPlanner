@@ -54,6 +54,7 @@ fun MainScreen() {
                         currentDestination?.route?.contains("WelcomeRoute") == false &&
                         currentDestination?.route?.contains("SearchRoute") == false &&
                         currentDestination?.route?.contains("CreateTripDetailsRoute") == false &&
+                        currentDestination?.route?.contains("EditTripDetailsRoute") == false &&
                         currentDestination?.route?.contains("ItineraryRoute") == false &&
                         currentDestination?.route?.contains("ExpenseRoute") == false &&
                         currentDestination?.route?.contains("TrackingRoute") == false &&
@@ -235,6 +236,7 @@ fun MainScreen() {
                 com.example.pocketplanner.ui.itinerary.TripsScreen(
                     userId = uid,
                     onTripClick = { tripId -> navController.navigate(ItineraryRoute(tripId)) },
+                    onEditTripClick = { tripId -> navController.navigate(EditTripDetailsRoute(tripId)) },
                     onAddTripClick = { navController.navigate(SearchRoute) }
                 )
             }
@@ -297,7 +299,7 @@ fun MainScreen() {
                     existingTrips = trips,
                     exchangeRates = exchangeRates,
                     onNavigateBack = { navController.popBackStack() },
-                    onCreateTrip = { days, name, start, end, customPhotoUrl, budgetAmt, budgetCurr ->
+                    onCreateTrip = { days, name, start, end, customPhotoUrl, budgetAmt, budgetCurr, isTrackerEnabled, trackingMode ->
                         val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid ?: "test_user_id"
                         itineraryViewModel.generateTripWithAI(
@@ -310,6 +312,8 @@ fun MainScreen() {
                             customPhotoUrl = customPhotoUrl,
                             budgetAmount = budgetAmt,
                             budgetCurrency = budgetCurr,
+                            isTrackerEnabled = isTrackerEnabled,
+                            trackingMode = trackingMode,
                             onSuccess = { 
                                 navController.popBackStack(HomeRoute, inclusive = false)
                             },
@@ -319,6 +323,63 @@ fun MainScreen() {
                         )
                     }
                 )
+            }
+
+            composable<EditTripDetailsRoute> { backStackEntry ->
+                val args = backStackEntry.toRoute<EditTripDetailsRoute>()
+                val itineraryViewModel: com.example.pocketplanner.ui.itinerary.ItineraryViewModel = hiltViewModel()
+                val isGenerating by itineraryViewModel.isGenerating.collectAsState()
+                val trips by itineraryViewModel.trips.collectAsState()
+                val exchangeRates by itineraryViewModel.exchangeRates.collectAsState()
+                val context = androidx.compose.ui.platform.LocalContext.current
+                
+                val existingTrip = trips.find { it.id == args.tripId }
+
+                androidx.compose.runtime.LaunchedEffect(Unit) {
+                    val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                    val userId = currentUser?.uid ?: "test_user_id"
+                    if (trips.isEmpty()) {
+                        itineraryViewModel.loadTrips(userId)
+                    }
+                    itineraryViewModel.fetchExchangeRates()
+                }
+
+                if (existingTrip != null) {
+                    com.example.pocketplanner.ui.itinerary.CreateTripDetailsScreen(
+                        destinations = existingTrip.destination, // Pre-fill but hide in UI
+                        isGenerating = isGenerating,
+                        coverPhotoUrl = existingTrip.photoUrl,
+                        existingTrips = trips,
+                        exchangeRates = exchangeRates,
+                        editTripId = existingTrip.id,
+                        existingTripData = existingTrip,
+                        onNavigateBack = { navController.popBackStack() },
+                        onCreateTrip = { _, name, start, end, photoUrl, budgetAmt, budgetCurr, isTrackerEnabled, trackingMode ->
+                            itineraryViewModel.updateTripSettings(
+                                tripId = existingTrip.id,
+                                newName = name,
+                                newStart = start,
+                                newEnd = end,
+                                newBudgetAmount = budgetAmt,
+                                newBudgetCurrency = budgetCurr,
+                                isTrackerEnabled = isTrackerEnabled,
+                                trackingMode = trackingMode,
+                                newPhotoUrl = photoUrl,
+                                onSuccess = {
+                                    navController.popBackStack()
+                                },
+                                onError = { error ->
+                                    android.widget.Toast.makeText(context, "Error: $error", android.widget.Toast.LENGTH_LONG).show()
+                                }
+                            )
+                        }
+                    )
+                } else {
+                    // Show loading or fallback
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        androidx.compose.material3.CircularProgressIndicator()
+                    }
+                }
             }
 
             composable<DayPlanRoute> { backStackEntry ->

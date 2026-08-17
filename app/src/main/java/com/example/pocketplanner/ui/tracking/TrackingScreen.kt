@@ -121,7 +121,7 @@ fun TrackingScreen(
                 
                 // Mock route line text
                 Spacer(modifier = Modifier.height(32.dp))
-                Text("Ho Chi Minh City", color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                Text("N/A", color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
             }
         }
 
@@ -213,7 +213,7 @@ fun TrackingScreen(
                             
                             Spacer(modifier = Modifier.weight(1f))
                             
-                            Text("Ho Chi Minh City", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                            Text("N/A", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                             
                             Spacer(modifier = Modifier.height(16.dp))
                             

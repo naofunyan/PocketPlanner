@@ -27,10 +27,23 @@ class TripRepository @Inject constructor(
     fun getTrip(tripId: String): Flow<TripEntity?> {
         return tripDao.getTripFlow(tripId)
     }
+
+    suspend fun deleteTrip(tripId: String) {
+        // Delete locally first for immediate UI update
+        tripDao.deleteTripById(tripId)
+        // Push delete to the cloud
+        syncManager.deleteTripFromCloud(tripId)
+    }
     suspend fun savePlaces(places: List<PlaceEntity>) {
         placeDao.insertPlaces(places)
     }
     fun getPlacesForDay(tripId: String, dayNumber: Int): Flow<List<PlaceEntity>> {
         return placeDao.getPlacesForDay(tripId, dayNumber)
+    }
+    fun getAllPlacesForTrip(tripId: String): Flow<List<PlaceEntity>> {
+        return placeDao.getAllPlacesForTrip(tripId)
+    }
+    suspend fun deletePlacesForDaysGreaterThan(tripId: String, maxDayNumber: Int) {
+        placeDao.deletePlacesForDaysGreaterThan(tripId, maxDayNumber)
     }
 }
