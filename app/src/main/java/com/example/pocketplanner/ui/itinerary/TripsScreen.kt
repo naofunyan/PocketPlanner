@@ -23,6 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import com.example.pocketplanner.R
+import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -252,6 +255,7 @@ fun TripsScreen(
         }
     }
 
+    val coroutineScope = rememberCoroutineScope()
     
     var tripToDelete by remember { mutableStateOf<com.example.pocketplanner.data.local.entity.TripEntity?>(null) }
 
@@ -291,7 +295,7 @@ fun TripsScreen(
                 // Settings
                 androidx.compose.material3.ListItem(
                     headlineContent = { Text("Trip Settings") },
-                    leadingContent = { Icon(Icons.Filled.Settings, contentDescription = null) },
+                    leadingContent = { Icon(painter = painterResource(id = R.drawable.navsettings), contentDescription = null, modifier = Modifier.size(24.dp)) },
                     modifier = Modifier.clickable {
                         val tripId = showContextMenuForTrip?.id
                         showContextMenuForTrip = null
@@ -303,25 +307,41 @@ fun TripsScreen(
                 // Share
                 androidx.compose.material3.ListItem(
                     headlineContent = { Text("Share Trip") },
-                    leadingContent = { Icon(Icons.Filled.Share, contentDescription = null) },
+                    leadingContent = { Icon(painter = painterResource(id = R.drawable.share), contentDescription = null, modifier = Modifier.size(24.dp)) },
                     modifier = Modifier.clickable {
                         val trip = showContextMenuForTrip
                         showContextMenuForTrip = null
                         if (trip != null) {
-                            val sendIntent: android.content.Intent = android.content.Intent().apply {
-                                action = android.content.Intent.ACTION_SEND
-                                putExtra(android.content.Intent.EXTRA_TEXT, "Check out my trip to ${trip.destination} from ${SimpleDateFormat("MMM d", Locale.getDefault()).format(Date(trip.startDate))} to ${SimpleDateFormat("MMM d", Locale.getDefault()).format(Date(trip.endDate))}!")
-                                type = "text/plain"
+                            coroutineScope.launch {
+                                // 1. Try to generate a postcard image
+                                val imageUri = com.example.pocketplanner.util.ImageGenerator.generateTripPostcard(context, trip)
+                                
+                                // 2. Create the rich text with Deep Link
+                                val deepLinkUrl = "pocketplanner://trip/${trip.id}"
+                                val shareText = "✈️ Check out my trip to ${trip.destination}!\n\nImport it directly into PocketPlanner:\n$deepLinkUrl"
+                                
+                                // 3. Build and launch intent
+                                val sendIntent = android.content.Intent().apply {
+                                    action = android.content.Intent.ACTION_SEND
+                                    putExtra(android.content.Intent.EXTRA_TEXT, shareText)
+                                    if (imageUri != null) {
+                                        putExtra(android.content.Intent.EXTRA_STREAM, imageUri)
+                                        type = "image/jpeg"
+                                        addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    } else {
+                                        type = "text/plain"
+                                    }
+                                }
+                                val shareIntent = android.content.Intent.createChooser(sendIntent, "Share Trip")
+                                context.startActivity(shareIntent)
                             }
-                            val shareIntent = android.content.Intent.createChooser(sendIntent, null)
-                            context.startActivity(shareIntent)
                         }
                     }
                 )
                 // Delete
                 androidx.compose.material3.ListItem(
                     headlineContent = { Text("Delete Trip", color = Color.Red) },
-                    leadingContent = { Icon(Icons.Filled.Delete, contentDescription = null, tint = Color.Red) },
+                    leadingContent = { Icon(painter = painterResource(id = R.drawable.delete), contentDescription = null, tint = Color.Red, modifier = Modifier.size(24.dp)) },
                     modifier = Modifier.clickable {
                         val trip = showContextMenuForTrip
                         showContextMenuForTrip = null

@@ -36,6 +36,9 @@ class TripRepository @Inject constructor(
     }
     suspend fun savePlaces(places: List<PlaceEntity>) {
         placeDao.insertPlaces(places)
+        if (places.isNotEmpty()) {
+            syncManager.pushPlacesToCloud(places.first().tripId, places)
+        }
     }
     fun getPlacesForDay(tripId: String, dayNumber: Int): Flow<List<PlaceEntity>> {
         return placeDao.getPlacesForDay(tripId, dayNumber)

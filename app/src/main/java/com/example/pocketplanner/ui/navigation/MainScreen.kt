@@ -227,6 +227,24 @@ fun MainScreen() {
                 )
             }
 
+            composable<ImportTripRoute>(
+                deepLinks = listOf(androidx.navigation.navDeepLink { uriPattern = "pocketplanner://trip/{tripId}" })
+            ) { backStackEntry ->
+                val args = backStackEntry.toRoute<ImportTripRoute>()
+                com.example.pocketplanner.ui.itinerary.ImportTripScreen(
+                    tripId = args.tripId,
+                    onImportComplete = {
+                        navController.navigate(HomeRoute) {
+                            popUpTo(0) { inclusive = true } // Clear stack and go home
+                        }
+                    },
+                    onCancel = {
+                        navController.navigate(HomeRoute) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
+            }
 
             composable<HomeRoute> {
                 // Grab the currently logged-in user from Firebase
