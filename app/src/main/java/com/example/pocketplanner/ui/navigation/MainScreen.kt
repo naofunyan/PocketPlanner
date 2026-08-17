@@ -131,8 +131,8 @@ fun MainScreen() {
 
                             val isExpense = currentDestination?.hierarchy?.any { it.route?.contains("ExpenseRoute") == true } == true
                             BottomNavTab(
-                                iconResId = com.example.pocketplanner.R.drawable.navexpense,
-                                label = "Expense",
+                                iconResId = com.example.pocketplanner.R.drawable.navwallet,
+                                label = "Wallet",
                                 isSelected = isExpense,
                                 onClick = {
                                     navController.navigate(ExpenseRoute("")) { // Navigate to global expense for now
