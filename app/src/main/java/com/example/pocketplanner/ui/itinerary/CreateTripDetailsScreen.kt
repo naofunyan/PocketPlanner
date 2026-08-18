@@ -198,7 +198,7 @@ fun CreateTripDetailsScreen(
                         onClick = {
                             if (startMillis != null) {
                                 val finalEndMillis = endMillis ?: startMillis
-                                val days = ((finalEndMillis - startMillis) / (1000 * 60 * 60 * 24)).toInt().coerceAtLeast(1)
+                                val days = ((finalEndMillis - startMillis) / (1000 * 60 * 60 * 24)).toInt().coerceAtLeast(0) + 1
                                 val photoUrlToPass = if (customImageUri != null) customImageUri.toString() else coverPhotoUrl
                                 val bAmt = budgetAmount.toDoubleOrNull()
                                 val bCurr = if (bAmt != null) selectedCurrency else null

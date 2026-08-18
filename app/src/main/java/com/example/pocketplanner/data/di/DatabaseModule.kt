@@ -56,4 +56,9 @@ object DatabaseModule {
     fun provideAlertDao(appDatabase: AppDatabase): AlertDao {
         return appDatabase.alertDao()
     }
+
+    @Provides
+    fun providePlaceDetailsDao(appDatabase: AppDatabase): com.example.pocketplanner.data.local.dao.PlaceDetailsDao {
+        return appDatabase.placeDetailsDao()
+    }
 }

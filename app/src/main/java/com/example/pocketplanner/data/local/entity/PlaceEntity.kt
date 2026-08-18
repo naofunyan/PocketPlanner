@@ -13,5 +13,9 @@ data class PlaceEntity(
     val lng: Double,
     val category: String, // e.g. "Restaurant", "Attraction"
     val estimatedCost: Double = 0.0,
-    val notes: String = ""
+    val notes: String = "",
+    val startTime: String = "",
+    val endTime: String = "",
+    val photoUrl: String? = null,
+    val isVisited: Boolean = false
 )

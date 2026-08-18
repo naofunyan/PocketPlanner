@@ -13,10 +13,12 @@ import com.example.pocketplanner.data.local.entity.TripEntity
 import com.example.pocketplanner.data.local.entity.ExpenseEntity
 import com.example.pocketplanner.data.local.entity.TrackingPointEntity
 
+import com.example.pocketplanner.data.local.entity.PlaceDetailsEntity
+
 // If we add more tables later, we just add them to the entities array and bump the version
 @Database(
-    entities = [TripEntity::class, PlaceEntity::class, ExpenseEntity::class, TrackingPointEntity::class, AlertEntity::class],
-    version = 8, // Bump version to clear DB and apply tracker fields to TripEntity
+    entities = [TripEntity::class, PlaceEntity::class, ExpenseEntity::class, TrackingPointEntity::class, AlertEntity::class, PlaceDetailsEntity::class],
+    version = 14,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -27,4 +29,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun expenseDao(): ExpenseDao
     abstract fun trackingPointDao(): TrackingPointDao
     abstract fun alertDao(): AlertDao
+    
+    abstract fun placeDetailsDao(): com.example.pocketplanner.data.local.dao.PlaceDetailsDao
 }

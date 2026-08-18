@@ -417,8 +417,20 @@ fun MainScreen() {
                     onDayClick = { dayNumber ->
                         navController.navigate(DayPlanRoute(route.tripId, dayNumber))
                     },
-                    onExpenseClick = { navController.navigate(ExpenseRoute(route.tripId)) },
-                    onTrackClick = { navController.navigate(TrackingRoute(route.tripId)) }
+                    onExpenseClick = { 
+                        navController.navigate(ExpenseRoute(route.tripId)) {
+                            popUpTo(route) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        } 
+                    },
+                    onTrackClick = { 
+                        navController.navigate(TrackingRoute(route.tripId)) {
+                            popUpTo(route) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        } 
+                    }
                 )
             }
 
@@ -427,8 +439,19 @@ fun MainScreen() {
                 com.example.pocketplanner.ui.expense.ExpenseScreen(
                     tripId = args.tripId,
                     onNavigateBack = { navController.popBackStack() },
-                    onPlanClick = { navController.popBackStack() },
-                    onTrackClick = { navController.navigate(TrackingRoute(args.tripId)) }
+                    onPlanClick = { 
+                        navController.navigate(ItineraryRoute(args.tripId)) {
+                            popUpTo(ItineraryRoute(args.tripId)) { inclusive = false }
+                            launchSingleTop = true
+                        } 
+                    },
+                    onTrackClick = { 
+                        navController.navigate(TrackingRoute(args.tripId)) {
+                            popUpTo(ItineraryRoute(args.tripId)) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        } 
+                    }
                 )
             }
 
@@ -437,8 +460,19 @@ fun MainScreen() {
                 com.example.pocketplanner.ui.tracking.TrackingScreen(
                     tripId = args.tripId,
                     onNavigateBack = { navController.popBackStack() },
-                    onPlanClick = { navController.popBackStack() },
-                    onExpenseClick = { navController.navigate(ExpenseRoute(args.tripId)) }
+                    onPlanClick = { 
+                        navController.navigate(ItineraryRoute(args.tripId)) {
+                            popUpTo(ItineraryRoute(args.tripId)) { inclusive = false }
+                            launchSingleTop = true
+                        } 
+                    },
+                    onExpenseClick = { 
+                        navController.navigate(ExpenseRoute(args.tripId)) {
+                            popUpTo(ItineraryRoute(args.tripId)) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        } 
+                    }
                 )
             }
 

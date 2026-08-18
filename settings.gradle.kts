@@ -16,6 +16,21 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
+            credentials {
+                val properties = java.util.Properties()
+                val localPropertiesFile = java.io.File(rootDir, "local.properties")
+                if (localPropertiesFile.exists()) {
+                    properties.load(localPropertiesFile.inputStream())
+                }
+                username = "mapbox"
+                password = properties.getProperty("MAPBOX_SECRET_TOKEN") ?: System.getenv("MAPBOX_SECRET_TOKEN") ?: ""
+            }
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
     }
 }
 

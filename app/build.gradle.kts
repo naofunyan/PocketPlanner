@@ -22,6 +22,7 @@ localProperties.load(localPropertiesFile.inputStream())
 val vertexApiKey = localProperties.getProperty("VERTEX_API_KEY") ?: System.getenv("VERTEX_API_KEY") ?: ""
 val unsplashApiKey = localProperties.getProperty("UNSPLASH_API_KEY") ?: System.getenv("UNSPLASH_API_KEY") ?: ""
 val mapboxAccessToken = localProperties.getProperty("MAPBOX_ACCESS_TOKEN") ?: System.getenv("MAPBOX_ACCESS_TOKEN") ?: ""
+val foursquareApiKey = localProperties.getProperty("FOURSQUARE_API_KEY") ?: System.getenv("FOURSQUARE_API_KEY") ?: ""
 
 android {
     namespace = "com.example.pocketplanner"
@@ -41,6 +42,8 @@ android {
         buildConfigField("String", "VERTEX_API_KEY", "\"$vertexApiKey\"")
         buildConfigField("String", "UNSPLASH_API_KEY", "\"$unsplashApiKey\"")
         buildConfigField("String", "MAPBOX_ACCESS_TOKEN", "\"$mapboxAccessToken\"")
+        buildConfigField("String", "FOURSQUARE_API_KEY", "\"$foursquareApiKey\"")
+        buildConfigField("String", "GOOGLE_PLACES_API_KEY", "\"${localProperties.getProperty("GOOGLE_PLACES_API_KEY") ?: System.getenv("GOOGLE_PLACES_API_KEY") ?: ""}\"")
     }
 
     buildTypes {
@@ -107,6 +110,10 @@ dependencies {
 
     // Location Services
     implementation(libs.play.services.location)
+
+    // Mapbox
+    implementation("com.mapbox.maps:android:11.2.0")
+    implementation("com.mapbox.extension:maps-compose:11.2.0")
 
     // ML Kit for Language ID & Translation
     implementation("com.google.mlkit:language-id:17.0.6")

@@ -123,7 +123,7 @@ fun ExpenseScreen(
                             if (trip != null) {
                                 val startStr = dateFormatter.format(Date(trip!!.startDate))
                                 val endStr = dateFormatter.format(Date(trip!!.endDate))
-                                val days = ((trip!!.endDate - trip!!.startDate) / 86400000L).toInt().coerceAtLeast(1)
+                                val days = ((trip!!.endDate - trip!!.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1
                                 Text(
                                     text = "$startStr - $endStr • $days Days",
                                     style = MaterialTheme.typography.bodyMedium,
@@ -271,22 +271,22 @@ fun ExpenseScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 24.dp, start = 48.dp, end = 48.dp)
+                    .padding(bottom = 24.dp, start = 32.dp, end = 32.dp)
             ) {
                 Surface(
                     shape = RoundedCornerShape(30.dp),
-                    color = Color.White,
-                    shadowElevation = 8.dp,
+                    color = Color(0xFFF2F2F2),
+                    shadowElevation = 0.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
-                        modifier = Modifier.padding(8.dp),
+                        modifier = Modifier.padding(4.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        BottomNavPill("Plan", false) { onPlanClick() }
-                        BottomNavPill("Expense", true) { }
-                        BottomNavPill("Track", false) { onTrackClick() }
+                        BottomNavPill("Plan", false, Modifier.weight(1f)) { onPlanClick() }
+                        BottomNavPill("Expense", true, Modifier.weight(1f)) { }
+                        BottomNavPill("Track", false, Modifier.weight(1f)) { onTrackClick() }
                     }
                 }
             }
@@ -396,27 +396,23 @@ fun getIconForCategory(category: String): ImageVector {
 
 // Reused from ItineraryScreen
 @Composable
-fun BottomNavPill(text: String, isSelected: Boolean, onClick: () -> Unit) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
+fun BottomNavPill(text: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Surface(
+        color = if (isSelected) Color(0xFF4694DA) else Color.Transparent,
+        shape = RoundedCornerShape(30.dp),
+        modifier = modifier
+            .clip(RoundedCornerShape(30.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Text(
-            text = text,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            color = if (isSelected) Color(0xFF005b9f) else Color.DarkGray,
-            fontSize = 14.sp
-        )
-        if (isSelected) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Box(
-                modifier = Modifier
-                    .width(20.dp)
-                    .height(3.dp)
-                    .clip(RoundedCornerShape(1.5.dp))
-                    .background(Color(0xFF005b9f))
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(vertical = 12.dp)
+        ) {
+            Text(
+                text = text,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                color = if (isSelected) Color.White else Color.Gray,
+                fontSize = 14.sp
             )
         }
     }

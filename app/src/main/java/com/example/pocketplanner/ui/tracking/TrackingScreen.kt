@@ -263,22 +263,22 @@ fun TrackingScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp, start = 48.dp, end = 48.dp)
+                    .padding(bottom = 24.dp, start = 32.dp, end = 32.dp)
             ) {
                 Surface(
                     shape = RoundedCornerShape(30.dp),
-                    color = Color.White,
-                    shadowElevation = 8.dp,
+                    color = Color(0xFFF2F2F2),
+                    shadowElevation = 0.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
-                        modifier = Modifier.padding(8.dp),
+                        modifier = Modifier.padding(4.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        BottomNavPill("Plan", false) { onPlanClick() }
-                        BottomNavPill("Expense", false) { onExpenseClick() }
-                        BottomNavPill("Track", true) { }
+                        BottomNavPill("Plan", false, Modifier.weight(1f)) { onPlanClick() }
+                        BottomNavPill("Expense", false, Modifier.weight(1f)) { onExpenseClick() }
+                        BottomNavPill("Track", true, Modifier.weight(1f)) { }
                     }
                 }
             }
@@ -287,27 +287,23 @@ fun TrackingScreen(
 }
 
 @Composable
-fun BottomNavPill(text: String, isSelected: Boolean, onClick: () -> Unit) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
+fun BottomNavPill(text: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Surface(
+        color = if (isSelected) Color(0xFF4694DA) else Color.Transparent,
+        shape = RoundedCornerShape(30.dp),
+        modifier = modifier
+            .clip(RoundedCornerShape(30.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Text(
-            text = text,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            color = if (isSelected) Color(0xFF005b9f) else Color.DarkGray,
-            fontSize = 14.sp
-        )
-        if (isSelected) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Box(
-                modifier = Modifier
-                    .width(20.dp)
-                    .height(3.dp)
-                    .clip(RoundedCornerShape(1.5.dp))
-                    .background(Color(0xFF005b9f))
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(vertical = 12.dp)
+        ) {
+            Text(
+                text = text,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                color = if (isSelected) Color.White else Color.Gray,
+                fontSize = 14.sp
             )
         }
     }
