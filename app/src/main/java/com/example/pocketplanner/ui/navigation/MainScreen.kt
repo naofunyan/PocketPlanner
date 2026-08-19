@@ -181,7 +181,7 @@ fun MainScreen() {
         // We DO NOT pad the NavHost by innerPadding so it draws full-screen, BEHIND the floating bottom nav
         NavHost(
             navController = navController,
-            startDestination = WelcomeRoute,
+            startDestination = if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser != null) HomeRoute else WelcomeRoute,
             modifier = Modifier.fillMaxSize(),
             enterTransition = { fadeIn(animationSpec = tween(400)) },
             exitTransition = { fadeOut(animationSpec = tween(400)) },
@@ -483,8 +483,40 @@ fun MainScreen() {
             }
 
             composable<ProfileRoute> {
-                // Placeholder for now!
-                Text("User Profile Settings")
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(24.dp).systemBarsPadding(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "User Profile Settings",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Signed in as: ${currentUser?.email ?: "Unknown"}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                    )
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Button(
+                        onClick = {
+                            com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                            // Navigate to AuthRoute and clear backstack
+                            navController.navigate(WelcomeRoute) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Sign Out", color = MaterialTheme.colorScheme.onError)
+                    }
+                }
             }
         }
     }
