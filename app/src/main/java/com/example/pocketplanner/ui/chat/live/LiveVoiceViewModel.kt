@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pocketplanner.BuildConfig
-import com.google.auth.oauth2.GoogleCredentials
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +18,9 @@ import okhttp3.WebSocketListener
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
+import com.google.firebase.functions.ktx.functions
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.tasks.await
 
 enum class LiveVoiceState {
     IDLE, CONNECTING, LISTENING, SPEAKING, ERROR
@@ -215,18 +217,25 @@ class LiveVoiceViewModel : ViewModel() {
         }
     }
 
-    private fun generateAccessToken(): String {
-        val context = appContext
-            ?: throw IllegalStateException("Context not set")
-        
-        val stream = context.assets.open("service_account.json")
-        val credentials = stream.use {
-            GoogleCredentials.fromStream(it)
-                .createScoped(listOf("https://www.googleapis.com/auth/cloud-platform"))
+    private suspend fun generateAccessToken(): String {
+        try {
+            val functions = Firebase.functions
+
+            // Call the backend function we just deployed
+            val result = functions
+                .getHttpsCallable("getVertexAccessToken")
+                .call()
+                .await() // Suspends the coroutine until the network request finishes
+
+            val data = result.data as? Map<String, Any>
+            val token = data?.get("token") as? String
+
+            return token ?: throw Exception("Token missing in server response")
+
+        } catch (e: Exception) {
+            Log.e("LiveVoice", "Failed to fetch Vertex token from Firebase Functions", e)
+            throw e
         }
-        
-        credentials.refreshIfExpired()
-        return credentials.accessToken.tokenValue
     }
 
     private fun startRecordingAndStreaming() {

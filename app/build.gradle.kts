@@ -116,6 +116,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore.ktx)
+    implementation("com.google.firebase:firebase-functions-ktx")
 
     // Google Sign-In (Credential Manager)
     implementation("androidx.credentials:credentials:1.3.0")
@@ -161,6 +162,6 @@ dependencies {
     // Fix for ListenableFuture resolution in CameraX
     implementation("com.google.guava:guava:32.1.3-android")
     
-    // Google Auth Library for Service Account OAuth2 tokens (Vertex AI WebSocket auth)
-    implementation("com.google.auth:google-auth-library-oauth2-http:1.19.0")
+    // Firebase Functions (used to fetch Vertex AI token securely)
+    implementation("com.google.firebase:firebase-functions-ktx")
 }
