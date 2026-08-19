@@ -66,6 +66,20 @@ android {
         compose = true
         buildConfig = true
     }
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/license.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/notice.txt",
+                "META-INF/INDEX.LIST"
+            )
+        }
+    }
 }
 
 dependencies {
@@ -130,4 +144,23 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 
     implementation(libs.kotlinx.serialization.json)
+    
+    // OkHttp for WebSockets (Gemini Live API)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    
+    // Accompanist for Permissions in Compose
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+
+    // CameraX for Live Video Feed
+    val cameraxVersion = "1.3.1"
+    implementation("androidx.camera:camera-core:$cameraxVersion")
+    implementation("androidx.camera:camera-camera2:$cameraxVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
+    implementation("androidx.camera:camera-view:$cameraxVersion")
+    
+    // Fix for ListenableFuture resolution in CameraX
+    implementation("com.google.guava:guava:32.1.3-android")
+    
+    // Google Auth Library for Service Account OAuth2 tokens (Vertex AI WebSocket auth)
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.19.0")
 }

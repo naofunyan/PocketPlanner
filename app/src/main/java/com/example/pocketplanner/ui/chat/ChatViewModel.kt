@@ -46,7 +46,7 @@ class ChatViewModel @Inject constructor(
             put("role", "user")
             put("parts", JSONArray().apply {
                 put(JSONObject().apply {
-                    put("text", "You are PocketPlanner, a friendly travel assistant for Vietnam. Keep your answers helpful and concise. You can also analyze photos of landmarks, menus, and signs.")
+                    put("text", "You are PocketPlanner, a friendly travel assistant for Vietnam. Keep your answers helpful and concise. You can analyze photos. Always reply natively in the same language that the user uses.")
                 })
             })
         })
@@ -54,7 +54,7 @@ class ChatViewModel @Inject constructor(
             put("role", "model")
             put("parts", JSONArray().apply {
                 put(JSONObject().apply {
-                    put("text", "Understood. I am PocketPlanner, your friendly travel assistant!")
+                    put("text", "Understood. I am PocketPlanner, your friendly travel assistant, and I will match your language!")
                 })
             })
         })
@@ -74,24 +74,12 @@ class ChatViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // 1. Detect language
-                var englishPrompt = userText
-                if (userText.isNotBlank()) {
-                    val detectedLang = translationManager.detectLanguage(userText)
-                    if (detectedLang != null) {
-                        userLanguage = detectedLang
-                    }
-                    if (userLanguage != "en") {
-                        englishPrompt = translationManager.translate(userText, userLanguage, "en")
-                    }
-                }
-
-                // 2. Build Multi-modal Parts Array
+                // 1. Build Multi-modal Parts Array
                 val partsArray = JSONArray()
 
-                if (englishPrompt.isNotBlank()) {
+                if (userText.isNotBlank()) {
                     partsArray.put(JSONObject().apply {
-                        put("text", englishPrompt)
+                        put("text", userText)
                     })
                 }
 
@@ -111,7 +99,7 @@ class ChatViewModel @Inject constructor(
                     put("parts", partsArray)
                 })
 
-                // 3. Ask Vertex AI via REST
+                // 2. Ask Vertex AI via REST
                 val aiResponseText = generateWithRest()
 
                 // Append AI response to history
@@ -124,14 +112,8 @@ class ChatViewModel @Inject constructor(
                     })
                 })
 
-                // 4. Translate back
-                var finalResponse = aiResponseText
-                if (userLanguage != "en") {
-                    finalResponse = translationManager.translate(finalResponse, "en", userLanguage)
-                }
-
-                // 5. Update UI
-                _messages.value = _messages.value.dropLast(1) + ChatMessage(text = finalResponse, isFromUser = false)
+                // 3. Update UI (Raw text will be parsed by UI)
+                _messages.value = _messages.value.dropLast(1) + ChatMessage(text = aiResponseText, isFromUser = false)
 
             } catch (e: Exception) {
                 if (chatHistory.isNotEmpty() && chatHistory.last().getString("role") == "user") {

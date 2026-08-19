@@ -63,6 +63,7 @@ fun MainScreen() {
 
     OfflineBannerWrapper {
         Scaffold(
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
             bottomBar = {
             if (showBottomBar) {
                 Box(
@@ -477,7 +478,7 @@ fun MainScreen() {
             }
 
             composable<ChatRoute> {
-                com.example.pocketplanner.ui.chat.ChatScreen(
+                com.example.pocketplanner.ui.chat.AiHubScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
