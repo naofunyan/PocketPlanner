@@ -33,12 +33,15 @@ import coil.compose.AsyncImage
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ExploreScreen(
-    onSearchClick: () -> Unit = {}, // Not needed anymore for navigation, keeping to avoid breaking callers
+    onSearchClick: () -> Unit = {},
     onNavigateToDetails: (String) -> Unit = {}
 ) {
     val listState = rememberLazyListState()
     var searchQuery by remember { mutableStateOf("") }
-    
+
+    // State to track the selected tab (0 = Discover, 1 = Saved)
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+
     val allDestinations = listOf(
         Destination(
             id = "1",
@@ -68,60 +71,107 @@ fun ExploreScreen(
     )
 
     val displayedDestinations = allDestinations.filter {
-        it.title.contains(searchQuery, ignoreCase = true) || 
-        it.description.contains(searchQuery, ignoreCase = true)
+        it.title.contains(searchQuery, ignoreCase = true) ||
+                it.description.contains(searchQuery, ignoreCase = true)
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Search bar pinned at the top
-        val statusBarsTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        // MAIN SCROLLABLE CONTENT
+        Column(modifier = Modifier.fillMaxSize()) {
+            val statusBarsTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+            Spacer(modifier = Modifier.height(statusBarsTop + 16.dp))
+
+            TopSegmentedControl(
+                selectedIndex = selectedTabIndex,
+                onIndexSelected = { selectedTabIndex = it }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Only show categories on the Discover tab
+            if (selectedTabIndex == 0) {
+                CategoryRow()
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = listState,
+                contentPadding = PaddingValues(bottom = 200.dp)
+            ) {
+                if (selectedTabIndex == 0) {
+                    // DISCOVER TAB CONTENT
+                    if (displayedDestinations.isEmpty()) {
+                        item {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(48.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("No destinations found.", color = Color.Gray)
+                            }
+                        }
+                    } else {
+                        items(displayedDestinations) { dest ->
+                            ExploreCard(
+                                destination = dest,
+                                onNavigateToDetails = onNavigateToDetails
+                            )
+                        }
+                    }
+                } else {
+                    // SAVED TAB CONTENT
+                    item {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 64.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.FavoriteBorder,
+                                contentDescription = "No Saved Places",
+                                tint = Color.LightGray,
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .padding(bottom = 16.dp)
+                            )
+                            Text("No saved destinations yet.", color = Color.Gray)
+                        }
+                    }
+                }
+            }
+        }
+
+        // FLOATING BOTTOM SEARCH BAR
+        val isImeVisible = WindowInsets.isImeVisible
+        val bottomPadding = if (isImeVisible) 16.dp else 110.dp
+
         Box(
             modifier = Modifier
+                .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .padding(top = statusBarsTop + 16.dp, bottom = 16.dp)
+                .padding(bottom = bottomPadding)
+                .imePadding()
         ) {
-            TopSearchBar(
+            ExploreSearchBar(
                 query = searchQuery,
                 onQueryChange = { searchQuery = it }
             )
-        }
-
-        TopSegmentedControl()
-        Spacer(modifier = Modifier.height(16.dp))
-
-        CategoryRow()
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Scrollable destination cards
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 120.dp) // Revert back to normal bottom padding
-        ) {
-            if (displayedDestinations.isEmpty()) {
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(48.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("No destinations found.", color = Color.Gray)
-                    }
-                }
-            } else {
-                items(displayedDestinations) { dest ->
-                    ExploreCard(destination = dest, onNavigateToDetails = onNavigateToDetails)
-                }
-            }
         }
     }
 }
 
 @Composable
-fun TopSegmentedControl() {
+fun TopSegmentedControl(
+    selectedIndex: Int,
+    onIndexSelected: (Int) -> Unit
+) {
     Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        color = Color.Gray.copy(alpha = 0.15f),
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -133,30 +183,49 @@ fun TopSegmentedControl() {
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(8.dp),
-                shadowElevation = 1.dp,
+            TabItem(
+                text = "Discover",
+                isSelected = selectedIndex == 0,
+                onClick = { onIndexSelected(0) },
                 modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = "Discover",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                    modifier = Modifier.padding(vertical = 10.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
-            Text(
+            )
+
+            TabItem(
                 text = "Saved",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(vertical = 10.dp),
-                textAlign = TextAlign.Center
+                isSelected = selectedIndex == 1,
+                onClick = { onIndexSelected(1) },
+                modifier = Modifier.weight(1f)
             )
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TabItem(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = onClick,
+        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+        shape = RoundedCornerShape(8.dp),
+        shadowElevation = if (isSelected) 1.dp else 0.dp,
+        modifier = modifier
+    ) {
+        Text(
+            text = text,
+            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+            style = if (isSelected) {
+                MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+            } else {
+                MaterialTheme.typography.labelLarge
+            },
+            modifier = Modifier.padding(vertical = 10.dp),
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -333,7 +402,7 @@ fun ExploreCard(destination: Destination, onNavigateToDetails: (String) -> Unit)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopSearchBar(
+fun ExploreSearchBar(
     query: String,
     onQueryChange: (String) -> Unit
 ) {
