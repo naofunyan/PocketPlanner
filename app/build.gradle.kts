@@ -161,7 +161,4 @@ dependencies {
     
     // Fix for ListenableFuture resolution in CameraX
     implementation("com.google.guava:guava:32.1.3-android")
-    
-    // Firebase Functions (used to fetch Vertex AI token securely)
-    implementation("com.google.firebase:firebase-functions-ktx")
 }

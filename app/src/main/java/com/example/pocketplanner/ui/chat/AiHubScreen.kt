@@ -220,7 +220,7 @@ fun AiHubScreen(
                     0 -> ChatScreen(onNavigateBack = onNavigateBack)
                     1 -> com.example.pocketplanner.ui.chat.live.LiveVoiceScreen(onNavigateBack = onNavigateBack)
                     2 -> VisualTranslatePlaceholder(onNavigateBack)
-                    3 -> InterpreterPlaceholder(onNavigateBack)
+                    3 -> com.example.pocketplanner.ui.chat.interpreter.InterpreterScreen(onNavigateBack = onNavigateBack)
                 }
             }
         }
@@ -258,41 +258,6 @@ fun VisualTranslatePlaceholder(onBack: () -> Unit) {
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text("Start Scanning", modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-            }
-        }
-    }
-}
-
-@Composable
-fun InterpreterPlaceholder(onBack: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF3D3D3D))) {
-        IconButton(onClick = onBack, modifier = Modifier.padding(16.dp).systemBarsPadding()) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
-        }
-        
-        Column(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(Icons.Filled.Translate, contentDescription = null, tint = Color.White, modifier = Modifier.size(64.dp))
-            Spacer(modifier = Modifier.height(24.dp))
-            Text("Interpreter", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                "Translate real-world conversations instantly. Just tap the microphone and speak—the app will speak back in the local language.",
-                color = Color.LightGray,
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center,
-                lineHeight = 24.sp
-            )
-            Spacer(modifier = Modifier.height(32.dp))
-            Button(
-                onClick = { /* TODO: Request Mic Permission */ },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text("Start Interpreting", modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             }
         }
     }
