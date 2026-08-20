@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -77,7 +78,7 @@ fun AiHubScreen(
         }
     }
 
-    val tabs = listOf("CHAT", "LIVE", "LENS", "INTERPRET")
+    val tabs = listOf("CHAT", "LIVE", "TRANSLATE", "INTERPRETER")
     var tabWidths by remember { mutableStateOf(List(tabs.size) { 0.dp }) }
     var tabOffsets by remember { mutableStateOf(List(tabs.size) { 0.dp }) }
     var tabHeight by remember { mutableStateOf(32.dp) }
@@ -129,8 +130,8 @@ fun AiHubScreen(
                 
                 // Mode selector built using a Box so horizontal screen swipes seamlessly pass through
                 Box(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    contentAlignment = Alignment.CenterStart
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     val currentTab = pagerState.currentPage % actualPageCount
                     val pillWidth by animateDpAsState(
@@ -144,60 +145,69 @@ fun AiHubScreen(
                         label = "pillOffset"
                     )
 
-                    // The sliding background pill
-                    if (tabWidths.isNotEmpty() && tabWidths[0] > 0.dp) {
-                        Box(
-                            modifier = Modifier
-                                .offset(x = pillOffset)
-                                .width(pillWidth)
-                                .height(tabHeight) // Uses the exact measured height
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary) // App's primary color
-                        )
-                    }
-
-                    // The text row
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.CenterStart
                     ) {
-                        tabs.forEachIndexed { index, title ->
-                            val isSelected = currentTab == index
+                        // The sliding background pill
+                        if (tabWidths.isNotEmpty() && tabWidths[0] > 0.dp) {
                             Box(
                                 modifier = Modifier
-                                    .onGloballyPositioned { layoutCoordinates ->
-                                        val widthDp = with(density) { layoutCoordinates.size.width.toDp() }
-                                        val heightDp = with(density) { layoutCoordinates.size.height.toDp() }
-                                        val offsetDp = with(density) { layoutCoordinates.positionInParent().x.toDp() }
-                                        val newWidths = tabWidths.toMutableList()
-                                        newWidths[index] = widthDp
-                                        tabWidths = newWidths
-                                        val newOffsets = tabOffsets.toMutableList()
-                                        newOffsets[index] = offsetDp
-                                        tabOffsets = newOffsets
-                                        if (index == 0) tabHeight = heightDp
-                                    }
+                                    .offset(x = pillOffset)
+                                    .width(pillWidth)
+                                    .height(tabHeight) // Uses the exact measured height
                                     .clip(CircleShape)
-                                    .clickable(
-                                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        coroutineScope.launch {
-                                            // Calculate the closest target page that matches the clicked tab index
-                                            val diff = index - currentTab
-                                            pagerState.animateScrollToPage(pagerState.currentPage + diff)
+                                    .background(MaterialTheme.colorScheme.primary) // App's primary color
+                            )
+                        }
+
+                        // The text row
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            tabs.forEachIndexed { index, title ->
+                                val isSelected = currentTab == index
+                                Box(
+                                    modifier = Modifier
+                                        .defaultMinSize(minWidth = 68.dp)
+                                        .onGloballyPositioned { layoutCoordinates ->
+                                            val widthDp = with(density) { layoutCoordinates.size.width.toDp() }
+                                            val heightDp = with(density) { layoutCoordinates.size.height.toDp() }
+                                            val offsetDp = with(density) { layoutCoordinates.positionInParent().x.toDp() }
+                                            val newWidths = tabWidths.toMutableList()
+                                            newWidths[index] = widthDp
+                                            tabWidths = newWidths
+                                            val newOffsets = tabOffsets.toMutableList()
+                                            newOffsets[index] = offsetDp
+                                            tabOffsets = newOffsets
+                                            if (index == 0) tabHeight = heightDp
                                         }
-                                    }
-                                    .padding(horizontal = 18.dp, vertical = 8.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = title,
-                                    color = if (isSelected) Color.White else Color.Gray, // Contrast colors
-                                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                                    fontSize = 12.sp,
-                                    textAlign = TextAlign.Center
-                                )
+                                        .clip(CircleShape)
+                                        .clickable(
+                                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                            indication = null
+                                        ) {
+                                            coroutineScope.launch {
+                                                // Calculate the closest target page that matches the clicked tab index
+                                                val diff = index - currentTab
+                                                pagerState.animateScrollToPage(pagerState.currentPage + diff)
+                                            }
+                                        }
+                                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = title,
+                                        color = if (isSelected) Color.White else Color.Gray, // Contrast colors
+                                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                                        fontSize = 11.sp,
+                                        textAlign = TextAlign.Center,
+                                        maxLines = 1,
+                                        softWrap = false
+                                    )
+                                }
                             }
                         }
                     }
@@ -218,46 +228,16 @@ fun AiHubScreen(
             ) { page ->
                 when (page % actualPageCount) {
                     0 -> ChatScreen(onNavigateBack = onNavigateBack)
-                    1 -> com.example.pocketplanner.ui.chat.live.LiveVoiceScreen(onNavigateBack = onNavigateBack)
-                    2 -> VisualTranslatePlaceholder(onNavigateBack)
+                    1 -> com.example.pocketplanner.ui.chat.live.LiveVoiceScreen(
+                        onNavigateBack = onNavigateBack,
+                        isActive = (pagerState.currentPage % actualPageCount == 1)
+                    )
+                    2 -> com.example.pocketplanner.ui.chat.translate.TranslateScreen(
+                        onNavigateBack = onNavigateBack,
+                        isActive = (pagerState.currentPage % actualPageCount == 2)
+                    )
                     3 -> com.example.pocketplanner.ui.chat.interpreter.InterpreterScreen(onNavigateBack = onNavigateBack)
                 }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun VisualTranslatePlaceholder(onBack: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF2C2C2C))) {
-        IconButton(onClick = onBack, modifier = Modifier.padding(16.dp).systemBarsPadding()) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
-        }
-        
-        Column(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(Icons.Filled.CameraAlt, contentDescription = null, tint = Color.White, modifier = Modifier.size(64.dp))
-            Spacer(modifier = Modifier.height(24.dp))
-            Text("Visual Translate", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                "Point your camera at foreign menus, street signs, or transit maps to instantly read them in your native language.",
-                color = Color.LightGray,
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center,
-                lineHeight = 24.sp
-            )
-            Spacer(modifier = Modifier.height(32.dp))
-            Button(
-                onClick = { /* TODO: Request Camera Permission */ },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text("Start Scanning", modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             }
         }
     }

@@ -56,6 +56,7 @@ import androidx.compose.material.icons.filled.VideocamOff
 @Composable
 fun LiveVoiceScreen(
     onNavigateBack: () -> Unit,
+    isActive: Boolean = true,
     viewModel: LiveVoiceViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -75,12 +76,16 @@ fun LiveVoiceScreen(
         viewModel.setContext(context)
     }
 
-    // Auto-start when permissions are granted
-    LaunchedEffect(permissionsState.allPermissionsGranted) {
+    // Auto-start when permissions are granted and the tab is active
+    LaunchedEffect(permissionsState.allPermissionsGranted, isActive) {
         if (!permissionsState.allPermissionsGranted) {
-            permissionsState.launchMultiplePermissionRequest()
-        } else if (state == LiveVoiceState.IDLE) {
-            viewModel.startCall()
+            if (isActive) permissionsState.launchMultiplePermissionRequest()
+        } else {
+            if (isActive && state == LiveVoiceState.IDLE) {
+                viewModel.startCall()
+            } else if (!isActive && state != LiveVoiceState.IDLE) {
+                viewModel.endCall()
+            }
         }
     }
 
@@ -89,13 +94,15 @@ fun LiveVoiceScreen(
         if (permissionsState.allPermissionsGranted) {
             val previewView = remember { PreviewView(context) }
 
-            LaunchedEffect(lensFacing, isCameraOff, lifecycleOwner) {
+            LaunchedEffect(lensFacing, isCameraOff, lifecycleOwner, isActive) {
                 val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
                 cameraProviderFuture.addListener({
                     val cameraProvider = cameraProviderFuture.get()
-                    cameraProvider.unbindAll()
 
-                    if (!isCameraOff) {
+                    if (isActive && !isCameraOff) {
+                        // Only unbind all if WE are the active tab taking control!
+                        cameraProvider.unbindAll()
+                        
                         val preview = Preview.Builder().build().also {
                             it.setSurfaceProvider(previewView.surfaceProvider)
                         }
