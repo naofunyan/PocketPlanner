@@ -166,7 +166,7 @@ fun MainScreen() {
                                     .clickable { navController.navigate(ChatRoute) } // <-- ADD THIS
                             ) {
                                 androidx.compose.foundation.Image(
-                                    painter = androidx.compose.ui.res.painterResource(id = com.example.pocketplanner.R.drawable.navaction),
+                                    painter = androidx.compose.ui.res.painterResource(id = com.example.pocketplanner.R.drawable.navai),
                                     contentDescription = "AI Call",
                                     modifier = Modifier.size(32.dp),
                                     colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.primary)
