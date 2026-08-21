@@ -50,7 +50,7 @@ fun MainScreen() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
     // We only show the bottom bar if the current route is NOT AuthRoute or WelcomeRoute
-    val showBottomBar = currentDestination?.route?.contains("AuthRoute") == false && 
+    val showBottomBar = currentDestination?.route?.contains("AuthRoute") == false &&
                         currentDestination?.route?.contains("WelcomeRoute") == false &&
                         currentDestination?.route?.contains("SearchRoute") == false &&
                         currentDestination?.route?.contains("CreateTripDetailsRoute") == false &&
@@ -59,7 +59,8 @@ fun MainScreen() {
                         currentDestination?.route?.contains("ExpenseRoute") == false &&
                         currentDestination?.route?.contains("TrackingRoute") == false &&
                         currentDestination?.route?.contains("ChatRoute") == false &&
-                        currentDestination?.route?.contains("ExploreDetailsRoute") == false
+                        currentDestination?.route?.contains("ExploreDetailsRoute") == false &&
+                        currentDestination?.route?.contains("TransactionHistoryRoute") == false
 
     OfflineBannerWrapper {
         Scaffold(
@@ -130,13 +131,13 @@ fun MainScreen() {
                                 }
                             )
 
-                            val isExpense = currentDestination?.hierarchy?.any { it.route?.contains("ExpenseRoute") == true } == true
+                            val isWallet = currentDestination?.hierarchy?.any { it.route?.contains("GlobalWalletRoute") == true } == true
                             BottomNavTab(
                                 iconResId = com.example.pocketplanner.R.drawable.navwallet,
                                 label = "Wallet",
-                                isSelected = isExpense,
+                                isSelected = isWallet,
                                 onClick = {
-                                    navController.navigate(ExpenseRoute("")) { // Navigate to global expense for now
+                                    navController.navigate(GlobalWalletRoute) {
                                         popUpTo(HomeRoute) { saveState = true }
                                         launchSingleTop = true
                                         restoreState = true
@@ -264,6 +265,24 @@ fun MainScreen() {
                 com.example.pocketplanner.ui.explore.ExploreScreen(
                     onSearchClick = { navController.navigate(SearchRoute) },
                     onNavigateToDetails = { destId -> navController.navigate(ExploreDetailsRoute(destId)) }
+                )
+            }
+
+            // ADD THIS NEW COMPOSABLE:
+            composable<GlobalWalletRoute> {
+                com.example.pocketplanner.ui.expense.GlobalWalletScreen(
+                    onNavigateToHistory = { selectedTripId ->
+                        navController.navigate(TransactionHistoryRoute(selectedTripId))
+                    }
+                )
+            }
+
+            composable<TransactionHistoryRoute> { backStackEntry ->
+                // Grab the passed ID and feed it to the screen
+                val args = backStackEntry.toRoute<TransactionHistoryRoute>()
+                com.example.pocketplanner.ui.expense.TransactionHistoryScreen(
+                    tripId = args.tripId,
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
 
@@ -436,23 +455,26 @@ fun MainScreen() {
             }
 
             composable<ExpenseRoute> { backStackEntry ->
+                // 1. Declare 'args' so the rest of your code can use it!
                 val args = backStackEntry.toRoute<ExpenseRoute>()
+
                 com.example.pocketplanner.ui.expense.ExpenseScreen(
                     tripId = args.tripId,
                     onNavigateBack = { navController.popBackStack() },
-                    onPlanClick = { 
+                    onPlanClick = {
                         navController.navigate(ItineraryRoute(args.tripId)) {
                             popUpTo(ItineraryRoute(args.tripId)) { inclusive = false }
                             launchSingleTop = true
-                        } 
+                        }
                     },
-                    onTrackClick = { 
+                    onTrackClick = {
                         navController.navigate(TrackingRoute(args.tripId)) {
                             popUpTo(ItineraryRoute(args.tripId)) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
-                        } 
-                    }
+                        }
+                    },
+                    onNavigateToHistory = { navController.navigate(TransactionHistoryRoute(args.tripId)) }
                 )
             }
 

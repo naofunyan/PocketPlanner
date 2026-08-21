@@ -61,4 +61,9 @@ object DatabaseModule {
     fun providePlaceDetailsDao(appDatabase: AppDatabase): com.example.pocketplanner.data.local.dao.PlaceDetailsDao {
         return appDatabase.placeDetailsDao()
     }
+
+    @Provides
+    fun provideTicketDao(database: AppDatabase): com.example.pocketplanner.data.local.dao.TicketDao {
+        return database.ticketDao()
+    }
 }

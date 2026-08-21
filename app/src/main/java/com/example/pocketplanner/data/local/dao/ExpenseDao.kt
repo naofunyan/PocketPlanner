@@ -1,6 +1,7 @@
 package com.example.pocketplanner.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -11,6 +12,10 @@ import kotlinx.coroutines.flow.Flow
 interface ExpenseDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExpense(expense: ExpenseEntity)
+
+    // DELETE FUNCTION:
+    @Delete
+    suspend fun deleteExpense(expense: ExpenseEntity)
 
     // Flow automatically updates the UI when a new expense is added
     @Query("SELECT * FROM expenses WHERE tripId = :tripId ORDER BY date DESC")

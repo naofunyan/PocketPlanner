@@ -164,4 +164,7 @@ dependencies {
     
     // Fix for ListenableFuture resolution in CameraX
     implementation("com.google.guava:guava:32.1.3-android")
+
+    // Image Cropper
+    implementation("com.github.yalantis:ucrop:2.2.9")
 }

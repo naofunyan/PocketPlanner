@@ -16,6 +16,12 @@ object HomeRoute // Where we show the list of trips
 object ExploreRoute
 
 @Serializable
+object GlobalWalletRoute
+
+@Serializable
+data class TransactionHistoryRoute(val tripId: String)
+
+@Serializable
 object SearchRoute
 
 @Serializable
