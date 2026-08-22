@@ -38,6 +38,13 @@ import com.example.pocketplanner.ui.expense.ExpenseScreen
 import com.example.pocketplanner.ui.itinerary.DayPlanScreen
 import com.example.pocketplanner.ui.itinerary.ItineraryScreen
 import com.example.pocketplanner.ui.components.OfflineBannerWrapper
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.runtime.getValue
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 import android.annotation.SuppressLint
 
@@ -60,7 +67,9 @@ fun MainScreen() {
                         currentDestination?.route?.contains("TrackingRoute") == false &&
                         currentDestination?.route?.contains("ChatRoute") == false &&
                         currentDestination?.route?.contains("ExploreDetailsRoute") == false &&
-                        currentDestination?.route?.contains("TransactionHistoryRoute") == false
+                        currentDestination?.route?.contains("TransactionHistoryRoute") == false &&
+                        currentDestination?.route?.contains("AllPlacesRoute") == false &&
+                        currentDestination?.route?.contains("PlaceDetailsRoute") == false
 
     OfflineBannerWrapper {
         Scaffold(
@@ -264,7 +273,10 @@ fun MainScreen() {
             composable<ExploreRoute> {
                 com.example.pocketplanner.ui.explore.ExploreScreen(
                     onSearchClick = { navController.navigate(SearchRoute) },
-                    onNavigateToDetails = { destId -> navController.navigate(ExploreDetailsRoute(destId)) }
+                    onNavigateToDetails = { destId -> navController.navigate(ExploreDetailsRoute(destId)) },
+                    onPlaceClick = { placeName ->
+                        navController.navigate(PlaceDetailsRoute(placeName))
+                    }
                 )
             }
 
@@ -291,9 +303,33 @@ fun MainScreen() {
                 com.example.pocketplanner.ui.explore.ExploreDetailsScreen(
                     destinationId = args.destinationId,
                     onNavigateBack = { navController.popBackStack() },
-                    onAddToTrip = {
-                        // For now, bounce the user to the SearchScreen so they can start creating a trip!
-                        navController.navigate(SearchRoute)
+                    onCreateNewTrip = { navController.navigate(CreateTripDetailsRoute(destinations = args.destinationId)) },
+                    onSeeAllPlaces = { id -> navController.navigate(AllPlacesRoute(id)) },
+                    // 1. ADD THIS LINE:
+                    onPlaceClick = { name -> navController.navigate(PlaceDetailsRoute(name)) }
+                )
+            }
+
+            composable<AllPlacesRoute> { backStackEntry ->
+                val args = backStackEntry.toRoute<AllPlacesRoute>()
+                com.example.pocketplanner.ui.explore.AllPlacesScreen(
+                    destinationId = args.destinationId,
+                    onNavigateBack = { navController.popBackStack() },
+                    // 2. ADD THIS LINE:
+                    onPlaceClick = { name -> navController.navigate(PlaceDetailsRoute(name)) }
+                )
+            }
+
+            // 3. ADD THE BRAND NEW SCREEN ROUTE BLOCK:
+            composable<PlaceDetailsRoute> { backStackEntry ->
+                val args = backStackEntry.toRoute<PlaceDetailsRoute>()
+                com.example.pocketplanner.ui.explore.PlaceDetailsScreen(
+                    placeName = args.placeName,
+                    onNavigateBack = { navController.popBackStack() },
+
+                    // Triggered when they click "View" on the success Snackbar!
+                    onViewTrip = { tripId ->
+                        navController.navigate(ItineraryRoute(tripId))
                     }
                 )
             }

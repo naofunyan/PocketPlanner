@@ -7,6 +7,7 @@ import com.example.pocketplanner.data.local.dao.AlertDao
 import com.example.pocketplanner.data.local.dao.ExpenseDao
 import com.example.pocketplanner.data.local.dao.PlaceDao
 import com.example.pocketplanner.data.local.dao.TripDao
+import com.example.pocketplanner.data.local.dao.SavedPlaceDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -65,5 +66,10 @@ object DatabaseModule {
     @Provides
     fun provideTicketDao(database: AppDatabase): com.example.pocketplanner.data.local.dao.TicketDao {
         return database.ticketDao()
+    }
+
+    @Provides
+    fun provideSavedPlaceDao(database: AppDatabase): SavedPlaceDao {
+        return database.savedPlaceDao()
     }
 }

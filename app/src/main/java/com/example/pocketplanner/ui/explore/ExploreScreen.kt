@@ -1,67 +1,69 @@
 package com.example.pocketplanner.ui.explore
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.layout.FlowRow
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.Spring
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.launch
-import androidx.compose.material.icons.filled.Public
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ExploreScreen(
     onSearchClick: () -> Unit = {},
-    onNavigateToDetails: (String) -> Unit = {}
+    onNavigateToDetails: (String) -> Unit = {},
+    onPlaceClick: (String) -> Unit = {},
+    viewModel: ExploreViewModel = hiltViewModel()
 ) {
+    val savedNames by viewModel.savedPlaces.collectAsState()
+
     val listState = rememberLazyListState()
     var searchQuery by remember { mutableStateOf("") }
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
 
-    // 1. STATE FOR 3-STAGE SHEET: Tracks whether we are in the "Map Only" dropped-down state
     var isMapExpanded by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
 
-    // 2. DYNAMIC PEEK HEIGHT: Smoothly animates between Tabs-Only (180.dp) and Half-Screen (55%)
     val targetPeekHeight = if (isMapExpanded) 240.dp else (screenHeight * 0.55f)
     val currentPeekHeight by animateDpAsState(
         targetValue = targetPeekHeight,
@@ -71,13 +73,12 @@ fun ExploreScreen(
     val bottomSheetState = rememberStandardBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState)
 
-    // 1. Reusable drag logic
     val expandMapDragModifier = Modifier.pointerInput(Unit) {
         detectVerticalDragGestures { _, dragAmount ->
-            if (dragAmount > 15) { // Swiped down
+            if (dragAmount > 15) {
                 isMapExpanded = true
                 coroutineScope.launch { scaffoldState.bottomSheetState.partialExpand() }
-            } else if (dragAmount < -15) { // Swiped up
+            } else if (dragAmount < -15) {
                 isMapExpanded = false
             }
         }
@@ -86,37 +87,29 @@ fun ExploreScreen(
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetPeekHeight = currentPeekHeight,
-        // 1. Give it a distinct top curve definition
         sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         sheetContainerColor = Color.White,
-        sheetShadowElevation = 8.dp, // Adds depth so the curve stands out from the map
+        sheetShadowElevation = 8.dp,
         containerColor = Color.Transparent,
-
         sheetDragHandle = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .then(expandMapDragModifier) // 2. Attached here!
+                    .then(expandMapDragModifier)
                     .padding(top = 16.dp, bottom = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 BottomSheetDefaults.DragHandle()
             }
         },
-
         content = { innerPadding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)
-            ) {
+            Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
                 AsyncImage(
                     model = "https://picsum.photos/seed/mapholder/800/1000",
                     contentDescription = "Map Background",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-
                 Text(
                     text = "Explore",
                     style = MaterialTheme.typography.headlineLarge,
@@ -128,17 +121,10 @@ fun ExploreScreen(
                 )
             }
         },
-
         sheetContent = {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 4.dp)
-            ) {
+            Box(modifier = Modifier.fillMaxSize().padding(top = 4.dp)) {
                 Column(modifier = Modifier.fillMaxSize()) {
 
-                    // 3. Wrap the ENTIRE top header in our drag modifier!
-                    // This turns the tabs and categories into a massive downward drag target.
                     Column(modifier = Modifier.fillMaxWidth().then(expandMapDragModifier)) {
                         TopSegmentedControl(
                             selectedIndex = selectedTabIndex,
@@ -148,7 +134,12 @@ fun ExploreScreen(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         if (selectedTabIndex == 0) {
-                            CategoryRow()
+                            CategoryRow(
+                                selectedCategory = selectedCategory,
+                                onCategoryClick = { clickedCat ->
+                                    selectedCategory = if (selectedCategory == clickedCat) null else clickedCat
+                                }
+                            )
                             Spacer(modifier = Modifier.height(16.dp))
                         }
                     }
@@ -156,20 +147,99 @@ fun ExploreScreen(
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         state = listState,
-                        contentPadding = PaddingValues(bottom = 120.dp)
+                        contentPadding = PaddingValues(bottom = 200.dp)
                     ) {
                         if (selectedTabIndex == 0) {
-                            item {
-                                BrowseByCRegionSection()
+                            if (searchQuery.isNotBlank()) {
+                                item {
+                                    SearchResultsSection(
+                                        query = searchQuery,
+                                        selectedCategory = selectedCategory,
+                                        onPlaceClick = onPlaceClick
+                                    )
+                                }
+                            } else {
+                                item {
+                                    ForYouSection(
+                                        selectedCategory = selectedCategory,
+                                        onNavigateToDetails = onNavigateToDetails
+                                    )
+                                }
+                                item { Spacer(modifier = Modifier.height(32.dp)) }
+
+                                item {
+                                    UnderTheRadarSection(
+                                        selectedCategory = selectedCategory,
+                                        onPlaceClick = onPlaceClick
+                                    )
+                                }
+                                item { Spacer(modifier = Modifier.height(32.dp)) }
                             }
                         } else {
-                            item {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth().padding(top = 64.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Icon(Icons.Filled.FavoriteBorder, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(64.dp).padding(bottom = 16.dp))
-                                    Text("No saved destinations yet.", color = Color.Gray)
+                            // ---> 2. REMOVED the old DestinationRepository.savedPlaces line. <---
+                            // We are now directly using the 'savedNames' list we collected from the ViewModel at the top of the screen!
+
+                            val savedDestinations = savedNames.map { savedTitle ->
+                                com.example.pocketplanner.data.repository.DestinationRepository.allSubplaces.find { it.name == savedTitle }
+                                    ?: com.example.pocketplanner.data.repository.Subplace(
+                                        name = savedTitle, subtitle = "Saved destination", description = "",
+                                        countryName = "Global", flagEmoji = "🌍",
+                                        heroImageUrl = "https://picsum.photos/seed/${savedTitle.replace(" ", "")}/800/1000",
+                                        mapImageUrl = "", highlights = emptyList(), openingTime = "", ticketPrice = "", theme = "Saved"
+                                    )
+                            }
+
+                            if (savedDestinations.isEmpty()) {
+                                item {
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth().padding(top = 64.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Icon(Icons.Filled.FavoriteBorder, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(64.dp).padding(bottom = 16.dp))
+                                        Text("No saved destinations yet.", color = Color.Gray)
+                                    }
+                                }
+                            } else {
+                                item {
+                                    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)) {
+                                        savedDestinations.forEach { dest ->
+                                            Surface(
+                                                shape = RoundedCornerShape(16.dp),
+                                                color = Color(0xFFF4F6F9),
+                                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).clickable { onPlaceClick(dest.name) }
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier.padding(12.dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    AsyncImage(
+                                                        model = dest.heroImageUrl,
+                                                        contentDescription = dest.name,
+                                                        contentScale = ContentScale.Crop,
+                                                        modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
+                                                    )
+                                                    Spacer(modifier = Modifier.width(16.dp))
+                                                    Column(modifier = Modifier.weight(1f)) {
+                                                        Text(
+                                                            text = dest.name,
+                                                            fontWeight = FontWeight.Bold,
+                                                            fontSize = 16.sp,
+                                                            color = Color(0xFF1E3A4B)
+                                                        )
+                                                        Spacer(modifier = Modifier.height(4.dp))
+                                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                                            Text(text = dest.flagEmoji, fontSize = 14.sp)
+                                                        }
+                                                    }
+                                                    Icon(
+                                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                                        contentDescription = "View",
+                                                        tint = Color.LightGray
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -187,7 +257,11 @@ fun ExploreScreen(
                         .padding(bottom = bottomPadding)
                         .imePadding()
                 ) {
-                    ExploreSearchBar(query = searchQuery, onQueryChange = { searchQuery = it })
+                    ExploreSearchBar(
+                        query = searchQuery,
+                        onQueryChange = { searchQuery = it },
+                        onSearchSubmit = { }
+                    )
                 }
             }
         }
@@ -195,43 +269,22 @@ fun ExploreScreen(
 }
 
 @Composable
-fun TopSegmentedControl(
-    selectedIndex: Int,
-    onIndexSelected: (Int) -> Unit
-) {
+fun TopSegmentedControl(selectedIndex: Int, onIndexSelected: (Int) -> Unit) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp) // Gap between the buttons
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        TabItem(
-            text = "Discover",
-            isSelected = selectedIndex == 0,
-            onClick = { onIndexSelected(0) },
-            modifier = Modifier.weight(1f)
-        )
-
-        TabItem(
-            text = "Saved",
-            isSelected = selectedIndex == 1,
-            onClick = { onIndexSelected(1) },
-            modifier = Modifier.weight(1f)
-        )
+        TabItem("Discover", selectedIndex == 0, { onIndexSelected(0) }, Modifier.weight(1f))
+        TabItem("Saved", selectedIndex == 1, { onIndexSelected(1) }, Modifier.weight(1f))
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TabItem(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+private fun TabItem(text: String, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
         onClick = onClick,
-        color = if (isSelected) Color(0xFF092A3A) else Color(0xFFE2E2E6), // Navy vs Light Gray
+        color = if (isSelected) Color(0xFF092A3A) else Color(0xFFE2E2E6),
         shape = RoundedCornerShape(12.dp),
         modifier = modifier.height(48.dp)
     ) {
@@ -246,48 +299,32 @@ private fun TabItem(
 }
 
 @Composable
-fun CategoryRow() {
+fun CategoryRow(selectedCategory: String?, onCategoryClick: (String) -> Unit) {
     val categories = listOf(
-        Pair("🌲", "Nature"),
-        Pair("🧗", "Adventure"),
-        Pair("🏛️", "Culture"),
-        Pair("🍴", "Food"),
-        Pair("🐾", "Wildlife"),
-        Pair("🏙️", "City"),
-        Pair("🏖️", "Beach")
+        Pair("🌲", "Nature"), Pair("🏛️", "Culture"), Pair("🍴", "Food"),
+        Pair("🏙️", "City"), Pair("🏖️", "Beach")
     )
-
-    var selectedCategory by remember { mutableStateOf("Nature") }
 
     Column {
         Text(
-            text = "Browse by travel theme",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF1E3A4B),
+            text = "Browse by travel theme", style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold, color = Color(0xFF1E3A4B),
             modifier = Modifier.padding(horizontal = 24.dp)
         )
-
         Spacer(modifier = Modifier.height(12.dp))
-
-        // Swapped FlowRow back to LazyRow for a single, swipeable horizontal line!
         LazyRow(
             contentPadding = PaddingValues(horizontal = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(categories) { cat ->
                 val isSelected = selectedCategory == cat.second
-
                 Surface(
                     shape = CircleShape,
                     color = if (isSelected) Color(0xFFF0E6FA) else Color.White,
                     border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0)) else null,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable { selectedCategory = cat.second }
+                    modifier = Modifier.clip(CircleShape).clickable { onCategoryClick(cat.second) }
                 ) {
                     Row(
-                        // Slightly tighter padding to make the chips themselves more compact
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -296,140 +333,7 @@ fun CategoryRow() {
                         Text(
                             text = cat.second,
                             color = if (isSelected) Color(0xFF6B4FA9) else Color(0xFF1E3A4B),
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ExploreCard(destination: Destination, onNavigateToDetails: (String) -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 12.dp)
-            .clickable { onNavigateToDetails(destination.id) },
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            ) {
-                AsyncImage(
-                    model = destination.imageUrl,
-                    contentDescription = destination.title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-
-                Surface(
-                    shape = CircleShape,
-                    color = Color.White.copy(alpha = 0.8f),
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(16.dp)
-                        .size(36.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.FavoriteBorder,
-                        contentDescription = "Save",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
-
-                if (destination.badge != null) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFFE65100).copy(alpha = 0.9f),
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            text = destination.badge,
-                            color = Color.White,
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-                }
-            }
-
-            Column(modifier = Modifier.padding(20.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = destination.title,
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-                    )
-
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp)
-                        ) {
-                            Icon(Icons.Filled.Star, contentDescription = "Rating", tint = Color(0xFFFFB300), modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(destination.rating, style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = destination.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(
-                            text = "From ${destination.price}",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = " / day",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 2.dp)
-                        )
-                    }
-
-                    Button(
-                        onClick = { onNavigateToDetails(destination.id) }, // <--- WE TRIGGER THE NAVIGATION HERE
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-                    ) {
-                        Text(
-                            text = "View Details",
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                            style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Medium
                         )
                     }
                 }
@@ -442,113 +346,83 @@ fun ExploreCard(destination: Destination, onNavigateToDetails: (String) -> Unit)
 @Composable
 fun ExploreSearchBar(
     query: String,
-    onQueryChange: (String) -> Unit
+    onQueryChange: (String) -> Unit,
+    onSearchSubmit: () -> Unit = {}
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     Surface(
-        shape = CircleShape,
-        color = Color.White,
-        shadowElevation = 8.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp)
+        shape = CircleShape, color = Color.White, shadowElevation = 8.dp,
+        modifier = Modifier.fillMaxWidth().height(56.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Filled.Search,
-                contentDescription = "Search",
-                tint = Color.Gray,
-                modifier = Modifier.size(24.dp)
-            )
-
+            Icon(Icons.Filled.Search, "Search", tint = Color.Gray, modifier = Modifier.size(24.dp))
             Spacer(modifier = Modifier.width(8.dp))
-
             TextField(
-                value = query,
-                onValueChange = onQueryChange,
-                placeholder = {
-                    Text(
-                        text = "Search destinations...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
-                    )
-                },
+                value = query, onValueChange = onQueryChange,
+                placeholder = { Text("Search destinations...", style = MaterialTheme.typography.bodyMedium, color = Color.Gray) },
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
                     cursorColor = MaterialTheme.colorScheme.primary
                 ),
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = {
+                    onSearchSubmit()
+                    keyboardController?.hide()
+                }),
                 modifier = Modifier.weight(1f)
             )
-
             Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(36.dp)
+                shape = CircleShape, color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(36.dp).clickable {
+                    onSearchSubmit()
+                    keyboardController?.hide()
+                }
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = "Go",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, "Go", tint = Color.White, modifier = Modifier.size(20.dp))
                 }
             }
         }
     }
 }
 
-data class CRegion(val name: String, val color: Color)
-
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun BrowseByCRegionSection() {
-    val regions = listOf(
-        CRegion("Northeast", Color(0xFFF0904E)),
-        CRegion("Northwest", Color(0xFF26A8F0)),
-        CRegion("Red River Delta", Color(0xFFEE6384)),
-        CRegion("North Central Coast", Color(0xFFDA5C43)),
-        CRegion("South Central Coast", Color(0xFFA5A292)),
-        CRegion("Central Highlands", Color(0xFFBE7898)),
-        CRegion("Southeast", Color(0xFFBE7898)), // Matched your screenshot colors/layout
-        CRegion("Mekong River Delta", Color(0xFFBE7898))
-    )
+fun ForYouSection(
+    selectedCategory: String?,
+    onNavigateToDetails: (String) -> Unit = {}
+) {
+    var cities = com.example.pocketplanner.data.repository.DestinationRepository.cities
 
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
+    if (selectedCategory != null) {
+        cities = cities.filter { it.theme == selectedCategory }
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "Browse by subregion",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF1E3A4B)
+            text = "For you", style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold, color = Color(0xFF1E3A4B),
+            modifier = Modifier.padding(horizontal = 24.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 1. Replaced FlowRow with a strictly chunked loop to enforce perfect grid sizing
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            regions.chunked(2).forEach { rowRegions ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    rowRegions.forEach { region ->
-                        CRegionCard(region = region, modifier = Modifier.weight(1f))
-                    }
-
-                    // 2. If a row only has 1 item, add an invisible spacer to keep the column width locked!
-                    if (rowRegions.size == 1) {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
+        if (cities.isEmpty()) {
+            Text(
+                text = "No destinations found.", color = Color.Gray,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
+        } else {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(cities) { city ->
+                    ForYouCard(city = city, onNavigateToDetails = onNavigateToDetails)
                 }
             }
         }
@@ -556,55 +430,181 @@ fun BrowseByCRegionSection() {
 }
 
 @Composable
-fun CRegionCard(region: CRegion, modifier: Modifier = Modifier) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = Color(0xFFF4F6F9),
-        modifier = modifier
-            .height(76.dp) // 3. Increased height slightly to accommodate 3 lines of text
-            .clickable { /* TODO: Navigate to region filter */ }
+fun ForYouCard(
+    city: com.example.pocketplanner.data.repository.City,
+    onNavigateToDetails: (String) -> Unit = {}
+) {
+    Card(
+        modifier = Modifier.width(280.dp).height(200.dp).clickable { onNavigateToDetails(city.title) },
+        shape = RoundedCornerShape(24.dp), elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = region.name,
-                style = MaterialTheme.typography.labelMedium, // 4. Slightly smaller font prevents ugly character breaks
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E3A4B),
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 12.dp, end = 4.dp) // 5. Tighter padding maximizes horizontal room for text
+        Box(modifier = Modifier.fillMaxSize()) {
+            AsyncImage(
+                model = city.heroImageUrl, contentDescription = city.title,
+                contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
             )
-
             Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .offset(x = 16.dp)
-                    .background(region.color, CircleShape),
+                modifier = Modifier.fillMaxSize().background(
+                    Brush.verticalGradient(
+                        0f to Color.Transparent, 0.3f to Color.Transparent,
+                        0.6f to Color.Black.copy(alpha = 0.4f), 1f to Color.Black.copy(alpha = 0.9f)
+                    )
+                )
+            )
+            Box(
+                modifier = Modifier.padding(16.dp).size(32.dp).background(Color.White.copy(alpha = 0.2f), CircleShape).align(Alignment.TopStart),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Public,
-                    contentDescription = null,
-                    tint = Color.White.copy(alpha = 0.25f),
-                    modifier = Modifier.size(48.dp)
-                )
+                Text(text = city.flagEmoji, fontSize = 18.sp)
+            }
+            Row(
+                modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom
+            ) {
+                Column {
+                    Text(
+                        text = city.title, color = Color.White,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold, shadow = Shadow(Color.Black.copy(alpha = 0.6f), Offset(2f, 2f), 8f)
+                        )
+                    )
+                    Text(text = "${city.topPlaces.size} Places", color = Color(0xFFE0E0E0), style = MaterialTheme.typography.labelMedium)
+                }
             }
         }
     }
 }
 
-data class Destination(
-    val id: String,
-    val title: String,
-    val description: String,
-    val price: String,
-    val rating: String,
-    val imageUrl: String,
-    val badge: String? = null
-)
+@Composable
+fun UnderTheRadarSection(
+    selectedCategory: String?,
+    onPlaceClick: (String) -> Unit = {}
+) {
+    var places = com.example.pocketplanner.data.repository.DestinationRepository.allSubplaces
+
+    if (selectedCategory != null) {
+        places = places.filter { it.theme == selectedCategory }
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Under the radar", style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold, color = Color(0xFF1E3A4B),
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (places.isEmpty()) {
+            Text(
+                text = "No hidden gems found.", color = Color.Gray,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
+        } else {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(places) { place ->
+                    UnderTheRadarCard(subplace = place, onPlaceClick = onPlaceClick)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun UnderTheRadarCard(
+    subplace: com.example.pocketplanner.data.repository.Subplace,
+    onPlaceClick: (String) -> Unit = {}
+) {
+    Card(
+        modifier = Modifier.width(160.dp).height(160.dp).clickable { onPlaceClick(subplace.name) },
+        shape = RoundedCornerShape(24.dp), elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            AsyncImage(
+                model = subplace.heroImageUrl, contentDescription = subplace.name,
+                contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
+            )
+            // Slightly darkened the bottom gradient so the smaller white text stays highly readable
+            Box(
+                modifier = Modifier.fillMaxSize().background(
+                    Brush.verticalGradient(
+                        0f to Color.Transparent, 0.4f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.9f)
+                    )
+                )
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top
+            ) {
+                Surface(shape = CircleShape, color = Color.White, modifier = Modifier.size(28.dp)) {
+                    Box(contentAlignment = Alignment.Center) { Text(text = subplace.flagEmoji, fontSize = 14.sp) }
+                }
+            }
+            Text(
+                text = subplace.name,
+                color = Color.White,
+                // 1. Scaled down the font size
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    shadow = Shadow(Color.Black.copy(alpha = 0.8f), Offset(2f, 2f), 8f)
+                ),
+                // 2. Capped at 2 lines with an ellipsis
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                // 3. Anchored to the bottom left
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(horizontal = 12.dp, vertical = 12.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun SearchResultsSection(
+    query: String,
+    selectedCategory: String?,
+    onPlaceClick: (String) -> Unit
+) {
+    var places = com.example.pocketplanner.data.repository.DestinationRepository.allSubplaces
+
+    if (selectedCategory != null) places = places.filter { it.theme == selectedCategory }
+    places = places.filter { it.name.contains(query, ignoreCase = true) }
+
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
+        Text(
+            text = "Search Results", style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold, color = Color(0xFF1E3A4B),
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        if (places.isEmpty()) {
+            Text(text = "No destinations found for \"$query\".", color = Color.Gray)
+        } else {
+            places.forEach { dest ->
+                Surface(
+                    shape = RoundedCornerShape(16.dp), color = Color(0xFFF4F6F9),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).clickable { onPlaceClick(dest.name) }
+                ) {
+                    Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        AsyncImage(
+                            model = dest.heroImageUrl, contentDescription = dest.name,
+                            contentScale = ContentScale.Crop, modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = dest.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF1E3A4B))
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = dest.flagEmoji, fontSize = 14.sp)
+                            }
+                        }
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "View", tint = Color.LightGray)
+                    }
+                }
+            }
+        }
+    }
+}

@@ -55,4 +55,10 @@ data class ExploreDetailsRoute(val destinationId: String)
 object AlertsRoute
 
 @Serializable
+data class AllPlacesRoute(val destinationId: String)
+
+@Serializable
+data class PlaceDetailsRoute(val placeName: String)
+
+@Serializable
 object ProfileRoute

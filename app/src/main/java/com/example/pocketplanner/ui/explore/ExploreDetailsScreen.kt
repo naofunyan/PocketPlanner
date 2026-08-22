@@ -1,202 +1,307 @@
 package com.example.pocketplanner.ui.explore
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExploreDetailsScreen(
     destinationId: String,
     onNavigateBack: () -> Unit,
-    onAddToTrip: () -> Unit
+    onCreateNewTrip: () -> Unit = {},
+    onSeeAllPlaces: (String) -> Unit = {},
+    onPlaceClick: (String) -> Unit = {},
+    // 1. INJECT THE VIEWMODEL HERE
+    viewModel: ExploreViewModel = hiltViewModel()
 ) {
-    val destination = getMockDestinationById(destinationId)
+    // 2. COLLECT THE DATABASE STATE
+    val savedNames by viewModel.savedPlaces.collectAsState()
 
-    Scaffold(
-        bottomBar = {
-            Surface(
-                color = Color.White,
-                shadowElevation = 16.dp
-            ) {
+    // 1. PULL REAL DATA FROM REPOSITORY! (Fallback to first city if not found)
+    val destination = com.example.pocketplanner.data.repository.DestinationRepository.cities.find { it.id == destinationId }
+        ?: com.example.pocketplanner.data.repository.DestinationRepository.cities.first()
+
+    // 2. Generate a dynamic map image using the city ID
+    val mapImageUrl = "https://picsum.photos/seed/${destination.id.replace(" ", "")}map/1000/1200"
+
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+    val initialPeekHeight = screenHeight * 0.52f
+
+    val bottomSheetState = rememberStandardBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
+    val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState)
+
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        sheetPeekHeight = initialPeekHeight,
+        sheetShape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+        sheetContainerColor = Color.White,
+        sheetShadowElevation = 12.dp,
+        containerColor = Color.Black,
+        sheetDragHandle = null,
+
+        content = {
+            Box(modifier = Modifier.fillMaxSize()) {
+                AsyncImage(
+                    model = mapImageUrl,
+                    contentDescription = "Map View",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(
+                            top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 12.dp,
+                            start = 20.dp,
+                            end = 20.dp
+                        ),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Text("Price", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+                    // Back Button
+                    Surface(
+                        shape = CircleShape, color = Color.White, shadowElevation = 6.dp,
+                        modifier = Modifier.size(44.dp).clickable { onNavigateBack() }
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color(0xFF1E3A4B), modifier = Modifier.size(22.dp))
+                        }
+                    }
+
+                    // 3. CHECK THE VIEWMODEL STATE
+                    val isSaved = savedNames.contains(destination.title)
+
+                    Surface(
+                        shape = CircleShape, color = Color.White, shadowElevation = 6.dp,
+                        modifier = Modifier.size(44.dp).clickable {
+                            // 4. USE THE VIEWMODEL FUNCTION TO SAVE/DELETE FROM ROOM DATABASE
+                            viewModel.toggleSavePlace(destination.title, isSaved)
+                        }
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = if (isSaved) Icons.Filled.Bookmark else Icons.Default.BookmarkBorder,
+                                contentDescription = "Bookmark",
+                                tint = Color(0xFF1E3A4B),
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        sheetContent = {
+            LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 140.dp)) {
+                item {
+                    DestinationHeroBanner(destination = destination, onCreateNewTrip = onCreateNewTrip)
+                }
+                item {
+                    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 20.dp)) {
                         Text(
-                            text = destination.price,
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
+                            text = destination.description,
+                            style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFF4A5568), lineHeight = 26.sp, fontSize = 16.sp)
                         )
                     }
-                    Button(
-                        onClick = onAddToTrip,
-                        shape = RoundedCornerShape(24.dp),
-                        modifier = Modifier
-                            .height(56.dp)
-                            .padding(start = 24.dp)
-                            .fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                    ) {
-                        Text("Add to Trip", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    }
+                }
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    DestinationPlacesSection(
+                        destinationId = destination.id,
+                        places = destination.topPlaces,
+                        onSeeAllPlaces = onSeeAllPlaces,
+                        onPlaceClick = onPlaceClick
+                    )
                 }
             }
         }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = innerPadding.calculateBottomPadding())
+    )
+}
+
+@Composable
+fun DestinationPlacesSection(
+    destinationId: String,
+    places: List<com.example.pocketplanner.data.repository.Subplace>, // Accepts real Subplaces
+    onSeeAllPlaces: (String) -> Unit,
+    onPlaceClick: (String) -> Unit = {}
+) {
+    if (places.isEmpty()) return
+
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
+        Text(text = "Places", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color(0xFF1E3A4B))
+        Spacer(modifier = Modifier.height(20.dp))
+
+        places.forEach { place ->
+            PlaceListItem(place = place, onPlaceClick = onPlaceClick)
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+
+        OutlinedButton(
+            onClick = { onSeeAllPlaces(destinationId) },
+            modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally).height(48.dp),
+            shape = CircleShape, border = BorderStroke(1.dp, Color(0xFFE2E2E6)),
+            colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent)
         ) {
-            // Background Image Header
+            Text(text = "See all", color = Color(0xFF1E3A4B), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), modifier = Modifier.padding(horizontal = 16.dp))
+        }
+    }
+}
+
+@Composable
+fun PlaceListItem(
+    place: com.example.pocketplanner.data.repository.Subplace, // Accepts real Subplace
+    onPlaceClick: (String) -> Unit = {}
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable { onPlaceClick(place.name) },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier.size(64.dp)
+                .shadow(elevation = 6.dp, shape = RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.2f))
+                .clip(RoundedCornerShape(16.dp)).background(Color(0xFFF4F6F9))
+        ) {
             AsyncImage(
-                model = destination.imageUrl,
-                contentDescription = destination.title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(400.dp)
+                // Mapped to the new heroImageUrl
+                model = place.heroImageUrl,
+                contentDescription = place.name,
+                contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
             )
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = place.name, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 17.sp), color = Color(0xFF1E3A4B))
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(text = place.subtitle, style = MaterialTheme.typography.bodyMedium, color = Color(0xFF7A869A), maxLines = 2, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = innerPadding.calculateTopPadding() + 16.dp, start = 16.dp, end = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                IconButton(
-                    onClick = onNavigateBack,
-                    modifier = Modifier.background(Color.White.copy(alpha = 0.8f), CircleShape)
-                ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
-                }
-                IconButton(
-                    onClick = { /* TODO */ },
-                    modifier = Modifier.background(Color.White.copy(alpha = 0.8f), CircleShape)
-                ) {
-                    Icon(Icons.Filled.FavoriteBorder, contentDescription = "Save", tint = MaterialTheme.colorScheme.primary)
-                }
-            }
+@Composable
+private fun DestinationHeroBanner(
+    destination: com.example.pocketplanner.data.repository.City, // Accepts real City
+    onCreateNewTrip: () -> Unit
+) {
+    val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
-            // Bottom Content Sheet
+    Box(modifier = Modifier.fillMaxWidth().height(340.dp + topPadding).clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))) {
+        AsyncImage(
+            model = destination.heroImageUrl, contentDescription = destination.title,
+            contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
+        )
+        Box(modifier = Modifier.fillMaxSize().background(
+            Brush.verticalGradient(0.0f to Color.Black.copy(alpha = 0.4f), 0.3f to Color.Transparent, 0.5f to Color.Transparent, 0.85f to Color.Black.copy(alpha = 0.6f), 1.0f to Color.Black.copy(alpha = 0.1f))
+        ))
+        Box(modifier = Modifier.fillMaxSize().background(
+            Brush.verticalGradient(0.0f to Color.Transparent, 0.85f to Color.Transparent, 0.95f to Color.White.copy(alpha = 0.8f), 1.0f to Color.White)
+        ))
+        Box(modifier = Modifier.align(Alignment.TopCenter).padding(top = topPadding + 12.dp).size(width = 38.dp, height = 4.dp).background(Color.White.copy(alpha = 0.8f), CircleShape))
+
+        Surface(
+            shape = CircleShape, color = Color.White.copy(alpha = 0.25f),
+            modifier = Modifier.align(Alignment.TopStart).padding(start = 20.dp, top = topPadding + 16.dp).size(36.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) { Text(text = destination.flagEmoji, fontSize = 20.sp) }
+        }
+
+        Column(
+            modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 24.dp, vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = destination.title, color = Color.White, textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold, fontSize = 32.sp, shadow = Shadow(color = Color.Black.copy(alpha = 0.8f), offset = Offset(0f, 2f), blurRadius = 12f))
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = destination.tagline.uppercase(), color = Color.White.copy(alpha = 0.95f), textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp, fontSize = 11.sp, shadow = Shadow(color = Color.Black.copy(alpha = 0.9f), offset = Offset(0f, 2f), blurRadius = 12f))
+            )
+            Spacer(modifier = Modifier.height(20.dp))
             Surface(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 350.dp), // Pushed down to overlap the image
-                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-                color = MaterialTheme.colorScheme.background
+                onClick = onCreateNewTrip, shape = CircleShape, color = Color.White, shadowElevation = 8.dp,
+                modifier = Modifier.height(48.dp).shadow(elevation = 8.dp, shape = CircleShape)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp)
-                ) {
-                    // Badge and Rating Row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (destination.badge != null) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFFE65100).copy(alpha = 0.1f)
-                            ) {
-                                Text(
-                                    text = destination.badge,
-                                    color = Color(0xFFE65100),
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                                )
-                            }
-                        } else {
-                            Spacer(modifier = Modifier)
-                        }
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Filled.Star, contentDescription = "Rating", tint = Color(0xFFFFB300), modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(destination.rating, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = destination.title,
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Text(
-                        text = "Overview",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = destination.description + " This beautiful location offers breathtaking views, unique cultural experiences, and unforgettable memories. Perfect for travelers seeking both adventure and relaxation.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Gray,
-                        lineHeight = 24.sp
-                    )
+                Row(modifier = Modifier.padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                    Icon(Icons.Filled.Add, null, tint = Color(0xFF092A3A), modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Create a new trip", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, color = Color(0xFF092A3A)))
                 }
             }
         }
     }
 }
 
-// Temporary Helper to share the mock data
-fun getMockDestinationById(id: String): Destination {
-    val mockDestinations = listOf(
-        Destination(
-            id = "1",
-            title = "Grand Canyon",
-            description = "Experience the breathtaking scale and vibrant colors of one of the world's most renowned natural wonders.",
-            price = "$120",
-            rating = "4.9",
-            imageUrl = "https://picsum.photos/seed/grandcanyon/800/400",
-            badge = "🔥 Trending"
-        ),
-        Destination(
-            id = "2",
-            title = "Tokyo City",
-            description = "Dive into a vibrant metropolis blending neon-lit skyscrapers with historic temples, offering endless discoveries.",
-            price = "$200",
-            rating = "4.8",
-            imageUrl = "https://picsum.photos/seed/tokyo/800/400"
-        ),
-        Destination(
-            id = "3",
-            title = "Maldives Resort",
-            description = "Relax in luxury overwater bungalows surrounded by crystal clear turquoise waters and pristine white beaches.",
-            price = "$450",
-            rating = "5.0",
-            imageUrl = "https://picsum.photos/seed/maldives/800/400"
-        )
-    )
-    return mockDestinations.find { it.id == id } ?: mockDestinations.first()
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AllPlacesScreen(
+    destinationId: String,
+    onNavigateBack: () -> Unit,
+    onPlaceClick: (String) -> Unit = {}
+) {
+    // 1. FETCH FROM REAL REPOSITORY
+    val destination = com.example.pocketplanner.data.repository.DestinationRepository.cities.find { it.id == destinationId }
+        ?: com.example.pocketplanner.data.repository.DestinationRepository.cities.first()
+
+    Scaffold(
+        containerColor = Color.White,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Column {
+                        Text(text = "Places", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold), color = Color(0xFF092A3A))
+                        Text(text = destination.title, style = MaterialTheme.typography.bodyMedium, color = Color(0xFF4A5568))
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Navigate Back", tint = Color(0xFF092A3A))
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White, scrolledContainerColor = Color.White)
+            )
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            items(destination.topPlaces) { place ->
+                PlaceListItem(place = place, onPlaceClick = onPlaceClick)
+            }
+        }
+    }
 }

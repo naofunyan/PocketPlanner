@@ -1168,6 +1168,60 @@ class ItineraryViewModel @Inject constructor(
             }
         }
     }
+
+    fun addDetailedPlaceToDay(
+        tripId: String,
+        dayNumber: Int,
+        name: String,
+        category: String = "Sightseeing",
+        lat: Double = 0.0, // Defaulting to 0.0 for mock data, can be updated later
+        lng: Double = 0.0,
+        photoUrl: String? = null
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // 1. Get current places to calculate sequential time (Reusing your logic!)
+                val currentPlaces = tripRepository.getPlacesForDay(tripId, dayNumber).firstOrNull() ?: emptyList()
+                val format = java.text.SimpleDateFormat("hh:mm a", java.util.Locale.US)
+                val sorted = currentPlaces.sortedBy { try { format.parse(it.startTime)?.time ?: 0L } catch(e:Exception){0L} }
+                val lastPlace = sorted.lastOrNull()
+
+                var newStartTime = "09:00 AM" // Default morning start time
+                var newEndTime = "10:00 AM"
+
+                if (lastPlace != null && lastPlace.endTime.isNotBlank()) {
+                    newStartTime = lastPlace.endTime
+                    try {
+                        val d = format.parse(lastPlace.endTime)
+                        if (d != null) {
+                            val cal = java.util.Calendar.getInstance()
+                            cal.time = d
+                            cal.add(java.util.Calendar.HOUR_OF_DAY, 1) // Add 1 hour duration
+                            newEndTime = format.format(cal.time)
+                        }
+                    } catch (e: Exception) {}
+                }
+
+                // 2. Insert into Database
+                val newPlace = PlaceEntity(
+                    id = UUID.randomUUID().toString(),
+                    tripId = tripId,
+                    dayNumber = dayNumber,
+                    name = name,
+                    lat = lat,
+                    lng = lng,
+                    category = category,
+                    startTime = newStartTime,
+                    endTime = newEndTime,
+                    photoUrl = photoUrl
+                )
+
+                placeDao.insertPlaces(listOf(newPlace))
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 }
 
 sealed class WeatherState {
