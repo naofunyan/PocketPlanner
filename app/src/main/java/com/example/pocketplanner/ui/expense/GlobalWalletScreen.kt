@@ -64,6 +64,7 @@ fun GlobalWalletScreen(
     val ticketTrips by ticketViewModel.allTrips.collectAsState()
     val filteredTickets by ticketViewModel.filteredTickets.collectAsState(initial = emptyList())
     val ticketFilter by ticketViewModel.selectedFilter.collectAsState()
+    val ticketSearchQuery by ticketViewModel.searchQuery.collectAsState()
 
     // UI States
     val pagerState = rememberPagerState(pageCount = { 2 }) // We have 2 tabs!
@@ -193,7 +194,9 @@ fun GlobalWalletScreen(
                             selectedFilter = ticketFilter,
                             onFilterSelected = { filter -> ticketViewModel.setFilter(filter) },
                             onTicketClick = { ticket -> viewingTicket = ticket },
-                            onDeleteTicket = { ticket -> ticketViewModel.deleteTicket(ticket) }
+                            onDeleteTicket = { ticket -> ticketViewModel.deleteTicket(ticket) },
+                            searchQuery = ticketSearchQuery,
+                            onSearchQueryChanged = { ticketViewModel.setSearchQuery(it) }
                         )
                     }
                 }
@@ -280,6 +283,7 @@ fun GlobalWalletScreen(
     viewingTicket?.let { ticket ->
         TicketImageViewer(
             ticket = ticket,
+            viewModel = ticketViewModel,
             onDismiss = { viewingTicket = null }
         )
     }

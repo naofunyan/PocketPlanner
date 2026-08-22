@@ -167,4 +167,9 @@ dependencies {
 
     // Image Cropper
     implementation("com.github.yalantis:ucrop:2.2.9")
+
+    // ML Kit Barcode Scanning
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+    // QR Code generation
+    implementation("com.google.zxing:core:3.5.3")
 }

@@ -28,7 +28,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.FlowRow
 import coil.compose.AsyncImage
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import kotlinx.coroutines.launch
+import androidx.compose.material.icons.filled.Public
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -38,131 +52,146 @@ fun ExploreScreen(
 ) {
     val listState = rememberLazyListState()
     var searchQuery by remember { mutableStateOf("") }
-
-    // State to track the selected tab (0 = Discover, 1 = Saved)
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
-    val allDestinations = listOf(
-        Destination(
-            id = "1",
-            title = "Grand Canyon",
-            description = "Experience the breathtaking scale and vibrant colors of one of the world's most renowned natural wonders.",
-            price = "$120",
-            rating = "4.9",
-            imageUrl = "https://picsum.photos/seed/grandcanyon/800/400",
-            badge = "🔥 Trending"
-        ),
-        Destination(
-            id = "2",
-            title = "Tokyo City",
-            description = "Dive into a vibrant metropolis blending neon-lit skyscrapers with historic temples, offering endless discoveries.",
-            price = "$200",
-            rating = "4.8",
-            imageUrl = "https://picsum.photos/seed/tokyo/800/400"
-        ),
-        Destination(
-            id = "3",
-            title = "Maldives Resort",
-            description = "Relax in luxury overwater bungalows surrounded by crystal clear turquoise waters and pristine white beaches.",
-            price = "$450",
-            rating = "5.0",
-            imageUrl = "https://picsum.photos/seed/maldives/800/400"
-        )
+    // 1. STATE FOR 3-STAGE SHEET: Tracks whether we are in the "Map Only" dropped-down state
+    var isMapExpanded by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
+    // 2. DYNAMIC PEEK HEIGHT: Smoothly animates between Tabs-Only (180.dp) and Half-Screen (55%)
+    val targetPeekHeight = if (isMapExpanded) 240.dp else (screenHeight * 0.55f)
+    val currentPeekHeight by animateDpAsState(
+        targetValue = targetPeekHeight,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
     )
 
-    val displayedDestinations = allDestinations.filter {
-        it.title.contains(searchQuery, ignoreCase = true) ||
-                it.description.contains(searchQuery, ignoreCase = true)
+    val bottomSheetState = rememberStandardBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
+    val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState)
+
+    // 1. Reusable drag logic
+    val expandMapDragModifier = Modifier.pointerInput(Unit) {
+        detectVerticalDragGestures { _, dragAmount ->
+            if (dragAmount > 15) { // Swiped down
+                isMapExpanded = true
+                coroutineScope.launch { scaffoldState.bottomSheetState.partialExpand() }
+            } else if (dragAmount < -15) { // Swiped up
+                isMapExpanded = false
+            }
+        }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        sheetPeekHeight = currentPeekHeight,
+        // 1. Give it a distinct top curve definition
+        sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        sheetContainerColor = Color.White,
+        sheetShadowElevation = 8.dp, // Adds depth so the curve stands out from the map
+        containerColor = Color.Transparent,
 
-        // MAIN SCROLLABLE CONTENT
-        Column(modifier = Modifier.fillMaxSize()) {
-            val statusBarsTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-            Spacer(modifier = Modifier.height(statusBarsTop + 16.dp))
-
-            TopSegmentedControl(
-                selectedIndex = selectedTabIndex,
-                onIndexSelected = { selectedTabIndex = it }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Only show categories on the Discover tab
-            if (selectedTabIndex == 0) {
-                CategoryRow()
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                state = listState,
-                contentPadding = PaddingValues(bottom = 200.dp)
+        sheetDragHandle = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(expandMapDragModifier) // 2. Attached here!
+                    .padding(top = 16.dp, bottom = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (selectedTabIndex == 0) {
-                    // DISCOVER TAB CONTENT
-                    if (displayedDestinations.isEmpty()) {
-                        item {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(48.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text("No destinations found.", color = Color.Gray)
-                            }
-                        }
-                    } else {
-                        items(displayedDestinations) { dest ->
-                            ExploreCard(
-                                destination = dest,
-                                onNavigateToDetails = onNavigateToDetails
-                            )
+                BottomSheetDefaults.DragHandle()
+            }
+        },
+
+        content = { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+            ) {
+                AsyncImage(
+                    model = "https://picsum.photos/seed/mapholder/800/1000",
+                    contentDescription = "Map Background",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                Text(
+                    text = "Explore",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    modifier = Modifier
+                        .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 16.dp)
+                        .padding(horizontal = 24.dp)
+                )
+            }
+        },
+
+        sheetContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 4.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxSize()) {
+
+                    // 3. Wrap the ENTIRE top header in our drag modifier!
+                    // This turns the tabs and categories into a massive downward drag target.
+                    Column(modifier = Modifier.fillMaxWidth().then(expandMapDragModifier)) {
+                        TopSegmentedControl(
+                            selectedIndex = selectedTabIndex,
+                            onIndexSelected = { selectedTabIndex = it }
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        if (selectedTabIndex == 0) {
+                            CategoryRow()
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
                     }
-                } else {
-                    // SAVED TAB CONTENT
-                    item {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 64.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.FavoriteBorder,
-                                contentDescription = "No Saved Places",
-                                tint = Color.LightGray,
-                                modifier = Modifier
-                                    .size(64.dp)
-                                    .padding(bottom = 16.dp)
-                            )
-                            Text("No saved destinations yet.", color = Color.Gray)
+
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        state = listState,
+                        contentPadding = PaddingValues(bottom = 120.dp)
+                    ) {
+                        if (selectedTabIndex == 0) {
+                            item {
+                                BrowseByCRegionSection()
+                            }
+                        } else {
+                            item {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 64.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Icon(Icons.Filled.FavoriteBorder, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(64.dp).padding(bottom = 16.dp))
+                                    Text("No saved destinations yet.", color = Color.Gray)
+                                }
+                            }
                         }
                     }
                 }
+
+                val isImeVisible = WindowInsets.isImeVisible
+                val bottomPadding = if (isImeVisible) 16.dp else 110.dp
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = bottomPadding)
+                        .imePadding()
+                ) {
+                    ExploreSearchBar(query = searchQuery, onQueryChange = { searchQuery = it })
+                }
             }
         }
-
-        // FLOATING BOTTOM SEARCH BAR
-        val isImeVisible = WindowInsets.isImeVisible
-        val bottomPadding = if (isImeVisible) 16.dp else 110.dp
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = bottomPadding)
-                .imePadding()
-        ) {
-            ExploreSearchBar(
-                query = searchQuery,
-                onQueryChange = { searchQuery = it }
-            )
-        }
-    }
+    )
 }
 
 @Composable
@@ -170,33 +199,25 @@ fun TopSegmentedControl(
     selectedIndex: Int,
     onIndexSelected: (Int) -> Unit
 ) {
-    Surface(
-        color = Color.Gray.copy(alpha = 0.15f),
-        shape = RoundedCornerShape(12.dp),
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp) // Gap between the buttons
     ) {
-        Row(
-            modifier = Modifier
-                .padding(4.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            TabItem(
-                text = "Discover",
-                isSelected = selectedIndex == 0,
-                onClick = { onIndexSelected(0) },
-                modifier = Modifier.weight(1f)
-            )
+        TabItem(
+            text = "Discover",
+            isSelected = selectedIndex == 0,
+            onClick = { onIndexSelected(0) },
+            modifier = Modifier.weight(1f)
+        )
 
-            TabItem(
-                text = "Saved",
-                isSelected = selectedIndex == 1,
-                onClick = { onIndexSelected(1) },
-                modifier = Modifier.weight(1f)
-            )
-        }
+        TabItem(
+            text = "Saved",
+            isSelected = selectedIndex == 1,
+            onClick = { onIndexSelected(1) },
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
@@ -210,58 +231,75 @@ private fun TabItem(
 ) {
     Surface(
         onClick = onClick,
-        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-        shape = RoundedCornerShape(8.dp),
-        shadowElevation = if (isSelected) 1.dp else 0.dp,
-        modifier = modifier
+        color = if (isSelected) Color(0xFF092A3A) else Color(0xFFE2E2E6), // Navy vs Light Gray
+        shape = RoundedCornerShape(12.dp),
+        modifier = modifier.height(48.dp)
     ) {
-        Text(
-            text = text,
-            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-            style = if (isSelected) {
-                MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
-            } else {
-                MaterialTheme.typography.labelLarge
-            },
-            modifier = Modifier.padding(vertical = 10.dp),
-            textAlign = TextAlign.Center
-        )
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+            Text(
+                text = text,
+                color = if (isSelected) Color.White else Color(0xFF092A3A),
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+            )
+        }
     }
 }
 
 @Composable
 fun CategoryRow() {
     val categories = listOf(
-        Pair("⛰️", "Nature"),
-        Pair("🏂", "Adventure"),
+        Pair("🌲", "Nature"),
+        Pair("🧗", "Adventure"),
+        Pair("🏛️", "Culture"),
+        Pair("🍴", "Food"),
+        Pair("🐾", "Wildlife"),
         Pair("🏙️", "City"),
         Pair("🏖️", "Beach")
     )
 
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(categories.size) { index ->
-            val cat = categories[index]
-            val isSelected = index == 0
+    var selectedCategory by remember { mutableStateOf("Nature") }
 
-            Surface(
-                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
-                border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant) else null,
-                shape = CircleShape
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+    Column {
+        Text(
+            text = "Browse by travel theme",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1E3A4B),
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Swapped FlowRow back to LazyRow for a single, swipeable horizontal line!
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(categories) { cat ->
+                val isSelected = selectedCategory == cat.second
+
+                Surface(
+                    shape = CircleShape,
+                    color = if (isSelected) Color(0xFFF0E6FA) else Color.White,
+                    border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0)) else null,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable { selectedCategory = cat.second }
                 ) {
-                    Text(text = cat.first)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = cat.second,
-                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.labelMedium
-                    )
+                    Row(
+                        // Slightly tighter padding to make the chips themselves more compact
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = cat.first, fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = cat.second,
+                            color = if (isSelected) Color(0xFF6B4FA9) else Color(0xFF1E3A4B),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         }
@@ -463,6 +501,99 @@ fun ExploreSearchBar(
                         modifier = Modifier.size(20.dp)
                     )
                 }
+            }
+        }
+    }
+}
+
+data class CRegion(val name: String, val color: Color)
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun BrowseByCRegionSection() {
+    val regions = listOf(
+        CRegion("Northeast", Color(0xFFF0904E)),
+        CRegion("Northwest", Color(0xFF26A8F0)),
+        CRegion("Red River Delta", Color(0xFFEE6384)),
+        CRegion("North Central Coast", Color(0xFFDA5C43)),
+        CRegion("South Central Coast", Color(0xFFA5A292)),
+        CRegion("Central Highlands", Color(0xFFBE7898)),
+        CRegion("Southeast", Color(0xFFBE7898)), // Matched your screenshot colors/layout
+        CRegion("Mekong River Delta", Color(0xFFBE7898))
+    )
+
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
+        Text(
+            text = "Browse by subregion",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1E3A4B)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 1. Replaced FlowRow with a strictly chunked loop to enforce perfect grid sizing
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            regions.chunked(2).forEach { rowRegions ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    rowRegions.forEach { region ->
+                        CRegionCard(region = region, modifier = Modifier.weight(1f))
+                    }
+
+                    // 2. If a row only has 1 item, add an invisible spacer to keep the column width locked!
+                    if (rowRegions.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CRegionCard(region: CRegion, modifier: Modifier = Modifier) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFFF4F6F9),
+        modifier = modifier
+            .height(76.dp) // 3. Increased height slightly to accommodate 3 lines of text
+            .clickable { /* TODO: Navigate to region filter */ }
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = region.name,
+                style = MaterialTheme.typography.labelMedium, // 4. Slightly smaller font prevents ugly character breaks
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1E3A4B),
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 12.dp, end = 4.dp) // 5. Tighter padding maximizes horizontal room for text
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .offset(x = 16.dp)
+                    .background(region.color, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Public,
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.25f),
+                    modifier = Modifier.size(48.dp)
+                )
             }
         }
     }

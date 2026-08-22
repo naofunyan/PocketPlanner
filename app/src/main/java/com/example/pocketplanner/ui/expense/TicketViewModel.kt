@@ -10,6 +10,7 @@ import com.example.pocketplanner.data.local.entity.TicketEntity
 import com.example.pocketplanner.data.local.entity.TripEntity
 import com.example.pocketplanner.data.repository.TicketRepository
 import com.example.pocketplanner.data.repository.TripRepository
+import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
@@ -26,6 +27,9 @@ import java.io.FileOutputStream
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.coroutines.resumeWithException
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.qrcode.QRCodeWriter
+import android.graphics.Color as AndroidColor
 
 // ---------- Filter model ----------
 
@@ -76,15 +80,62 @@ class TicketViewModel @Inject constructor(
         _selectedFilter.value = filter
     }
 
+    // ---- Search ----
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
     // Base: all tickets from the database
     private val _allTickets: Flow<List<TicketEntity>> = ticketRepository.getAllTickets()
 
-    // Derived: filtered list based on the selected filter chip
-    val filteredTickets: Flow<List<TicketEntity>> = _selectedFilter.flatMapLatest { filter ->
-        when (filter) {
-            is TicketFilter.All -> ticketRepository.getAllTickets()
-            is TicketFilter.General -> ticketRepository.getUnlinkedTickets()
-            is TicketFilter.Trip -> ticketRepository.getTicketsForTrip(filter.tripId)
+    // Derived: filtered by chip + search query
+    val filteredTickets: Flow<List<TicketEntity>> = combine(
+        _selectedFilter.flatMapLatest { filter ->
+            when (filter) {
+                is TicketFilter.All -> ticketRepository.getAllTickets()
+                is TicketFilter.General -> ticketRepository.getUnlinkedTickets()
+                is TicketFilter.Trip -> ticketRepository.getTicketsForTrip(filter.tripId)
+            }
+        },
+        _searchQuery
+    ) { tickets, query ->
+        if (query.isBlank()) {
+            tickets
+        } else {
+            val lowerQuery = query.lowercase()
+            tickets.filter { ticket ->
+                ticket.title.lowercase().contains(lowerQuery)
+                        || ticket.confirmationCode?.lowercase()?.contains(lowerQuery) == true
+                        || ticket.ocrRawText?.lowercase()?.contains(lowerQuery) == true
+                        || ticket.qrContent?.lowercase()?.contains(lowerQuery) == true
+                        || ticket.type.lowercase().contains(lowerQuery)
+                        || ticket.notes.lowercase().contains(lowerQuery)
+            }
+        }
+    }
+
+    /**
+     * Generates a Bitmap QR code from a raw text string.
+     * Used as a backup when the original ticket image QR is unreadable.
+     */
+    fun generateQrBitmap(content: String, size: Int = 512): Bitmap? {
+        return try {
+            val writer = QRCodeWriter()
+            val bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, size, size)
+            val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565)
+            for (x in 0 until size) {
+                for (y in 0 until size) {
+                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) AndroidColor.BLACK else AndroidColor.WHITE)
+                }
+            }
+            bitmap
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 
@@ -98,7 +149,8 @@ class TicketViewModel @Inject constructor(
         tripId: String?,
         confirmationCode: String?,
         notes: String,
-        ocrRawText: String?
+        ocrRawText: String?,
+        qrContent: String? = null
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             val ticketId = UUID.randomUUID().toString()
@@ -120,7 +172,8 @@ class TicketViewModel @Inject constructor(
                 thumbnailUri = thumbPath,
                 confirmationCode = confirmationCode,
                 notes = notes,
-                ocrRawText = ocrRawText
+                ocrRawText = ocrRawText,
+                qrContent = qrContent
             )
             ticketRepository.addTicket(ticket)
         }
@@ -323,6 +376,43 @@ class TicketViewModel @Inject constructor(
             OcrResult()
         } finally {
             _isScanning.value = false
+        }
+    }
+
+    // ---- QR/Barcode scanning ----
+
+    /**
+     * Scans the image for QR codes and barcodes.
+     * Returns the raw content string of the first detected code, or null if none found.
+     * Uses Bitmap decoding to handle both content:// and file:// URIs reliably.
+     */
+    suspend fun scanBarcode(imageUri: Uri): String? = withContext(Dispatchers.IO) {
+        try {
+            // Decode the URI to a Bitmap — works with both content:// and file:// URIs
+            val bitmap = appContext.contentResolver.openInputStream(imageUri)?.use { stream ->
+                BitmapFactory.decodeStream(stream)
+            } ?: return@withContext null
+
+            val image = InputImage.fromBitmap(bitmap, 0)
+            val scanner = BarcodeScanning.getClient()
+
+            val barcodes = suspendCancellableCoroutine { continuation ->
+                scanner.process(image)
+                    .addOnSuccessListener { results ->
+                        continuation.resumeWith(Result.success(results))
+                    }
+                    .addOnFailureListener { e ->
+                        continuation.resumeWithException(e)
+                    }
+            }
+
+            bitmap.recycle()
+
+            // Return the raw value of the first detected barcode/QR
+            barcodes.firstOrNull()?.rawValue
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 }

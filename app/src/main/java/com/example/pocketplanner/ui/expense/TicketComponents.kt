@@ -52,6 +52,9 @@ import java.io.File
 import java.text.SimpleDateFormat
 import com.yalantis.ucrop.UCrop
 import android.app.Activity.RESULT_OK
+import android.view.WindowManager
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.foundation.Image
 import java.util.*
 
 // ============================================================
@@ -65,9 +68,37 @@ fun TicketTabContent(
     selectedFilter: TicketFilter,
     onFilterSelected: (TicketFilter) -> Unit,
     onTicketClick: (TicketEntity) -> Unit,
-    onDeleteTicket: (TicketEntity) -> Unit
+    onDeleteTicket: (TicketEntity) -> Unit,
+    searchQuery: String = "",
+    onSearchQueryChanged: (String) -> Unit = {}
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
+        // --- Search Bar ---
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = onSearchQueryChanged,
+            placeholder = { Text("Search tickets...", color = Color.Gray) },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search", tint = Color.Gray) },
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = { onSearchQueryChanged("") }) {
+                        Icon(Icons.Filled.Close, contentDescription = "Clear", tint = Color.Gray)
+                    }
+                }
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF005b9f),
+                unfocusedBorderColor = Color.Transparent,
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 8.dp)
+        )
 
         // --- Filter Chips ---
         TicketFilterChips(
@@ -282,6 +313,18 @@ private fun TicketCard(
                     )
                 }
 
+                // QR content (if found)
+                if (!ticket.qrContent.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "QR: ${ticket.qrContent}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF607D8B),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
                 // Trip badge (if linked)
                 if (tripName != null) {
                     Spacer(modifier = Modifier.height(6.dp))
@@ -381,6 +424,7 @@ fun AddTicketForm(
     val isScanning by viewModel.isScanning.collectAsState()
     var hasScanned by remember { mutableStateOf(false) }
     var ocrRawText by remember { mutableStateOf<String?>(null) }
+    var qrContent by remember { mutableStateOf<String?>(null) }
 
     // --- Crop launcher ---
     // This receives the result AFTER the user finishes cropping
@@ -623,6 +667,14 @@ fun AddTicketForm(
                                             if (result.suggestedConfirmationCode.isNotBlank() && confirmationCode.isBlank()) {
                                                 confirmationCode = result.suggestedConfirmationCode
                                             }
+                                            if (result.suggestedDate != null) {
+                                                datePickerState.selectedDateMillis = result.suggestedDate
+                                            }
+
+                                            // Also scan for QR/barcode on the ORIGINAL image
+                                            originalImageUri?.let { origUri ->
+                                                qrContent = viewModel.scanBarcode(origUri)
+                                            }
 
                                             hasScanned = true
                                         }
@@ -856,8 +908,7 @@ fun AddTicketForm(
                 onClick = {
                     // Use originalImageUri for storage (preserves QR),
                     // OCR was run on the cropped version
-                    val storageUri = originalImageUri ?: imageUri
-                    storageUri?.let { uri ->
+                    imageUri?.let { uri ->
                         viewModel.addTicket(
                             title = title.ifBlank { "Untitled Ticket" },
                             type = selectedType,
@@ -866,7 +917,8 @@ fun AddTicketForm(
                             tripId = selectedTripId,
                             confirmationCode = confirmationCode.ifBlank { null },
                             notes = notes,
-                            ocrRawText = ocrRawText
+                            ocrRawText = ocrRawText,
+                            qrContent = qrContent
                         )
                         onSave()
                     }
@@ -973,12 +1025,32 @@ fun AddTicketForm(
 @Composable
 fun TicketImageViewer(
     ticket: TicketEntity,
+    viewModel: TicketViewModel,
     onDismiss: () -> Unit
 ) {
     // Zoom and pan state
     var scale by remember { mutableFloatStateOf(1f) }
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
+
+    // Auto-brightness: max brightness when viewing, restore on close
+    val context = LocalContext.current
+    DisposableEffect(Unit) {
+        val window = (context as? android.app.Activity)?.window
+        val originalBrightness = window?.attributes?.screenBrightness ?: -1f
+
+        // Set to max brightness
+        window?.attributes = window?.attributes?.apply {
+            screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL // = 1.0f
+        }
+
+        onDispose {
+            // Restore original brightness when the viewer is closed
+            window?.attributes = window?.attributes?.apply {
+                screenBrightness = originalBrightness
+            }
+        }
+    }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -1004,9 +1076,20 @@ fun TicketImageViewer(
                     )
                     .pointerInput(Unit) {
                         detectTransformGestures { _, pan, zoom, _ ->
-                            scale = (scale * zoom).coerceIn(0.5f, 5f)
-                            offsetX += pan.x
-                            offsetY += pan.y
+                            scale = (scale * zoom).coerceIn(1f, 5f)
+
+                            if (scale > 1f) {
+                                // Only allow panning when zoomed in
+                                // Constrain so the image can't fly off screen
+                                val maxOffsetX = (scale - 1f) * size.width / 2f
+                                val maxOffsetY = (scale - 1f) * size.height / 2f
+                                offsetX = (offsetX + pan.x).coerceIn(-maxOffsetX, maxOffsetX)
+                                offsetY = (offsetY + pan.y).coerceIn(-maxOffsetY, maxOffsetY)
+                            } else {
+                                // Reset position when back to 1x
+                                offsetX = 0f
+                                offsetY = 0f
+                            }
                         }
                     }
             )
@@ -1028,14 +1111,19 @@ fun TicketImageViewer(
                 )
             }
 
-            // Ticket info at the bottom
+            // Ticket info + QR backup at the bottom
+            var showBackupQr by remember { mutableStateOf(false) }
+
             Surface(
                 color = Color.Black.copy(alpha = 0.6f),
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
             ) {
-                Column(modifier = Modifier.padding(24.dp)) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Text(
                         text = ticket.title,
                         style = MaterialTheme.typography.titleMedium,
@@ -1048,6 +1136,50 @@ fun TicketImageViewer(
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White.copy(alpha = 0.8f)
                         )
+                    }
+
+                    // QR backup section
+                    if (!ticket.qrContent.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        if (showBackupQr) {
+                            // Show the regenerated QR code
+                            val qrBitmap = remember(ticket.qrContent) {
+                                viewModel.generateQrBitmap(ticket.qrContent!!)
+                            }
+                            if (qrBitmap != null) {
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = Color.White,
+                                    modifier = Modifier.padding(8.dp)
+                                ) {
+                                    Image(
+                                        bitmap = qrBitmap.asImageBitmap(),
+                                        contentDescription = "Backup QR Code",
+                                        modifier = Modifier
+                                            .size(200.dp)
+                                            .padding(8.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            TextButton(onClick = { showBackupQr = false }) {
+                                Text("Hide QR", color = Color.White)
+                            }
+                        } else {
+                            OutlinedButton(
+                                onClick = { showBackupQr = true },
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = Color.White
+                                ),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(Icons.Filled.QrCode, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Show Backup QR")
+                            }
+                        }
                     }
                 }
             }
