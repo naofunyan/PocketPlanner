@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "tickets")
 data class TicketEntity(
     @PrimaryKey val id: String,            // UUID
+    val userId: String = "", // ← ADD THIS: Firebase Auth UID for cloud sync
     val tripId: String? = null,            // Nullable — null = standalone, non-null = linked to a trip
     val title: String,                     // e.g. "Vietnam Airlines VN123"
     val type: String,                      // Flight, Hotel, Event, Train, Bus, Other

@@ -32,4 +32,12 @@ interface TicketDao {
 
     @Delete
     suspend fun deleteTicket(ticket: TicketEntity)
+
+    // Get unsynced tickets for pushing to cloud
+    @Query("SELECT * FROM tickets WHERE isSyncedWithCloud = 0 AND userId = :userId")
+    suspend fun getUnsyncedTickets(userId: String): List<TicketEntity>
+
+    // Direct query (not Flow) for sync checks
+    @Query("SELECT * FROM tickets WHERE id = :id LIMIT 1")
+    suspend fun getTicketByIdDirect(id: String): TicketEntity?
 }

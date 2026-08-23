@@ -168,15 +168,14 @@ fun GlobalWalletScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // --- TAB CONTENT ---
-            if (allTrips.isEmpty()) {
-                EmptyWalletState()
-            } else {
-                // The new Swipeable Pager!
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.fillMaxSize()
-                ) { page ->
-                    if (page == 0) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                if (page == 0) {
+                    if (allTrips.isEmpty()) {
+                        EmptyWalletState()  // Only Expense tab shows this
+                    } else {
                         ExpenseTabContent(
                             budgetState = budgetState,
                             expenses = expenses,
@@ -187,18 +186,19 @@ fun GlobalWalletScreen(
                             },
                             onDeleteClick = { expense -> viewModel.deleteExpense(expense) }
                         )
-                    } else {
-                        TicketTabContent(
-                            tickets = filteredTickets,
-                            allTrips = ticketTrips,
-                            selectedFilter = ticketFilter,
-                            onFilterSelected = { filter -> ticketViewModel.setFilter(filter) },
-                            onTicketClick = { ticket -> viewingTicket = ticket },
-                            onDeleteTicket = { ticket -> ticketViewModel.deleteTicket(ticket) },
-                            searchQuery = ticketSearchQuery,
-                            onSearchQueryChanged = { ticketViewModel.setSearchQuery(it) }
-                        )
                     }
+                } else {
+                    // Ticket tab — always accessible regardless of trips
+                    TicketTabContent(
+                        tickets = filteredTickets,
+                        allTrips = ticketTrips,
+                        selectedFilter = ticketFilter,
+                        onFilterSelected = { filter -> ticketViewModel.setFilter(filter) },
+                        onTicketClick = { ticket -> viewingTicket = ticket },
+                        onDeleteTicket = { ticket -> ticketViewModel.deleteTicket(ticket) },
+                        searchQuery = ticketSearchQuery,
+                        onSearchQueryChanged = { ticketViewModel.setSearchQuery(it) }
+                    )
                 }
             }
         }

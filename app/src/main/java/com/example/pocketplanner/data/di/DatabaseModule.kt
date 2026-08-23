@@ -8,6 +8,7 @@ import com.example.pocketplanner.data.local.dao.ExpenseDao
 import com.example.pocketplanner.data.local.dao.PlaceDao
 import com.example.pocketplanner.data.local.dao.TripDao
 import com.example.pocketplanner.data.local.dao.SavedPlaceDao
+import com.google.firebase.storage.FirebaseStorage
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

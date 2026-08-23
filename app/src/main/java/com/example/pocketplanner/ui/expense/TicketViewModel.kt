@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pocketplanner.data.local.entity.TicketEntity
@@ -30,6 +31,12 @@ import kotlin.coroutines.resumeWithException
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import android.graphics.Color as AndroidColor
+import com.example.pocketplanner.BuildConfig
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
 
 // ---------- Filter model ----------
 
@@ -39,13 +46,57 @@ sealed class TicketFilter {
     data class Trip(val tripId: String, val tripName: String) : TicketFilter()
 }
 
+// ---------- Ticket status model ----------
+
+sealed class TicketStatus(val sortOrder: Int) {
+    object Today : TicketStatus(0)
+    object Tomorrow : TicketStatus(1)
+    data class Upcoming(val daysUntil: Int) : TicketStatus(2)
+    data class Later(val displayDate: String) : TicketStatus(3)
+    object Expired : TicketStatus(4)
+
+    companion object {
+        fun fromDateTime(dateTimeMillis: Long): TicketStatus {
+            val now = java.util.Calendar.getInstance()
+            val target = java.util.Calendar.getInstance().apply { timeInMillis = dateTimeMillis }
+
+            // Zero out time for day comparison
+            val todayStart = now.clone() as java.util.Calendar
+            todayStart.set(java.util.Calendar.HOUR_OF_DAY, 0)
+            todayStart.set(java.util.Calendar.MINUTE, 0)
+            todayStart.set(java.util.Calendar.SECOND, 0)
+            todayStart.set(java.util.Calendar.MILLISECOND, 0)
+
+            val targetStart = target.clone() as java.util.Calendar
+            targetStart.set(java.util.Calendar.HOUR_OF_DAY, 0)
+            targetStart.set(java.util.Calendar.MINUTE, 0)
+            targetStart.set(java.util.Calendar.SECOND, 0)
+            targetStart.set(java.util.Calendar.MILLISECOND, 0)
+
+            val dayDiff = ((targetStart.timeInMillis - todayStart.timeInMillis) / 86400000L).toInt()
+
+            return when {
+                dayDiff < 0 -> Expired
+                dayDiff == 0 -> Today
+                dayDiff == 1 -> Tomorrow
+                dayDiff in 2..30 -> Upcoming(dayDiff)
+                else -> {
+                    val formatter = java.text.SimpleDateFormat("MMM dd", java.util.Locale.getDefault())
+                    Later(formatter.format(java.util.Date(dateTimeMillis)))
+                }
+            }
+        }
+    }
+}
+
 // ---------- OCR result model ----------
 
 data class OcrResult(
     val rawText: String = "",
     val suggestedTitle: String = "",
     val suggestedConfirmationCode: String = "",
-    val suggestedDate: Long? = null
+    val suggestedDate: Long? = null,
+    val suggestedType: String = ""
 )
 
 // ---------- ViewModel ----------
@@ -92,7 +143,7 @@ class TicketViewModel @Inject constructor(
     // Base: all tickets from the database
     private val _allTickets: Flow<List<TicketEntity>> = ticketRepository.getAllTickets()
 
-    // Derived: filtered by chip + search query
+    // Derived: filtered by chip + search query, sorted by status (active first)
     val filteredTickets: Flow<List<TicketEntity>> = combine(
         _selectedFilter.flatMapLatest { filter ->
             when (filter) {
@@ -103,7 +154,7 @@ class TicketViewModel @Inject constructor(
         },
         _searchQuery
     ) { tickets, query ->
-        if (query.isBlank()) {
+        val filtered = if (query.isBlank()) {
             tickets
         } else {
             val lowerQuery = query.lowercase()
@@ -116,6 +167,14 @@ class TicketViewModel @Inject constructor(
                         || ticket.notes.lowercase().contains(lowerQuery)
             }
         }
+
+        // Sort: Today → Tomorrow → Upcoming → Later → Expired
+        // Within same status, sort by dateTime ascending (soonest first)
+        filtered.sortedWith(compareBy<TicketEntity> {
+            TicketStatus.fromDateTime(it.dateTime).sortOrder
+        }.thenBy {
+            it.dateTime
+        })
     }
 
     /**
@@ -164,6 +223,7 @@ class TicketViewModel @Inject constructor(
             // 3. Create and insert the entity
             val ticket = TicketEntity(
                 id = ticketId,
+                userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: "",
                 tripId = tripId,
                 title = title,
                 type = type,
@@ -278,104 +338,199 @@ class TicketViewModel @Inject constructor(
 
             val rawText = visionText.text
 
-            // --- TITLE: Find the largest text block by bounding box area ---
-            // This works because event names / flight info are usually the
-            // biggest, most prominent text on any ticket.
-            val suggestedTitle = visionText.textBlocks
-                .filter { block ->
-                    val text = block.text.trim()
-                    // Skip junk: pure numbers, short strings, time patterns
-                    text.length > 3
-                            && !text.matches(Regex("^\\d{1,2}[.:]+\\d{2}.*"))  // skip "18:35", "1:00 PM"
-                            && !text.matches(Regex("^\\d+$"))                   // skip pure numbers
-                            && !text.matches(Regex("^[\\d\\s%°.:]+$"))          // skip status bar junk
-                }
-                .maxByOrNull { block ->
-                    // Pick the block with the largest bounding box area
-                    val box = block.boundingBox
-                    if (box != null) box.width() * box.height() else 0
-                }
-                ?.text
-                ?.lines()
-                // Take up to the first 2 lines (titles can wrap)
-                ?.take(2)
-                ?.joinToString(" ")
-                ?.trim()
-                ?: ""
+            // --- TRY AI FIRST, FALL BACK TO REGEX ---
+            val aiResult = categorizeWithAI(rawText)
 
-            // --- CONFIRMATION CODE: Look near label keywords ---
-            // Scan for text blocks near "ORDER NUMBER", "BOOKING", "CONFIRMATION", etc.
-            val labelKeywords = listOf("order number", "booking", "confirmation", "conf", "reference", "ticket")
-            val allBlockTexts = visionText.textBlocks.map { it.text }
+            if (aiResult != null && aiResult.suggestedTitle.isNotBlank()) {
+                // AI succeeded — use its results
+                aiResult
+            } else {
+                // AI failed (offline/error) — use regex heuristics as fallback
 
-            var suggestedConfCode = ""
-            for (block in visionText.textBlocks) {
-                val blockLower = block.text.lowercase()
-                if (labelKeywords.any { keyword -> blockLower.contains(keyword) }) {
-                    // Found a label block — extract the alphanumeric code from it
-                    val codeRegex = Regex("[A-Z0-9]{5,15}")
-                    val match = codeRegex.find(block.text.uppercase())
-                    if (match != null) {
-                        suggestedConfCode = match.value
-                        break
+                // --- TITLE: Find the largest text block by bounding box area ---
+                val suggestedTitle = visionText.textBlocks
+                    .filter { block ->
+                        val text = block.text.trim()
+                        text.length > 3
+                                && !text.matches(Regex("^\\d{1,2}[.:]+\\d{2}.*"))
+                                && !text.matches(Regex("^\\d+$"))
+                                && !text.matches(Regex("^[\\d\\s%°.:]+$"))
                     }
-                }
-            }
-            // Fallback: if no label found, search all blocks for a standalone code
-            if (suggestedConfCode.isBlank()) {
-                val codeRegex = Regex("[A-Z]{2,5}\\d{4,10}|[A-Z0-9]{6,12}")
+                    .maxByOrNull { block ->
+                        val box = block.boundingBox
+                        if (box != null) box.width() * box.height() else 0
+                    }
+                    ?.text
+                    ?.lines()
+                    ?.take(2)
+                    ?.joinToString(" ")
+                    ?.trim()
+                    ?: ""
+
+                // --- CONFIRMATION CODE: Look near label keywords ---
+                val labelKeywords = listOf("order number", "booking", "confirmation", "conf", "reference", "ticket")
+
+                var suggestedConfCode = ""
                 for (block in visionText.textBlocks) {
-                    val match = codeRegex.find(block.text.uppercase())
-                    if (match != null) {
-                        suggestedConfCode = match.value
-                        break
+                    val blockLower = block.text.lowercase()
+                    if (labelKeywords.any { keyword -> blockLower.contains(keyword) }) {
+                        val codeRegex = Regex("[A-Z0-9]{5,15}")
+                        val match = codeRegex.find(block.text.uppercase())
+                        if (match != null) {
+                            suggestedConfCode = match.value
+                            break
+                        }
                     }
                 }
-            }
-
-            // --- DATE: Try to parse common date patterns ---
-            val datePatterns = listOf(
-                // "APR 18, 2026" or "Aug 25, 2026"
-                Regex("([A-Za-z]{3,9})\\s+(\\d{1,2}),?\\s+(\\d{4})") to "MMM dd yyyy",
-                // "18 APR 2026" or "25 Aug 2026"
-                Regex("(\\d{1,2})\\s+([A-Za-z]{3,9})\\s+(\\d{4})") to "dd MMM yyyy",
-                // "2026-04-18" or "2026/04/18"
-                Regex("(\\d{4})[/\\-](\\d{1,2})[/\\-](\\d{1,2})") to "yyyy-MM-dd",
-                // "18/04/2026" or "18-04-2026"
-                Regex("(\\d{1,2})[/\\-](\\d{1,2})[/\\-](\\d{4})") to "dd/MM/yyyy"
-            )
-
-            var suggestedDate: Long? = null
-            for ((regex, pattern) in datePatterns) {
-                val match = regex.find(rawText)
-                if (match != null) {
-                    try {
-                        val formatter = java.text.SimpleDateFormat(
-                            pattern,
-                            java.util.Locale.ENGLISH
-                        )
-                        suggestedDate = formatter.parse(
-                            match.value.replace(",", "").replace("/", "-").let { raw ->
-                                // Normalize for the formatter
-                                if (pattern == "dd/MM/yyyy") raw.replace("-", "/") else raw
-                            }
-                        )?.time
-                        if (suggestedDate != null) break
-                    } catch (_: Exception) { }
+                if (suggestedConfCode.isBlank()) {
+                    val codeRegex = Regex("[A-Z]{2,5}\\d{4,10}|[A-Z0-9]{6,12}")
+                    for (block in visionText.textBlocks) {
+                        val match = codeRegex.find(block.text.uppercase())
+                        if (match != null) {
+                            suggestedConfCode = match.value
+                            break
+                        }
+                    }
                 }
-            }
 
-            OcrResult(
-                rawText = rawText,
-                suggestedTitle = suggestedTitle,
-                suggestedConfirmationCode = suggestedConfCode,
-                suggestedDate = suggestedDate
-            )
+                // --- DATE: Try to parse common date patterns ---
+                val datePatterns = listOf(
+                    Regex("([A-Za-z]{3,9})\\s+(\\d{1,2}),?\\s+(\\d{4})") to "MMM dd yyyy",
+                    Regex("(\\d{1,2})\\s+([A-Za-z]{3,9})\\s+(\\d{4})") to "dd MMM yyyy",
+                    Regex("(\\d{4})[/\\-](\\d{1,2})[/\\-](\\d{1,2})") to "yyyy-MM-dd",
+                    Regex("(\\d{1,2})[/\\-](\\d{1,2})[/\\-](\\d{4})") to "dd/MM/yyyy"
+                )
+
+                var suggestedDate: Long? = null
+                for ((regex, pattern) in datePatterns) {
+                    val match = regex.find(rawText)
+                    if (match != null) {
+                        try {
+                            val formatter = java.text.SimpleDateFormat(pattern, java.util.Locale.ENGLISH)
+                            suggestedDate = formatter.parse(
+                                match.value.replace(",", "").replace("/", "-").let { raw ->
+                                    if (pattern == "dd/MM/yyyy") raw.replace("-", "/") else raw
+                                }
+                            )?.time
+                            if (suggestedDate != null) break
+                        } catch (_: Exception) { }
+                    }
+                }
+
+                OcrResult(
+                    rawText = rawText,
+                    suggestedTitle = suggestedTitle,
+                    suggestedConfirmationCode = suggestedConfCode,
+                    suggestedDate = suggestedDate
+                )
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             OcrResult()
         } finally {
             _isScanning.value = false
+        }
+    }
+
+    // ---- AI Categorization ----
+
+    private val vertexApiKey = BuildConfig.VERTEX_API_KEY
+    private val aiEndpoint = "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-3.7-flash:generateContent?key=$vertexApiKey"
+
+    /**
+     * Sends OCR text to Gemini and gets structured ticket data back.
+     * Falls back to null if the API call fails (offline, quota, etc.)
+     */
+    private suspend fun categorizeWithAI(ocrText: String): OcrResult? = withContext(Dispatchers.IO) {
+        if (ocrText.isBlank() || vertexApiKey.isBlank()) return@withContext null
+
+        try {
+            val prompt = """
+You are a ticket data extractor. Analyze the following OCR text from a travel/event ticket and extract structured information.
+
+OCR Text:
+\"\"\"
+$ocrText
+\"\"\"
+
+Respond ONLY with a JSON object (no markdown, no code fences, no explanation):
+{
+  "title": "the event name, flight info, or booking name (be descriptive)",
+  "type": "one of: Flight, Hotel, Event, Train, Bus, Other",
+  "date": "YYYY-MM-DD format or null if not found",
+  "confirmationCode": "booking/order/confirmation number or null if not found"
+}
+""".trimIndent()
+
+            val requestBody = JSONObject().apply {
+                put("contents", JSONArray().apply {
+                    put(JSONObject().apply {
+                        put("role", "user")
+                        put("parts", JSONArray().apply {
+                            put(JSONObject().apply {
+                                put("text", prompt)
+                            })
+                        })
+                    })
+                })
+            }
+
+            val url = URL(aiEndpoint)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.doOutput = true
+            connection.connectTimeout = 15000
+            connection.readTimeout = 30000
+
+            OutputStreamWriter(connection.outputStream).use { it.write(requestBody.toString()) }
+
+            if (connection.responseCode == 200) {
+                val responseString = connection.inputStream.bufferedReader().use { it.readText() }
+                val jsonResponse = JSONObject(responseString)
+                val aiText = jsonResponse
+                    .getJSONArray("candidates")
+                    .getJSONObject(0)
+                    .getJSONObject("content")
+                    .getJSONArray("parts")
+                    .getJSONObject(0)
+                    .getString("text")
+                    .trim()
+
+                // Clean up: remove markdown code fences if Gemini adds them
+                val cleanJson = aiText
+                    .removePrefix("```json")
+                    .removePrefix("```")
+                    .removeSuffix("```")
+                    .trim()
+
+                val parsed = JSONObject(cleanJson)
+
+                // Parse the date
+                var suggestedDate: Long? = null
+                val dateStr = parsed.optString("date", "")
+                if (dateStr.isNotBlank() && dateStr != "null") {
+                    try {
+                        val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.ENGLISH)
+                        suggestedDate = formatter.parse(dateStr)?.time
+                    } catch (_: Exception) { }
+                }
+
+                OcrResult(
+                    rawText = ocrText,
+                    suggestedTitle = parsed.optString("title", ""),
+                    suggestedConfirmationCode = parsed.optString("confirmationCode", "").let {
+                        if (it == "null") "" else it
+                    },
+                    suggestedDate = suggestedDate,
+                    suggestedType = parsed.optString("type", "")   // ← ADD THIS
+                )
+            } else {
+                null // API error — fall back to regex
+            }
+        } catch (e: Exception) {
+            Log.e("TicketVM", "AI categorization failed: ${e.message}")
+            null // Network error — fall back to regex
         }
     }
 

@@ -302,6 +302,29 @@ private fun TicketCard(
                     color = Color.Gray
                 )
 
+                // Status badge
+                Spacer(modifier = Modifier.height(4.dp))
+                val status = TicketStatus.fromDateTime(ticket.dateTime)
+                val (statusText, statusColor, statusBgColor) = when (status) {
+                    is TicketStatus.Today -> Triple("Today", Color.White, Color(0xFF2196F3))
+                    is TicketStatus.Tomorrow -> Triple("Tomorrow", Color.White, Color(0xFFFF9800))
+                    is TicketStatus.Upcoming -> Triple("In ${status.daysUntil} days", Color(0xFF2E7D32), Color(0xFFE8F5E9))
+                    is TicketStatus.Later -> Triple(status.displayDate, Color(0xFF616161), Color(0xFFF5F5F5))
+                    is TicketStatus.Expired -> Triple("Expired", Color.White, Color(0xFFE53935))
+                }
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = statusBgColor
+                ) {
+                    Text(
+                        text = statusText,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = statusColor,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
+
                 // Confirmation code (if present)
                 if (!ticket.confirmationCode.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
@@ -660,12 +683,18 @@ fun AddTicketForm(
                                             val result = viewModel.runOcr(uri)
                                             ocrRawText = result.rawText
 
-                                            // Auto-fill fields with OCR results
+                                            // Auto-fill fields with OCR/AI results
                                             if (result.suggestedTitle.isNotBlank() && title.isBlank()) {
                                                 title = result.suggestedTitle
                                             }
                                             if (result.suggestedConfirmationCode.isNotBlank() && confirmationCode.isBlank()) {
                                                 confirmationCode = result.suggestedConfirmationCode
+                                            }
+                                            if (result.suggestedType.isNotBlank()) {
+                                                val validTypes = listOf("Flight", "Hotel", "Event", "Train", "Bus", "Other")
+                                                if (result.suggestedType in validTypes) {
+                                                    selectedType = result.suggestedType
+                                                }
                                             }
                                             if (result.suggestedDate != null) {
                                                 datePickerState.selectedDateMillis = result.suggestedDate

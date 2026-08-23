@@ -18,13 +18,11 @@ class SyncWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            // For the hackathon scope, we just pull remote changes to ensure we have the latest.
-            // Pushing local changes requires a more complex diffing mechanism.
             syncManager.pullTripsFromCloud()
+            syncManager.pullTicketsFromCloud()  // ← ADD THIS
             Result.success()
         } catch (e: Exception) {
             e.printStackTrace()
-            // If it fails (e.g., connection drops mid-sync), tell WorkManager to retry later
             Result.retry()
         }
     }
