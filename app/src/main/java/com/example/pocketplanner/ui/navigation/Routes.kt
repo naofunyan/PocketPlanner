@@ -61,4 +61,13 @@ data class AllPlacesRoute(val destinationId: String)
 data class PlaceDetailsRoute(val placeName: String)
 
 @Serializable
+object SettingsRoute
+
+@Serializable
+object FallDetectionSettingsRoute
+
+@Serializable
+object EmergencySharingRoute
+
+@Serializable
 object ProfileRoute

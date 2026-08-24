@@ -80,6 +80,10 @@ android {
             )
         }
     }
+
+    androidResources {
+        noCompress.add("tflite")
+    }
 }
 
 dependencies {
@@ -173,4 +177,11 @@ dependencies {
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
     // QR Code generation
     implementation("com.google.zxing:core:3.5.3")
+
+    // TensorFlow Lite Core and Support libraries
+    implementation("org.tensorflow:tensorflow-lite:2.14.0")
+    implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
+
+    implementation("com.google.android.gms:play-services-location:21.2.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 }

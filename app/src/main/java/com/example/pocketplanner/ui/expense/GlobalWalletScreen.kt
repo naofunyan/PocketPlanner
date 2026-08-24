@@ -44,14 +44,12 @@ fun GlobalWalletScreen(
     viewModel: ExpenseViewModel = hiltViewModel(),
     ticketViewModel: TicketViewModel = hiltViewModel()
 ) {
-    // 1. Initialize ViewModel for Global Mode
     LaunchedEffect(Unit) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "guest"
-        viewModel.initialize("", userId) // Pass empty string to trigger Global Mode
+        viewModel.initialize("", userId)
         ticketViewModel.loadTrips(userId)
     }
 
-    // 2. State Observation
     val allTrips by viewModel.allTrips.collectAsState()
     val selectedTripId by viewModel.selectedTripId.collectAsState()
     val trip by viewModel.currentTrip.collectAsState(initial = null)
@@ -60,16 +58,14 @@ fun GlobalWalletScreen(
     val budgetState by viewModel.budgetOverview.collectAsState(initial = BudgetState(0.0, 0.0, 0.0))
     val exchangeRates by viewModel.exchangeRates.collectAsState(initial = emptyMap())
 
-    // Ticket state
     val ticketTrips by ticketViewModel.allTrips.collectAsState()
     val filteredTickets by ticketViewModel.filteredTickets.collectAsState(initial = emptyList())
     val ticketFilter by ticketViewModel.selectedFilter.collectAsState()
     val ticketSearchQuery by ticketViewModel.searchQuery.collectAsState()
 
-    // UI States
-    val pagerState = rememberPagerState(pageCount = { 2 }) // We have 2 tabs!
-    val selectedTabIndex = pagerState.currentPage // Reads the swipe position automatically
-    val coroutineScope = rememberCoroutineScope() // Needed to animate button taps
+    val pagerState = rememberPagerState(pageCount = { 2 })
+    val selectedTabIndex = pagerState.currentPage
+    val coroutineScope = rememberCoroutineScope()
 
     var showTripSelector by remember { mutableStateOf(false) }
     var showAddSheet by remember { mutableStateOf(false) }
@@ -81,19 +77,18 @@ fun GlobalWalletScreen(
     var viewingTicket by remember { mutableStateOf<com.example.pocketplanner.data.local.entity.TicketEntity?>(null) }
 
     Scaffold(
-        containerColor = Color(0xFFFAFAFA),
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
-            // Show FAB for Expense tab (when trip selected) or Ticket tab (always)
             if ((selectedTripId != null && selectedTabIndex == 0) || selectedTabIndex == 1) {
                 FloatingActionButton(
                     onClick = {
                         if (selectedTabIndex == 0) showAddSheet = true
                         else showAddTicketSheet = true
                     },
-                    containerColor = Color(0xFF005b9f),
-                    contentColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.primary, // <-- DYNAMIC
+                    contentColor = MaterialTheme.colorScheme.onPrimary, // <-- DYNAMIC
                     shape = CircleShape,
-                    modifier = Modifier.padding(bottom = 92.dp) // Lifted to clear main navbar
+                    modifier = Modifier.padding(bottom = 92.dp)
                 ) {
                     Icon(Icons.Filled.Add, contentDescription = if (selectedTabIndex == 0) "Add Expense" else "Add Ticket")
                 }
@@ -105,10 +100,9 @@ fun GlobalWalletScreen(
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding() + 24.dp)
         ) {
-            // --- HEADER: CONTEXT-AWARE ---
+            // --- HEADER ---
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 if (selectedTabIndex == 0) {
-                    // EXPENSE TAB: Trip selector
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -122,11 +116,11 @@ fun GlobalWalletScreen(
                             } ?: if (allTrips.isEmpty()) "No Trips Available" else "Loading...",
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E1E)
+                            color = MaterialTheme.colorScheme.onBackground, // <-- DYNAMIC
                         )
                         if (allTrips.isNotEmpty()) {
                             Spacer(modifier = Modifier.width(4.dp))
-                            Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select Trip", tint = Color.Gray)
+                            Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select Trip", tint = MaterialTheme.colorScheme.onSurfaceVariant) // <-- DYNAMIC
                         }
                     }
 
@@ -137,16 +131,15 @@ fun GlobalWalletScreen(
                         Text(
                             text = "$startStr - $endStr • $days Days",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant // <-- DYNAMIC
                         )
                     }
                 } else {
-                    // TICKET TAB: Static global header
                     Text(
                         text = "My Tickets",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E1E),
+                        color = MaterialTheme.colorScheme.onBackground, // <-- DYNAMIC
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
                 }
@@ -156,9 +149,8 @@ fun GlobalWalletScreen(
 
             // --- SEGMENTED CONTROL ---
             WalletSegmentedControl(
-                selectedIndex = selectedTabIndex, // Automatically matches the swipe position
+                selectedIndex = selectedTabIndex,
                 onIndexSelected = { index ->
-                    // Animate to the selected page when the button is tapped!
                     coroutineScope.launch {
                         pagerState.animateScrollToPage(index)
                     }
@@ -174,7 +166,7 @@ fun GlobalWalletScreen(
             ) { page ->
                 if (page == 0) {
                     if (allTrips.isEmpty()) {
-                        EmptyWalletState()  // Only Expense tab shows this
+                        EmptyWalletState()
                     } else {
                         ExpenseTabContent(
                             budgetState = budgetState,
@@ -188,7 +180,6 @@ fun GlobalWalletScreen(
                         )
                     }
                 } else {
-                    // Ticket tab — always accessible regardless of trips
                     TicketTabContent(
                         tickets = filteredTickets,
                         allTrips = ticketTrips,
@@ -206,10 +197,10 @@ fun GlobalWalletScreen(
 
     // --- BOTTOM SHEETS ---
     if (showTripSelector) {
-        ModalBottomSheet(onDismissRequest = { showTripSelector = false }, containerColor = Color.White) {
+        ModalBottomSheet(onDismissRequest = { showTripSelector = false }, containerColor = MaterialTheme.colorScheme.surface) { // <-- DYNAMIC
             LazyColumn(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
                 item {
-                    Text("Select a Trip", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text("Select a Trip", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) // <-- DYNAMIC
                     Spacer(modifier = Modifier.height(16.dp))
                 }
                 items(allTrips) { t ->
@@ -225,12 +216,13 @@ fun GlobalWalletScreen(
                     ) {
                         Text(
                             text = if (t.name.isNotBlank()) t.name else "Trip to ${t.destination}",
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface // <-- DYNAMIC
                         )
 
                         if (t.id == selectedTripId) {
                             Spacer(modifier = Modifier.weight(1f))
-                            Icon(Icons.Filled.Check, contentDescription = "Selected", tint = Color(0xFF005b9f))
+                            Icon(Icons.Filled.Check, contentDescription = "Selected", tint = MaterialTheme.colorScheme.primary) // <-- DYNAMIC
                         }
                     }
                 }
@@ -245,9 +237,9 @@ fun GlobalWalletScreen(
         ModalBottomSheet(
             onDismissRequest = { showAddSheet = false },
             sheetState = sheetState,
-            containerColor = Color.White,
-            modifier = Modifier.fillMaxHeight(), // 1. Force it to stretch all the way to the top!
-            dragHandle = null // 2. Hides the default grey drag bar since you have a custom back arrow
+            containerColor = MaterialTheme.colorScheme.surface, // <-- DYNAMIC
+            modifier = Modifier.fillMaxHeight(),
+            dragHandle = null
         ) {
             AddExpenseForm(
                 exchangeRates = exchangeRates,
@@ -259,14 +251,13 @@ fun GlobalWalletScreen(
         }
     }
 
-    // --- TICKET BOTTOM SHEET ---
     if (showAddTicketSheet) {
         val ticketSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
         ModalBottomSheet(
             onDismissRequest = { showAddTicketSheet = false },
             sheetState = ticketSheetState,
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface, // <-- DYNAMIC
             modifier = Modifier.fillMaxHeight(),
             dragHandle = null
         ) {
@@ -279,7 +270,6 @@ fun GlobalWalletScreen(
         }
     }
 
-    // --- TICKET IMAGE VIEWER ---
     viewingTicket?.let { ticket ->
         TicketImageViewer(
             ticket = ticket,
@@ -294,7 +284,7 @@ fun GlobalWalletScreen(
 @Composable
 fun WalletSegmentedControl(selectedIndex: Int, onIndexSelected: (Int) -> Unit) {
     Surface(
-        color = Color.Gray.copy(alpha = 0.15f),
+        color = MaterialTheme.colorScheme.surfaceVariant, // <-- FIXED: Was incorrectly onSurface
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
     ) {
@@ -309,14 +299,14 @@ fun WalletSegmentedControl(selectedIndex: Int, onIndexSelected: (Int) -> Unit) {
 private fun WalletTabItem(text: String, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
         onClick = onClick,
-        color = if (isSelected) Color(0xFF005b9f) else Color.Transparent,
+        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, // <-- DYNAMIC
         shape = RoundedCornerShape(8.dp),
         shadowElevation = if (isSelected) 1.dp else 0.dp,
         modifier = modifier
     ) {
         Text(
             text = text,
-            color = if (isSelected) Color.White else Color.DarkGray,
+            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant, // <-- DYNAMIC
             style = MaterialTheme.typography.labelLarge.copy(fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal),
             modifier = Modifier.padding(vertical = 10.dp),
             textAlign = TextAlign.Center
@@ -343,7 +333,6 @@ fun ExpenseTabContent(
             CategorySummaryRow(expenses = expenses, currencyFormatter = currencyFormatter)
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Replaced the old scattered list with our new unified widget!
             TransactionListWidget(
                 expenses = expenses,
                 currencyFormatter = currencyFormatter,
@@ -361,8 +350,8 @@ fun EmptyWalletState() {
         modifier = Modifier.fillMaxSize().padding(top = 100.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(Icons.Filled.Wallet, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
+        Icon(Icons.Filled.Wallet, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(64.dp)) // <-- DYNAMIC
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Create a trip to start tracking expenses.", color = Color.Gray)
+        Text("Create a trip to start tracking expenses.", color = MaterialTheme.colorScheme.onSurfaceVariant) // <-- DYNAMIC
     }
 }

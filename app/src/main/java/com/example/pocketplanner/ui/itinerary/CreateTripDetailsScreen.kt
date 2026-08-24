@@ -66,41 +66,41 @@ fun CreateTripDetailsScreen(
 ) {
     var tripName by remember(existingTripData) { mutableStateOf(existingTripData?.name ?: "") }
     var isTrackerEnabled by remember(existingTripData) { mutableStateOf(existingTripData?.isTrackerEnabled ?: true) }
-    
+
     var showStartDatePicker by remember { mutableStateOf(false) }
     var showStartTimePicker by remember { mutableStateOf(false) }
-    
+
     var showEndDatePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
-    
+
     val startDatePickerState = rememberDatePickerState(initialSelectedDateMillis = existingTripData?.startDate)
-    
+
     val startCal = existingTripData?.startDate?.let { java.util.Calendar.getInstance().apply { timeInMillis = it } }
     val startTimePickerState = rememberTimePickerState(
-        initialHour = startCal?.get(java.util.Calendar.HOUR_OF_DAY) ?: 9, 
+        initialHour = startCal?.get(java.util.Calendar.HOUR_OF_DAY) ?: 9,
         initialMinute = startCal?.get(java.util.Calendar.MINUTE) ?: 0
     )
-    
+
     val endDatePickerState = rememberDatePickerState(initialSelectedDateMillis = existingTripData?.endDate)
-    
+
     val endCal = existingTripData?.endDate?.let { java.util.Calendar.getInstance().apply { timeInMillis = it } }
     val endTimePickerState = rememberTimePickerState(
-        initialHour = endCal?.get(java.util.Calendar.HOUR_OF_DAY) ?: 17, 
+        initialHour = endCal?.get(java.util.Calendar.HOUR_OF_DAY) ?: 17,
         initialMinute = endCal?.get(java.util.Calendar.MINUTE) ?: 0
     )
-    
+
     var customImageUri by remember { mutableStateOf<Uri?>(null) }
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
-        onResult = { uri -> 
+        onResult = { uri ->
             if (uri != null) {
                 customImageUri = uri
             }
         }
     )
-    
+
     var selectedCurrency by remember(existingTripData) { mutableStateOf("USD") }
-    var budgetAmount by remember(existingTripData, exchangeRates) { 
+    var budgetAmount by remember(existingTripData, exchangeRates) {
         mutableStateOf(
             if (existingTripData != null) {
                 if (exchangeRates.isNotEmpty()) {
@@ -118,7 +118,7 @@ fun CreateTripDetailsScreen(
     var currencyDropdownExpanded by remember { mutableStateOf(false) }
     var trackingMode by remember(existingTripData) { mutableStateOf(existingTripData?.trackingMode ?: "High Accuracy") }
     val currencies = listOf("USD", "EUR", "GBP", "JPY", "AUD", "SGD", "VND")
-    
+
     val dateTimeFormatter = SimpleDateFormat("MMM d, h:mm a", Locale.getDefault())
 
     fun getCombinedMillis(dateMillis: Long?, hour: Int, minute: Int): Long? {
@@ -152,7 +152,7 @@ fun CreateTripDetailsScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFFFAFAFA),
+        containerColor = MaterialTheme.colorScheme.background, // DYNAMIC
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -160,7 +160,7 @@ fun CreateTripDetailsScreen(
                         text = if (editTripId != null) "Edit trip" else "New trip",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF001F3F) // Dark Navy
+                        color = MaterialTheme.colorScheme.onBackground // DYNAMIC
                     )
                 },
                 navigationIcon = {
@@ -168,465 +168,465 @@ fun CreateTripDetailsScreen(
                         modifier = Modifier
                             .padding(start = 24.dp)
                             .size(40.dp)
-                            .background(Color.White, CircleShape)
-                            .border(1.dp, Color(0xFFEEEEEE), CircleShape)
+                            .background(MaterialTheme.colorScheme.surface, CircleShape) // DYNAMIC
+                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape) // DYNAMIC
                             .clickable { onNavigateBack() },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = Color(0xFF005b9f), // Theme Blue
+                            tint = MaterialTheme.colorScheme.primary, // DYNAMIC
                             modifier = Modifier.size(20.dp)
                         )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(0xFFFAFAFA)
+                    containerColor = MaterialTheme.colorScheme.background // DYNAMIC
                 )
             )
         },
-            bottomBar = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White)
-                        .padding(24.dp)
-                        .padding(bottom = 16.dp)
-                ) {
-                    Button(
-                        onClick = {
-                            if (startMillis != null) {
-                                val finalEndMillis = endMillis ?: startMillis
-                                val days = ((finalEndMillis - startMillis) / (1000 * 60 * 60 * 24)).toInt().coerceAtLeast(0) + 1
-                                val photoUrlToPass = if (customImageUri != null) customImageUri.toString() else coverPhotoUrl
-                                val bAmt = budgetAmount.toDoubleOrNull()
-                                val bCurr = if (bAmt != null) selectedCurrency else null
-                                val finalTripName = if (tripName.isNotBlank()) tripName else "Trip to $destinations"
-                                onCreateTrip(days, finalTripName, startMillis, finalEndMillis, photoUrlToPass, bAmt, bCurr, isTrackerEnabled, trackingMode)
-                            }
-                        },
-                        enabled = startMillis != null && !isGenerating,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF005b9f)),
-                        shape = RoundedCornerShape(28.dp)
-                    ) {
-                        if (isGenerating) {
-                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                            Spacer(modifier = Modifier.width(12.dp))
-                            val loadingText = if (editTripId != null) "Saving Settings..." else "Generating Trip..."
-                            Text(loadingText, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                        } else {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                if (editTripId != null) {
-                                    Text("Save Settings", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Icon(imageVector = Icons.Filled.Save, contentDescription = null, modifier = Modifier.size(24.dp), tint = Color.White)
-                                } else {
-                                    Text("Create Trip with AI", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Icon(painter = painterResource(id = R.drawable.ai), contentDescription = null, modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        ) { innerPadding ->
-            val scrollState = androidx.compose.foundation.rememberScrollState()
-            Column(
+        bottomBar = {
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(scrollState)
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface) // DYNAMIC
+                    .padding(24.dp)
+                    .padding(bottom = 16.dp)
             ) {
-                // Cover Image Header
-                Box(
+                Button(
+                    onClick = {
+                        if (startMillis != null) {
+                            val finalEndMillis = endMillis ?: startMillis
+                            val days = ((finalEndMillis - startMillis) / (1000 * 60 * 60 * 24)).toInt().coerceAtLeast(0) + 1
+                            val photoUrlToPass = if (customImageUri != null) customImageUri.toString() else coverPhotoUrl
+                            val bAmt = budgetAmount.toDoubleOrNull()
+                            val bCurr = if (bAmt != null) selectedCurrency else null
+                            val finalTripName = if (tripName.isNotBlank()) tripName else "Trip to $destinations"
+                            onCreateTrip(days, finalTripName, startMillis, finalEndMillis, photoUrlToPass, bAmt, bCurr, isTrackerEnabled, trackingMode)
+                        }
+                    },
+                    enabled = startMillis != null && !isGenerating,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(240.dp)
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary), // DYNAMIC
+                    shape = RoundedCornerShape(28.dp)
                 ) {
-                    val imageUrl = customImageUri ?: coverPhotoUrl ?: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800&auto=format&fit=crop"
-                    Image(
-                        painter = rememberAsyncImagePainter(imageUrl),
-                        contentDescription = "Cover Image",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                    
-                    // Change Cover Button
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = Color.White.copy(alpha = 0.9f),
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .clickable { photoPickerLauncher.launch(androidx.activity.result.PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.PhotoCamera,
-                                contentDescription = null,
-                                tint = Color.DarkGray,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Change Cover",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.DarkGray
-                            )
-                        }
-                    }
-                }
-
-                // The white "Bottom Sheet" area
-                Surface(
-                    shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-                    color = Color(0xFFFAFAFA),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .offset(y = (-32).dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = tripName,
-                            onValueChange = { if (it.length <= 50) tripName = it },
-                            placeholder = { 
-                                Text(
-                                    "Name your trip", 
-                                    color = Color.Gray,
-                                    fontWeight = FontWeight.Bold
-                                ) 
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    painter = androidx.compose.ui.res.painterResource(id = com.example.pocketplanner.R.drawable.ntpen),
-                                    contentDescription = null,
-                                    tint = Color.Unspecified, // Assuming it's a colored icon or we can tint it later if needed. If it's a monochrome icon, tinting it DarkGray is standard, but Unspecified keeps original colors.
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            },
-                            trailingIcon = {
-                                Text(
-                                    text = "${tripName.length}/50",
-                                    color = Color.Gray,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.padding(end = 8.dp)
-                                )
-                            },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedBorderColor = Color(0xFFEEEEEE),
-                                focusedBorderColor = Color(0xFF005b9f),
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Date Selection Sub-Card matching new mockup
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = Color.White,
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0)),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(modifier = Modifier.fillMaxWidth()) {
-                                // Top half: Icon and "Trip dates"
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 16.dp),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        painter = androidx.compose.ui.res.painterResource(id = com.example.pocketplanner.R.drawable.ntcalendar),
-                                        contentDescription = null,
-                                        tint = Color.Unspecified,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        "Trip dates",
-                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                        color = Color(0xFF001F3F)
-                                    )
-                                }
-                                
-                                HorizontalDivider(color = Color(0xFFE0E0E0))
-                                
-                                // Bottom half: Dates and Arrow
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 16.dp),
-                                    horizontalArrangement = Arrangement.SpaceEvenly,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    // Start Date
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clickable { showStartDatePicker = true }
-                                    ) {
-                                        Text("Start date", style = MaterialTheme.typography.labelMedium, color = Color(0xFF001F3F))
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text(
-                                            startDateText, 
-                                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), 
-                                            color = if (startDateText == "Set date & time") Color(0xFF0091EA) else Color(0xFF001F3F),
-                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                        )
-                                    }
-                                    
-                                    // Arrow sitting over the dashed line
-                                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "To", tint = Color(0xFF001F3F), modifier = Modifier.size(20.dp))
-
-                                    // End Date
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clickable { showEndDatePicker = true }
-                                    ) {
-                                        Text("End date", style = MaterialTheme.typography.labelMedium, color = Color(0xFF001F3F))
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text(
-                                            endDateText, 
-                                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), 
-                                            color = if (endDateText == "Optional") Color(0xFF0091EA) else Color(0xFF001F3F),
-                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                        )
-                                    }
-                                }
+                    if (isGenerating) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp)) // DYNAMIC
+                        Spacer(modifier = Modifier.width(12.dp))
+                        val loadingText = if (editTripId != null) "Saving Settings..." else "Generating Trip..."
+                        Text(loadingText, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
+                    } else {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (editTripId != null) {
+                                Text("Save Settings", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Icon(imageVector = Icons.Filled.Save, contentDescription = null, modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
+                            } else {
+                                Text("Create Trip with AI", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Icon(painter = painterResource(id = R.drawable.ai), contentDescription = null, modifier = Modifier.size(24.dp), tint = Color.Unspecified)
                             }
                         }
-
-                        if (overlappingTripName != null) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Surface(
-                                color = Color(0xFFFFF3E0), // Light orange background
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(16.dp)
-                                ) {
-                                    Icon(
-                                        androidx.compose.material.icons.Icons.Default.Warning,
-                                        contentDescription = "Warning",
-                                        tint = Color(0xFFF57C00), // Dark orange
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        "Warning: This trip overlaps with your existing trip \"$overlappingTripName\".",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color(0xFFE65100), // Darker orange
-                                        lineHeight = 16.sp
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        // Budget Box
-                        OutlinedTextField(
-                            value = budgetAmount,
-                            onValueChange = { budgetAmount = it },
-                            placeholder = { 
-                                Text(
-                                    "Budget (Optional)", 
-                                    color = Color.Gray,
-                                    fontWeight = FontWeight.Bold
-                                ) 
-                            },
-                            leadingIcon = {
-                                Icon(painter = painterResource(id = R.drawable.ntbudget), contentDescription = "Budget", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                            },
-                            trailingIcon = {
-                                Box {
-                                    TextButton(onClick = { currencyDropdownExpanded = true }) {
-                                        Text(selectedCurrency, color = Color(0xFF001F3F), fontWeight = FontWeight.Bold)
-                                        Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select Currency", tint = Color(0xFF001F3F))
-                                    }
-                                    DropdownMenu(
-                                        expanded = currencyDropdownExpanded,
-                                        onDismissRequest = { currencyDropdownExpanded = false }
-                                    ) {
-                                        currencies.forEach { curr ->
-                                            DropdownMenuItem(
-                                                text = { Text(curr) },
-                                                onClick = {
-                                                    selectedCurrency = curr
-                                                    currencyDropdownExpanded = false
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White,
-                                focusedBorderColor = Color(0xFF0091EA),
-                                unfocusedBorderColor = Color.LightGray
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        
-                        // Live VND Conversion
-                        if (budgetAmount.isNotEmpty() && exchangeRates.isNotEmpty()) {
-                            val vndRate = exchangeRates["VND"] ?: 25000.0
-                            val selectedRate = exchangeRates[selectedCurrency] ?: 1.0
-                            val parsedAmount = budgetAmount.toDoubleOrNull() ?: 0.0
-                            val vndAmount = parsedAmount * (vndRate / selectedRate)
-                            
-                            val formattedVnd = try {
-                                val format = java.text.NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
-                                format.format(vndAmount)
-                            } catch (e: Exception) {
-                                "%,.0f VND".format(Locale.US, vndAmount)
-                            }
-                            
-                            Spacer(modifier = Modifier.height(8.dp))
-                            
-                            OutlinedTextField(
-                                value = formattedVnd,
-                                onValueChange = {},
-                                readOnly = true,
-                                singleLine = true,
-                                leadingIcon = {
-                                    Text("≈", color = Color.Gray, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 16.dp))
-                                },
-                                trailingIcon = {
-                                    Text("VND", color = Color(0xFF001F3F), fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 16.dp))
-                                },
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedContainerColor = Color.White,
-                                    unfocusedContainerColor = Color.White,
-                                    focusedBorderColor = Color.LightGray,
-                                    unfocusedBorderColor = Color.LightGray,
-                                    disabledTextColor = Color.DarkGray,
-                                    disabledContainerColor = Color.White,
-                                    disabledBorderColor = Color.LightGray
-                                ),
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        // Travel Tracker Section Box
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = Color.White,
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE)),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Icon(painter = painterResource(id = R.drawable.ntlocation), contentDescription = "Tracker", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text("Travel Tracker", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color(0xFF001F3F), modifier = Modifier.weight(1f))
-                                    Switch(
-                                        checked = isTrackerEnabled,
-                                        onCheckedChange = { isTrackerEnabled = it },
-                                        colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = Color(0xFF0091EA))
-                                    )
-                                }
-
-                                if (isTrackerEnabled) {
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    
-                                    // High Accuracy Option (was Balanced)
-                                    Surface(
-                                        shape = RoundedCornerShape(12.dp),
-                                        color = if (trackingMode == "High Accuracy") Color(0xFFE3F2FD) else Color.White,
-                                        border = if (trackingMode == "High Accuracy") androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF0091EA)) else androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray),
-                                        modifier = Modifier.fillMaxWidth().clickable { trackingMode = "High Accuracy" }
-                                    ) {
-                                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
-                                            RadioButton(
-                                                selected = trackingMode == "High Accuracy",
-                                                onClick = { trackingMode = "High Accuracy" },
-                                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF0091EA))
-                                            )
-                                            Column(modifier = Modifier.padding(start = 8.dp)) {
-                                                Text("High Accuracy", fontWeight = FontWeight.Bold, color = Color(0xFF001F3F))
-                                                Text("Neighborhood-level tracking. Background updates when moving significantly.", style = MaterialTheme.typography.bodySmall, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
-                                                Spacer(modifier = Modifier.height(8.dp))
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    Icon(painter = painterResource(id = R.drawable.ntrange), contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Unspecified)
-                                                    Text(" ~ 100m precision", style = MaterialTheme.typography.labelSmall, color = Color.DarkGray, modifier = Modifier.padding(start = 4.dp, end = 12.dp), maxLines = 1)
-                                                    Icon(painter = painterResource(id = R.drawable.ntenergy), contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Unspecified)
-                                                    Text(" Medium battery", style = MaterialTheme.typography.labelSmall, color = Color.DarkGray, modifier = Modifier.padding(start = 4.dp), maxLines = 1)
-                                                }
-                                            }
-                                        }
-                                    }
-                                    
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    
-                                    // Balanced Option (was Low Power Mode)
-                                    Surface(
-                                        shape = RoundedCornerShape(12.dp),
-                                        color = if (trackingMode == "Balanced") Color(0xFFE3F2FD) else Color.White,
-                                        border = if (trackingMode == "Balanced") androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF0091EA)) else androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray),
-                                        modifier = Modifier.fillMaxWidth().clickable { trackingMode = "Balanced" }
-                                    ) {
-                                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
-                                            RadioButton(
-                                                selected = trackingMode == "Balanced",
-                                                onClick = { trackingMode = "Balanced" },
-                                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF0091EA))
-                                            )
-                                            Column(modifier = Modifier.padding(start = 8.dp)) {
-                                                Text("Balanced", fontWeight = FontWeight.Bold, color = Color(0xFF001F3F))
-                                                Text("City-level tracking. Updates only occasionally to maximize battery savings.", style = MaterialTheme.typography.bodySmall, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
-                                                Spacer(modifier = Modifier.height(8.dp))
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    Icon(painter = painterResource(id = R.drawable.ntrange), contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Unspecified)
-                                                    Text(" ~ 10km precision", style = MaterialTheme.typography.labelSmall, color = Color.DarkGray, modifier = Modifier.padding(start = 4.dp, end = 12.dp), maxLines = 1)
-                                                    Icon(painter = painterResource(id = R.drawable.ntenergy), contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Unspecified)
-                                                    Text(" Minimal battery", style = MaterialTheme.typography.labelSmall, color = Color.DarkGray, modifier = Modifier.padding(start = 4.dp), maxLines = 1)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        
-                        // Extra padding at the bottom for scrolling past floating button
-                        Spacer(modifier = Modifier.height(80.dp))
                     }
                 }
             }
         }
+    ) { innerPadding ->
+        val scrollState = androidx.compose.foundation.rememberScrollState()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(scrollState)
+        ) {
+            // Cover Image Header
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(240.dp)
+            ) {
+                val imageUrl = customImageUri ?: coverPhotoUrl ?: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800&auto=format&fit=crop"
+                Image(
+                    painter = rememberAsyncImagePainter(imageUrl),
+                    contentDescription = "Cover Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                // Change Cover Button
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f), // DYNAMIC
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .clickable { photoPickerLauncher.launch(androidx.activity.result.PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.PhotoCamera,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface, // DYNAMIC
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Change Cover",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface // DYNAMIC
+                        )
+                    }
+                }
+            }
+
+            // The white "Bottom Sheet" area
+            Surface(
+                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                color = MaterialTheme.colorScheme.background, // DYNAMIC
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset(y = (-32).dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                ) {
+                    OutlinedTextField(
+                        value = tripName,
+                        onValueChange = { if (it.length <= 50) tripName = it },
+                        placeholder = {
+                            Text(
+                                "Name your trip",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC
+                                fontWeight = FontWeight.Bold
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = androidx.compose.ui.res.painterResource(id = com.example.pocketplanner.R.drawable.ntpen),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        },
+                        trailingIcon = {
+                            Text(
+                                text = "${tripName.length}/50",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant, // DYNAMIC
+                            focusedBorderColor = MaterialTheme.colorScheme.primary, // DYNAMIC
+                            focusedContainerColor = MaterialTheme.colorScheme.surface, // DYNAMIC
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface // DYNAMIC
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Date Selection Sub-Card
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surface, // DYNAMIC
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), // DYNAMIC
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            // Top half: Icon and "Trip dates"
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = androidx.compose.ui.res.painterResource(id = com.example.pocketplanner.R.drawable.ntcalendar),
+                                    contentDescription = null,
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "Trip dates",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onSurface // DYNAMIC
+                                )
+                            }
+
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) // DYNAMIC
+
+                            // Bottom half: Dates and Arrow
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Start Date
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { showStartDatePicker = true }
+                                ) {
+                                    Text("Start date", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        startDateText,
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = if (startDateText == "Set date & time") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, // DYNAMIC
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                    )
+                                }
+
+                                // Arrow sitting over the dashed line
+                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "To", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(20.dp)) // DYNAMIC
+
+                                // End Date
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { showEndDatePicker = true }
+                                ) {
+                                    Text("End date", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        endDateText,
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = if (endDateText == "Optional") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, // DYNAMIC
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    if (overlappingTripName != null) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Surface(
+                            color = MaterialTheme.colorScheme.errorContainer, // DYNAMIC WARNING BACKGROUND
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Icon(
+                                    androidx.compose.material.icons.Icons.Default.Warning,
+                                    contentDescription = "Warning",
+                                    tint = MaterialTheme.colorScheme.onErrorContainer, // DYNAMIC
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "Warning: This trip overlaps with your existing trip \"$overlappingTripName\".",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onErrorContainer, // DYNAMIC
+                                    lineHeight = 16.sp
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Budget Box
+                    OutlinedTextField(
+                        value = budgetAmount,
+                        onValueChange = { budgetAmount = it },
+                        placeholder = {
+                            Text(
+                                "Budget (Optional)",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC
+                                fontWeight = FontWeight.Bold
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(painter = painterResource(id = R.drawable.ntbudget), contentDescription = "Budget", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                        },
+                        trailingIcon = {
+                            Box {
+                                TextButton(onClick = { currencyDropdownExpanded = true }) {
+                                    Text(selectedCurrency, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold) // DYNAMIC
+                                    Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select Currency", tint = MaterialTheme.colorScheme.primary) // DYNAMIC
+                                }
+                                DropdownMenu(
+                                    expanded = currencyDropdownExpanded,
+                                    onDismissRequest = { currencyDropdownExpanded = false }
+                                ) {
+                                    currencies.forEach { curr ->
+                                        DropdownMenuItem(
+                                            text = { Text(curr) },
+                                            onClick = {
+                                                selectedCurrency = curr
+                                                currencyDropdownExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surface, // DYNAMIC
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface, // DYNAMIC
+                            focusedBorderColor = MaterialTheme.colorScheme.primary, // DYNAMIC
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant // DYNAMIC
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Live VND Conversion
+                    if (budgetAmount.isNotEmpty() && exchangeRates.isNotEmpty()) {
+                        val vndRate = exchangeRates["VND"] ?: 25000.0
+                        val selectedRate = exchangeRates[selectedCurrency] ?: 1.0
+                        val parsedAmount = budgetAmount.toDoubleOrNull() ?: 0.0
+                        val vndAmount = parsedAmount * (vndRate / selectedRate)
+
+                        val formattedVnd = try {
+                            val format = java.text.NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
+                            format.format(vndAmount)
+                        } catch (e: Exception) {
+                            "%,.0f VND".format(Locale.US, vndAmount)
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        OutlinedTextField(
+                            value = formattedVnd,
+                            onValueChange = {},
+                            readOnly = true,
+                            singleLine = true,
+                            leadingIcon = {
+                                Text("≈", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 16.dp)) // DYNAMIC
+                            },
+                            trailingIcon = {
+                                Text("VND", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 16.dp)) // DYNAMIC
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surface, // DYNAMIC
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface, // DYNAMIC
+                                focusedBorderColor = MaterialTheme.colorScheme.outlineVariant, // DYNAMIC
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant, // DYNAMIC
+                                disabledTextColor = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC
+                                disabledContainerColor = MaterialTheme.colorScheme.surface, // DYNAMIC
+                                disabledBorderColor = MaterialTheme.colorScheme.outlineVariant // DYNAMIC
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Travel Tracker Section Box
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surface, // DYNAMIC
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), // DYNAMIC
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(painter = painterResource(id = R.drawable.ntlocation), contentDescription = "Tracker", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text("Travel Tracker", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f)) // DYNAMIC
+                                Switch(
+                                    checked = isTrackerEnabled,
+                                    onCheckedChange = { isTrackerEnabled = it },
+                                    colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.onPrimary, checkedTrackColor = MaterialTheme.colorScheme.primary) // DYNAMIC
+                                )
+                            }
+
+                            if (isTrackerEnabled) {
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // High Accuracy Option
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (trackingMode == "High Accuracy") MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface, // DYNAMIC
+                                    border = if (trackingMode == "High Accuracy") androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), // DYNAMIC
+                                    modifier = Modifier.fillMaxWidth().clickable { trackingMode = "High Accuracy" }
+                                ) {
+                                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
+                                        RadioButton(
+                                            selected = trackingMode == "High Accuracy",
+                                            onClick = { trackingMode = "High Accuracy" },
+                                            colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary) // DYNAMIC
+                                        )
+                                        Column(modifier = Modifier.padding(start = 8.dp)) {
+                                            Text("High Accuracy", fontWeight = FontWeight.Bold, color = if (trackingMode == "High Accuracy") MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface) // DYNAMIC
+                                            Text("Neighborhood-level tracking. Background updates when moving significantly.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp)) // DYNAMIC
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(painter = painterResource(id = R.drawable.ntrange), contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Unspecified)
+                                                Text(" ~ 100m precision", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 4.dp, end = 12.dp), maxLines = 1) // DYNAMIC
+                                                Icon(painter = painterResource(id = R.drawable.ntenergy), contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Unspecified)
+                                                Text(" Medium battery", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 4.dp), maxLines = 1) // DYNAMIC
+                                            }
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                // Balanced Option
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (trackingMode == "Balanced") MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface, // DYNAMIC
+                                    border = if (trackingMode == "Balanced") androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), // DYNAMIC
+                                    modifier = Modifier.fillMaxWidth().clickable { trackingMode = "Balanced" }
+                                ) {
+                                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
+                                        RadioButton(
+                                            selected = trackingMode == "Balanced",
+                                            onClick = { trackingMode = "Balanced" },
+                                            colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary) // DYNAMIC
+                                        )
+                                        Column(modifier = Modifier.padding(start = 8.dp)) {
+                                            Text("Balanced", fontWeight = FontWeight.Bold, color = if (trackingMode == "Balanced") MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface) // DYNAMIC
+                                            Text("City-level tracking. Updates only occasionally to maximize battery savings.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp)) // DYNAMIC
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(painter = painterResource(id = R.drawable.ntrange), contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Unspecified)
+                                                Text(" ~ 10km precision", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 4.dp, end = 12.dp), maxLines = 1) // DYNAMIC
+                                                Icon(painter = painterResource(id = R.drawable.ntenergy), contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Unspecified)
+                                                Text(" Minimal battery", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 4.dp), maxLines = 1) // DYNAMIC
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Extra padding at the bottom for scrolling past floating button
+                    Spacer(modifier = Modifier.height(80.dp))
+                }
+            }
+        }
+    }
 
 
     // Start Date Picker Dialog
@@ -635,8 +635,8 @@ fun CreateTripDetailsScreen(
             onDismissRequest = { showStartDatePicker = false },
             confirmButton = {
                 TextButton(
-                    onClick = { 
-                        showStartDatePicker = false 
+                    onClick = {
+                        showStartDatePicker = false
                         showStartTimePicker = true
                     },
                     enabled = startDatePickerState.selectedDateMillis != null
@@ -678,8 +678,8 @@ fun CreateTripDetailsScreen(
             onDismissRequest = { showEndDatePicker = false },
             confirmButton = {
                 TextButton(
-                    onClick = { 
-                        showEndDatePicker = false 
+                    onClick = {
+                        showEndDatePicker = false
                         showEndTimePicker = true
                     },
                     enabled = endDatePickerState.selectedDateMillis != null

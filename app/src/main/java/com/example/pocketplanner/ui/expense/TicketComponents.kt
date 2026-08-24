@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -58,7 +57,7 @@ import androidx.compose.foundation.Image
 import java.util.*
 
 // ============================================================
-//  1. TICKET TAB CONTENT (replaces the placeholder)
+//  1. TICKET TAB CONTENT
 // ============================================================
 
 @Composable
@@ -77,22 +76,22 @@ fun TicketTabContent(
         OutlinedTextField(
             value = searchQuery,
             onValueChange = onSearchQueryChanged,
-            placeholder = { Text("Search tickets...", color = Color.Gray) },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search", tint = Color.Gray) },
+            placeholder = { Text("Search tickets...", color = MaterialTheme.colorScheme.onSurfaceVariant) }, // DYNAMIC
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant) }, // DYNAMIC
             trailingIcon = {
                 if (searchQuery.isNotEmpty()) {
                     IconButton(onClick = { onSearchQueryChanged("") }) {
-                        Icon(Icons.Filled.Close, contentDescription = "Clear", tint = Color.Gray)
+                        Icon(Icons.Filled.Close, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     }
                 }
             },
             singleLine = true,
             shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF005b9f),
+                focusedBorderColor = MaterialTheme.colorScheme.primary, // DYNAMIC
                 unfocusedBorderColor = Color.Transparent,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
+                focusedContainerColor = MaterialTheme.colorScheme.surface, // DYNAMIC
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface // DYNAMIC
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -119,7 +118,7 @@ fun TicketTabContent(
                 contentPadding = PaddingValues(
                     start = 24.dp,
                     end = 24.dp,
-                    bottom = 120.dp // Clear the FAB and bottom nav
+                    bottom = 120.dp
                 ),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -151,14 +150,9 @@ private fun TicketFilterChips(
     selectedFilter: TicketFilter,
     onFilterSelected: (TicketFilter) -> Unit
 ) {
-    // Build the list of filter options
-    // "All" is always first, "General" is second if there are unlinked tickets
-    // Then one chip per trip that has at least one linked ticket
     val filters = buildList<TicketFilter> {
         add(TicketFilter.All)
         add(TicketFilter.General)
-        // Find trips that have at least one ticket linked to them
-        // (we check against the FULL unfiltered ticket list via allTrips linkage)
         allTrips.forEach { trip ->
             add(TicketFilter.Trip(
                 tripId = trip.id,
@@ -199,8 +193,8 @@ private fun TicketFilterChips(
                     )
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = Color(0xFF005b9f),
-                    selectedLabelColor = Color.White
+                    selectedContainerColor = MaterialTheme.colorScheme.primary, // DYNAMIC
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary // DYNAMIC
                 ),
                 shape = RoundedCornerShape(20.dp)
             )
@@ -232,6 +226,7 @@ private fun TicketCard(
         else -> Icons.Filled.ConfirmationNumber
     }
 
+    // Keep Semantic Colors for icons, but adapt the cards
     val typeColor = when (ticket.type) {
         "Flight" -> Color(0xFF2196F3)
         "Hotel" -> Color(0xFFFF9800)
@@ -243,7 +238,7 @@ private fun TicketCard(
 
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface, // DYNAMIC
         shadowElevation = 2.dp,
         modifier = Modifier
             .fillMaxWidth()
@@ -259,7 +254,7 @@ private fun TicketCard(
             // Thumbnail
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = Color(0xFFF0F4F8),
+                color = MaterialTheme.colorScheme.surfaceVariant, // DYNAMIC
                 modifier = Modifier.size(72.dp)
             ) {
                 val thumbPath = ticket.thumbnailUri ?: ticket.imageUri
@@ -275,7 +270,6 @@ private fun TicketCard(
 
             // Details
             Column(modifier = Modifier.weight(1f)) {
-                // Title row with type icon
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = typeIcon,
@@ -287,6 +281,7 @@ private fun TicketCard(
                     Text(
                         text = ticket.title,
                         style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface, // DYNAMIC
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -295,22 +290,22 @@ private fun TicketCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Type + date
                 Text(
                     text = "${ticket.type} • ${dateFormatter.format(Date(ticket.dateTime))}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant // DYNAMIC
                 )
 
-                // Status badge
                 Spacer(modifier = Modifier.height(4.dp))
                 val status = TicketStatus.fromDateTime(ticket.dateTime)
+
+                // Adaptive Semantic Colors for Badges
                 val (statusText, statusColor, statusBgColor) = when (status) {
                     is TicketStatus.Today -> Triple("Today", Color.White, Color(0xFF2196F3))
                     is TicketStatus.Tomorrow -> Triple("Tomorrow", Color.White, Color(0xFFFF9800))
-                    is TicketStatus.Upcoming -> Triple("In ${status.daysUntil} days", Color(0xFF2E7D32), Color(0xFFE8F5E9))
-                    is TicketStatus.Later -> Triple(status.displayDate, Color(0xFF616161), Color(0xFFF5F5F5))
-                    is TicketStatus.Expired -> Triple("Expired", Color.White, Color(0xFFE53935))
+                    is TicketStatus.Upcoming -> Triple("In ${status.daysUntil} days", MaterialTheme.colorScheme.onSecondaryContainer, MaterialTheme.colorScheme.secondaryContainer) // DYNAMIC
+                    is TicketStatus.Later -> Triple(status.displayDate, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.surfaceVariant) // DYNAMIC
+                    is TicketStatus.Expired -> Triple("Expired", MaterialTheme.colorScheme.onErrorContainer, MaterialTheme.colorScheme.errorContainer) // DYNAMIC
                 }
                 Surface(
                     shape = RoundedCornerShape(6.dp),
@@ -325,40 +320,37 @@ private fun TicketCard(
                     )
                 }
 
-                // Confirmation code (if present)
                 if (!ticket.confirmationCode.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "Conf: ${ticket.confirmationCode}",
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF005b9f)
+                        color = MaterialTheme.colorScheme.primary // DYNAMIC
                     )
                 }
 
-                // QR content (if found)
                 if (!ticket.qrContent.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "QR: ${ticket.qrContent}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF607D8B),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
 
-                // Trip badge (if linked)
                 if (tripName != null) {
                     Spacer(modifier = Modifier.height(6.dp))
                     Surface(
                         shape = RoundedCornerShape(6.dp),
-                        color = Color(0xFFE8F5E9)
+                        color = MaterialTheme.colorScheme.secondaryContainer // DYNAMIC
                     ) {
                         Text(
                             text = tripName,
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color(0xFF2E7D32),
+                            color = MaterialTheme.colorScheme.onSecondaryContainer, // DYNAMIC
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -369,18 +361,17 @@ private fun TicketCard(
         }
     }
 
-    // Delete confirmation dialog
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Ticket", fontWeight = FontWeight.Bold) },
-            text = { Text("Are you sure you want to delete \"${ticket.title}\"?") },
+            title = { Text("Delete Ticket", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
+            text = { Text("Are you sure you want to delete \"${ticket.title}\"?", color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
                 TextButton(onClick = {
                     onDelete()
                     showDeleteDialog = false
                 }) {
-                    Text("Delete", color = Color.Red)
+                    Text("Delete", color = MaterialTheme.colorScheme.error) // DYNAMIC
                 }
             },
             dismissButton = {
@@ -407,14 +398,14 @@ private fun EmptyTicketState() {
         Icon(
             imageVector = Icons.Filled.ConfirmationNumber,
             contentDescription = null,
-            tint = Color.LightGray,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC
             modifier = Modifier.size(64.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Add your first ticket!", color = Color.Gray)
+        Text("Add your first ticket!", color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
         Text(
             "Tap + to scan a boarding pass, event ticket, or hotel booking.",
-            color = Color.Gray.copy(alpha = 0.7f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), // DYNAMIC
             style = MaterialTheme.typography.bodySmall,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 48.dp, vertical = 8.dp)
@@ -437,33 +428,28 @@ fun AddTicketForm(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // --- Image state ---
-    var imageUri by remember { mutableStateOf<Uri?>(null) }         // Final (cropped) image for OCR
-    var originalImageUri by remember { mutableStateOf<Uri?>(null) }  // Original untouched image for storage
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var originalImageUri by remember { mutableStateOf<Uri?>(null) }
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
     var showImageSourceDialog by remember { mutableStateOf(false) }
 
-    // --- OCR state ---
     val isScanning by viewModel.isScanning.collectAsState()
     var hasScanned by remember { mutableStateOf(false) }
     var ocrRawText by remember { mutableStateOf<String?>(null) }
     var qrContent by remember { mutableStateOf<String?>(null) }
 
-    // --- Crop launcher ---
-    // This receives the result AFTER the user finishes cropping
     val cropLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK && result.data != null) {
             val croppedUri = UCrop.getOutput(result.data!!)
             if (croppedUri != null) {
-                imageUri = croppedUri  // Use cropped version for display + OCR
+                imageUri = croppedUri
                 hasScanned = false
             }
         }
     }
 
-    // Helper function to launch UCrop
     fun launchCrop(sourceUri: Uri) {
         originalImageUri = sourceUri
 
@@ -471,7 +457,7 @@ fun AddTicketForm(
         val destUri = Uri.fromFile(destFile)
 
         val cropIntent = UCrop.of(sourceUri, destUri)
-            .withAspectRatio(0f, 0f)  // ← ADD THIS: starts in free crop, no ratio lock
+            .withAspectRatio(0f, 0f)
             .withOptions(UCrop.Options().apply {
                 setToolbarTitle("Crop to Ticket")
                 setToolbarColor(android.graphics.Color.parseColor("#FF005b9f"))
@@ -486,7 +472,6 @@ fun AddTicketForm(
         cropLauncher.launch(cropIntent)
     }
 
-    // --- Gallery launcher → goes to crop ---
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
@@ -496,7 +481,6 @@ fun AddTicketForm(
         }
     )
 
-    // --- Camera launcher → goes to crop ---
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { success ->
@@ -506,13 +490,11 @@ fun AddTicketForm(
         }
     )
 
-    // --- Form fields ---
     var title by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf("Flight") }
     var confirmationCode by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
 
-    // --- Date state ---
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = System.currentTimeMillis()
@@ -539,7 +521,6 @@ fun AddTicketForm(
     val dateFormatter = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
     val displayDate = dateFormatter.format(Date(selectedMillis))
 
-    // --- Trip linking ---
     var selectedTripId by remember { mutableStateOf<String?>(null) }
     var showTripDropdown by remember { mutableStateOf(false) }
     val selectedTripName = selectedTripId?.let { id ->
@@ -547,7 +528,6 @@ fun AddTicketForm(
             ?.let { if (it.name.isNotBlank()) it.name else "Trip to ${it.destination}" }
     } ?: "None"
 
-    // --- Ticket types ---
     data class TicketType(val name: String, val icon: ImageVector, val color: Color)
 
     val ticketTypes = listOf(
@@ -559,12 +539,10 @@ fun AddTicketForm(
         TicketType("Other", Icons.Filled.ConfirmationNumber, Color(0xFF607D8B))
     )
 
-    // ---- UI ----
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF4F7FA))
+            .background(MaterialTheme.colorScheme.background) // DYNAMIC
             .padding(top = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -576,13 +554,13 @@ fun AddTicketForm(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onDismiss) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.DarkGray)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground) // DYNAMIC
             }
             Text(
                 "Add Ticket",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = Color.DarkGray,
+                color = MaterialTheme.colorScheme.onBackground, // DYNAMIC
                 modifier = Modifier.padding(start = 16.dp)
             )
         }
@@ -598,7 +576,7 @@ fun AddTicketForm(
             // ========== IMAGE CAPTURE CARD ==========
             Surface(
                 shape = RoundedCornerShape(24.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface, // DYNAMIC
                 shadowElevation = 2.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -606,19 +584,19 @@ fun AddTicketForm(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("TICKET IMAGE", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    Text("TICKET IMAGE", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     Spacer(modifier = Modifier.height(16.dp))
 
                     if (imageUri == null) {
-                        // Dashed upload box (same pattern as AddExpenseForm)
                         val dashPathEffect = remember { PathEffect.dashPathEffect(floatArrayOf(20f, 20f), 0f) }
+                        val outlineColor = MaterialTheme.colorScheme.outline // Fix for Canvas draw behind
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(160.dp)
                                 .drawBehind {
                                     drawRoundRect(
-                                        color = Color(0xFFB0BEC5),
+                                        color = outlineColor, // DYNAMIC
                                         style = Stroke(width = 4f, pathEffect = dashPathEffect),
                                         cornerRadius = CornerRadius(16.dp.toPx())
                                     )
@@ -630,16 +608,15 @@ fun AddTicketForm(
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Surface(shape = CircleShape, color = Color(0xFFE3F2FD), modifier = Modifier.size(48.dp)) {
-                                    Icon(Icons.Filled.CameraAlt, contentDescription = null, tint = Color(0xFF4285F4), modifier = Modifier.padding(10.dp))
+                                Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(48.dp)) { // DYNAMIC
+                                    Icon(Icons.Filled.CameraAlt, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.padding(10.dp)) // DYNAMIC
                                 }
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Text("Tap to capture or import ticket", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                                Text("QR codes will be preserved in original quality", style = MaterialTheme.typography.labelSmall, color = Color.Gray.copy(alpha = 0.6f))
+                                Text("Tap to capture or import ticket", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                                Text("QR codes will be preserved in original quality", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) // DYNAMIC
                             }
                         }
                     } else {
-                        // Show the selected image
                         Box(modifier = Modifier.fillMaxWidth().height(200.dp)) {
                             AsyncImage(
                                 model = imageUri,
@@ -649,7 +626,6 @@ fun AddTicketForm(
                                     .fillMaxSize()
                                     .clip(RoundedCornerShape(16.dp))
                             )
-                            // Remove button
                             Surface(
                                 shape = CircleShape,
                                 color = Color.Black.copy(alpha = 0.6f),
@@ -674,7 +650,6 @@ fun AddTicketForm(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // --- SCAN TICKET BUTTON ---
                         if (!hasScanned) {
                             Button(
                                 onClick = {
@@ -683,7 +658,6 @@ fun AddTicketForm(
                                             val result = viewModel.runOcr(uri)
                                             ocrRawText = result.rawText
 
-                                            // Auto-fill fields with OCR/AI results
                                             if (result.suggestedTitle.isNotBlank() && title.isBlank()) {
                                                 title = result.suggestedTitle
                                             }
@@ -700,7 +674,6 @@ fun AddTicketForm(
                                                 datePickerState.selectedDateMillis = result.suggestedDate
                                             }
 
-                                            // Also scan for QR/barcode on the ORIGINAL image
                                             originalImageUri?.let { origUri ->
                                                 qrContent = viewModel.scanBarcode(origUri)
                                             }
@@ -711,36 +684,35 @@ fun AddTicketForm(
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4285F4)),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary), // DYNAMIC
                                 enabled = !isScanning
                             ) {
                                 if (isScanning) {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(20.dp),
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onPrimary, // DYNAMIC
                                         strokeWidth = 2.dp
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Scanning...")
+                                    Text("Scanning...", color = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
                                 } else {
-                                    Icon(Icons.Filled.DocumentScanner, contentDescription = null)
+                                    Icon(Icons.Filled.DocumentScanner, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Scan Ticket (OCR)")
+                                    Text("Scan Ticket (OCR)", color = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
                                 }
                             }
                         } else {
-                            // Show success badge after scanning
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFFE8F5E9)
+                                color = MaterialTheme.colorScheme.tertiaryContainer // DYNAMIC
                             ) {
                                 Row(
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = Color(0xFF4CAF50), modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.onTertiaryContainer, modifier = Modifier.size(16.dp)) // DYNAMIC
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Scanned! Fields auto-filled below.", style = MaterialTheme.typography.labelSmall, color = Color(0xFF2E7D32))
+                                    Text("Scanned! Fields auto-filled below.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onTertiaryContainer) // DYNAMIC
                                 }
                             }
                         }
@@ -753,19 +725,19 @@ fun AddTicketForm(
             // ========== DETAILS CARD ==========
             Surface(
                 shape = RoundedCornerShape(24.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface, // DYNAMIC
                 shadowElevation = 2.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
 
                     // --- Title ---
-                    Text("Title", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+                    Text("Title", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = title,
                         onValueChange = { title = it },
-                        placeholder = { Text("e.g. Vietnam Airlines VN123", color = Color.LightGray) },
+                        placeholder = { Text("e.g. Vietnam Airlines VN123", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) }, // DYNAMIC
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true
@@ -773,8 +745,8 @@ fun AddTicketForm(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // --- Type selector (chip row) ---
-                    Text("Type", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+                    // --- Type selector ---
+                    Text("Type", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     Spacer(modifier = Modifier.height(8.dp))
 
                     @OptIn(ExperimentalLayoutApi::class)
@@ -787,10 +759,10 @@ fun AddTicketForm(
                             val isSelected = selectedType == type.name
                             Surface(
                                 shape = RoundedCornerShape(50),
-                                color = if (isSelected) Color(0xFFE3F2FD) else Color.White,
+                                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface, // DYNAMIC
                                 border = androidx.compose.foundation.BorderStroke(
                                     width = 1.dp,
-                                    color = if (isSelected) Color(0xFF005b9f) else Color(0xFFE0E0E0)
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant // DYNAMIC
                                 ),
                                 modifier = Modifier.clickable(
                                     interactionSource = remember { MutableInteractionSource() },
@@ -811,7 +783,7 @@ fun AddTicketForm(
                                     Text(
                                         text = type.name,
                                         style = MaterialTheme.typography.labelMedium,
-                                        color = if (isSelected) Color(0xFF005b9f) else Color.DarkGray,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface, // DYNAMIC
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                     )
                                 }
@@ -822,14 +794,14 @@ fun AddTicketForm(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     // --- Date picker ---
-                    Text("Date", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+                    Text("Date", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     Spacer(modifier = Modifier.height(8.dp))
                     Box(modifier = Modifier.fillMaxWidth()) {
                         OutlinedTextField(
                             value = displayDate,
                             onValueChange = {},
                             readOnly = true,
-                            leadingIcon = { Icon(Icons.Filled.DateRange, contentDescription = "Date", tint = Color.Gray) },
+                            leadingIcon = { Icon(Icons.Filled.DateRange, contentDescription = "Date", tint = MaterialTheme.colorScheme.onSurfaceVariant) }, // DYNAMIC
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -846,12 +818,12 @@ fun AddTicketForm(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     // --- Confirmation code ---
-                    Text("Confirmation Code (Optional)", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+                    Text("Confirmation Code (Optional)", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = confirmationCode,
                         onValueChange = { confirmationCode = it },
-                        placeholder = { Text("e.g. ABC123", color = Color.LightGray) },
+                        placeholder = { Text("e.g. ABC123", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) }, // DYNAMIC
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true
@@ -859,8 +831,8 @@ fun AddTicketForm(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // --- Link to trip (optional dropdown) ---
-                    Text("Link to Trip (Optional)", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+                    // --- Link to trip ---
+                    Text("Link to Trip (Optional)", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     Spacer(modifier = Modifier.height(8.dp))
 
                     ExposedDropdownMenuBox(
@@ -881,7 +853,6 @@ fun AddTicketForm(
                             expanded = showTripDropdown,
                             onDismissRequest = { showTripDropdown = false }
                         ) {
-                            // "None" option
                             DropdownMenuItem(
                                 text = { Text("None") },
                                 onClick = {
@@ -890,11 +861,10 @@ fun AddTicketForm(
                                 },
                                 leadingIcon = {
                                     if (selectedTripId == null) {
-                                        Icon(Icons.Filled.Check, contentDescription = null, tint = Color(0xFF005b9f))
+                                        Icon(Icons.Filled.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary) // DYNAMIC
                                     }
                                 }
                             )
-                            // Trip options
                             allTrips.forEach { trip ->
                                 val name = if (trip.name.isNotBlank()) trip.name else "Trip to ${trip.destination}"
                                 DropdownMenuItem(
@@ -905,7 +875,7 @@ fun AddTicketForm(
                                     },
                                     leadingIcon = {
                                         if (selectedTripId == trip.id) {
-                                            Icon(Icons.Filled.Check, contentDescription = null, tint = Color(0xFF005b9f))
+                                            Icon(Icons.Filled.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary) // DYNAMIC
                                         }
                                     }
                                 )
@@ -916,12 +886,12 @@ fun AddTicketForm(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     // --- Notes ---
-                    Text("Notes (Optional)", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+                    Text("Notes (Optional)", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = notes,
                         onValueChange = { notes = it },
-                        placeholder = { Text("Add any extra details...", color = Color.LightGray) },
+                        placeholder = { Text("Add any extra details...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) }, // DYNAMIC
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(100.dp),
@@ -935,8 +905,6 @@ fun AddTicketForm(
             // ========== SAVE BUTTON ==========
             Button(
                 onClick = {
-                    // Use originalImageUri for storage (preserves QR),
-                    // OCR was run on the cropped version
                     imageUri?.let { uri ->
                         viewModel.addTicket(
                             title = title.ifBlank { "Untitled Ticket" },
@@ -957,21 +925,20 @@ fun AddTicketForm(
                     .height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF005b9f),
-                    disabledContainerColor = Color(0xFF005b9f).copy(alpha = 0.4f)
+                    containerColor = MaterialTheme.colorScheme.primary, // DYNAMIC
+                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f) // DYNAMIC
                 ),
                 enabled = imageUri != null && title.isNotBlank()
             ) {
-                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = Color.White)
+                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Save Ticket", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("Save Ticket", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
             }
         }
     }
 
     // ---- DIALOGS ----
 
-    // Date picker dialog
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -986,11 +953,10 @@ fun AddTicketForm(
         }
     }
 
-    // Image source dialog (Camera / Gallery)
     if (showImageSourceDialog) {
         AlertDialog(
             onDismissRequest = { showImageSourceDialog = false },
-            title = { Text("Add Ticket Image", fontWeight = FontWeight.Bold) },
+            title = { Text("Add Ticket Image", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) }, // DYNAMIC
             text = {
                 Column {
                     TextButton(
@@ -1009,9 +975,9 @@ fun AddTicketForm(
                             horizontalArrangement = Arrangement.Start,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(Icons.Filled.PhotoLibrary, contentDescription = null)
+                            Icon(Icons.Filled.PhotoLibrary, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text("Choose from Gallery", fontSize = 16.sp)
+                            Text("Choose from Gallery", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC
                         }
                     }
                     TextButton(
@@ -1033,9 +999,9 @@ fun AddTicketForm(
                             horizontalArrangement = Arrangement.Start,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(Icons.Filled.PhotoCamera, contentDescription = null)
+                            Icon(Icons.Filled.PhotoCamera, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text("Take a Photo", fontSize = 16.sp)
+                            Text("Take a Photo", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC
                         }
                     }
                 }
@@ -1057,24 +1023,20 @@ fun TicketImageViewer(
     viewModel: TicketViewModel,
     onDismiss: () -> Unit
 ) {
-    // Zoom and pan state
     var scale by remember { mutableFloatStateOf(1f) }
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
 
-    // Auto-brightness: max brightness when viewing, restore on close
     val context = LocalContext.current
     DisposableEffect(Unit) {
         val window = (context as? android.app.Activity)?.window
         val originalBrightness = window?.attributes?.screenBrightness ?: -1f
 
-        // Set to max brightness
         window?.attributes = window?.attributes?.apply {
-            screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL // = 1.0f
+            screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL
         }
 
         onDispose {
-            // Restore original brightness when the viewer is closed
             window?.attributes = window?.attributes?.apply {
                 screenBrightness = originalBrightness
             }
@@ -1088,9 +1050,8 @@ fun TicketImageViewer(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black)
+                .background(Color.Black) // Intentionally kept Black for image viewing
         ) {
-            // Zoomable image — uses the ORIGINAL imageUri for max quality
             AsyncImage(
                 model = File(ticket.imageUri),
                 contentDescription = "Ticket full view",
@@ -1108,14 +1069,11 @@ fun TicketImageViewer(
                             scale = (scale * zoom).coerceIn(1f, 5f)
 
                             if (scale > 1f) {
-                                // Only allow panning when zoomed in
-                                // Constrain so the image can't fly off screen
                                 val maxOffsetX = (scale - 1f) * size.width / 2f
                                 val maxOffsetY = (scale - 1f) * size.height / 2f
                                 offsetX = (offsetX + pan.x).coerceIn(-maxOffsetX, maxOffsetX)
                                 offsetY = (offsetY + pan.y).coerceIn(-maxOffsetY, maxOffsetY)
                             } else {
-                                // Reset position when back to 1x
                                 offsetX = 0f
                                 offsetY = 0f
                             }
@@ -1123,7 +1081,6 @@ fun TicketImageViewer(
                     }
             )
 
-            // Close button
             Surface(
                 shape = CircleShape,
                 color = Color.Black.copy(alpha = 0.5f),
@@ -1140,7 +1097,6 @@ fun TicketImageViewer(
                 )
             }
 
-            // Ticket info + QR backup at the bottom
             var showBackupQr by remember { mutableStateOf(false) }
 
             Surface(
@@ -1157,22 +1113,20 @@ fun TicketImageViewer(
                         text = ticket.title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = Color.White // Intentionally kept White for image viewing
                     )
                     if (!ticket.confirmationCode.isNullOrBlank()) {
                         Text(
                             text = "Confirmation: ${ticket.confirmationCode}",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.8f)
+                            color = Color.White.copy(alpha = 0.8f) // Intentionally kept White
                         )
                     }
 
-                    // QR backup section
                     if (!ticket.qrContent.isNullOrBlank()) {
                         Spacer(modifier = Modifier.height(12.dp))
 
                         if (showBackupQr) {
-                            // Show the regenerated QR code
                             val qrBitmap = remember(ticket.qrContent) {
                                 viewModel.generateQrBitmap(ticket.qrContent!!)
                             }

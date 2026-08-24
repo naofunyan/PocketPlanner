@@ -1,4 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.PocketPlanner" parent="android:Theme.Material.Light.NoActionBar"/>
+    <style name="Theme.PocketPlanner" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Add this exact line to match your Compose background -->
+        <item name="android:windowBackground">#F4F6F9</item>
+
+        <!-- Leave any other items you already have untouched -->
+    </style>
 </resources>

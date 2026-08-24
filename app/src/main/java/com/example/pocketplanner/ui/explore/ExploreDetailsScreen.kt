@@ -43,17 +43,13 @@ fun ExploreDetailsScreen(
     onCreateNewTrip: () -> Unit = {},
     onSeeAllPlaces: (String) -> Unit = {},
     onPlaceClick: (String) -> Unit = {},
-    // 1. INJECT THE VIEWMODEL HERE
     viewModel: ExploreViewModel = hiltViewModel()
 ) {
-    // 2. COLLECT THE DATABASE STATE
     val savedNames by viewModel.savedPlaces.collectAsState()
 
-    // 1. PULL REAL DATA FROM REPOSITORY! (Fallback to first city if not found)
     val destination = com.example.pocketplanner.data.repository.DestinationRepository.cities.find { it.id == destinationId }
         ?: com.example.pocketplanner.data.repository.DestinationRepository.cities.first()
 
-    // 2. Generate a dynamic map image using the city ID
     val mapImageUrl = "https://picsum.photos/seed/${destination.id.replace(" ", "")}map/1000/1200"
 
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
@@ -66,9 +62,9 @@ fun ExploreDetailsScreen(
         scaffoldState = scaffoldState,
         sheetPeekHeight = initialPeekHeight,
         sheetShape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-        sheetContainerColor = Color.White,
+        sheetContainerColor = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
         sheetShadowElevation = 12.dp,
-        containerColor = Color.Black,
+        containerColor = MaterialTheme.colorScheme.background, // DYNAMIC BACKGROUND
         sheetDragHandle = null,
 
         content = {
@@ -93,21 +89,23 @@ fun ExploreDetailsScreen(
                 ) {
                     // Back Button
                     Surface(
-                        shape = CircleShape, color = Color.White, shadowElevation = 6.dp,
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
+                        shadowElevation = 6.dp,
                         modifier = Modifier.size(44.dp).clickable { onNavigateBack() }
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color(0xFF1E3A4B), modifier = Modifier.size(22.dp))
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(22.dp)) // DYNAMIC ICON
                         }
                     }
 
-                    // 3. CHECK THE VIEWMODEL STATE
                     val isSaved = savedNames.contains(destination.title)
 
                     Surface(
-                        shape = CircleShape, color = Color.White, shadowElevation = 6.dp,
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
+                        shadowElevation = 6.dp,
                         modifier = Modifier.size(44.dp).clickable {
-                            // 4. USE THE VIEWMODEL FUNCTION TO SAVE/DELETE FROM ROOM DATABASE
                             viewModel.toggleSavePlace(destination.title, isSaved)
                         }
                     ) {
@@ -115,7 +113,7 @@ fun ExploreDetailsScreen(
                             Icon(
                                 imageVector = if (isSaved) Icons.Filled.Bookmark else Icons.Default.BookmarkBorder,
                                 contentDescription = "Bookmark",
-                                tint = Color(0xFF1E3A4B),
+                                tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, // DYNAMIC ICON
                                 modifier = Modifier.size(22.dp)
                             )
                         }
@@ -132,7 +130,7 @@ fun ExploreDetailsScreen(
                     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 20.dp)) {
                         Text(
                             text = destination.description,
-                            style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFF4A5568), lineHeight = 26.sp, fontSize = 16.sp)
+                            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 26.sp, fontSize = 16.sp) // DYNAMIC TEXT
                         )
                     }
                 }
@@ -153,14 +151,14 @@ fun ExploreDetailsScreen(
 @Composable
 fun DestinationPlacesSection(
     destinationId: String,
-    places: List<com.example.pocketplanner.data.repository.Subplace>, // Accepts real Subplaces
+    places: List<com.example.pocketplanner.data.repository.Subplace>,
     onSeeAllPlaces: (String) -> Unit,
     onPlaceClick: (String) -> Unit = {}
 ) {
     if (places.isEmpty()) return
 
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
-        Text(text = "Places", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Color(0xFF1E3A4B))
+        Text(text = "Places", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
         Spacer(modifier = Modifier.height(20.dp))
 
         places.forEach { place ->
@@ -171,17 +169,17 @@ fun DestinationPlacesSection(
         OutlinedButton(
             onClick = { onSeeAllPlaces(destinationId) },
             modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally).height(48.dp),
-            shape = CircleShape, border = BorderStroke(1.dp, Color(0xFFE2E2E6)),
+            shape = CircleShape, border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), // DYNAMIC BORDER
             colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent)
         ) {
-            Text(text = "See all", color = Color(0xFF1E3A4B), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), modifier = Modifier.padding(horizontal = 16.dp))
+            Text(text = "See all", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), modifier = Modifier.padding(horizontal = 16.dp)) // DYNAMIC TEXT
         }
     }
 }
 
 @Composable
 fun PlaceListItem(
-    place: com.example.pocketplanner.data.repository.Subplace, // Accepts real Subplace
+    place: com.example.pocketplanner.data.repository.Subplace,
     onPlaceClick: (String) -> Unit = {}
 ) {
     Row(
@@ -191,10 +189,10 @@ fun PlaceListItem(
         Box(
             modifier = Modifier.size(64.dp)
                 .shadow(elevation = 6.dp, shape = RoundedCornerShape(16.dp), spotColor = Color.Black.copy(alpha = 0.2f))
-                .clip(RoundedCornerShape(16.dp)).background(Color(0xFFF4F6F9))
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant) // DYNAMIC BACKGROUND
         ) {
             AsyncImage(
-                // Mapped to the new heroImageUrl
                 model = place.heroImageUrl,
                 contentDescription = place.name,
                 contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
@@ -202,19 +200,20 @@ fun PlaceListItem(
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = place.name, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 17.sp), color = Color(0xFF1E3A4B))
+            Text(text = place.name, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 17.sp), color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = place.subtitle, style = MaterialTheme.typography.bodyMedium, color = Color(0xFF7A869A), maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(text = place.subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis) // DYNAMIC TEXT
         }
     }
 }
 
 @Composable
 private fun DestinationHeroBanner(
-    destination: com.example.pocketplanner.data.repository.City, // Accepts real City
+    destination: com.example.pocketplanner.data.repository.City,
     onCreateNewTrip: () -> Unit
 ) {
     val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val surfaceColor = MaterialTheme.colorScheme.surface // Extracted to use in the gradient
 
     Box(modifier = Modifier.fillMaxWidth().height(340.dp + topPadding).clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))) {
         AsyncImage(
@@ -224,9 +223,12 @@ private fun DestinationHeroBanner(
         Box(modifier = Modifier.fillMaxSize().background(
             Brush.verticalGradient(0.0f to Color.Black.copy(alpha = 0.4f), 0.3f to Color.Transparent, 0.5f to Color.Transparent, 0.85f to Color.Black.copy(alpha = 0.6f), 1.0f to Color.Black.copy(alpha = 0.1f))
         ))
+
+        // FIXED: The fade effect now dynamically merges with the active theme's surface color
         Box(modifier = Modifier.fillMaxSize().background(
-            Brush.verticalGradient(0.0f to Color.Transparent, 0.85f to Color.Transparent, 0.95f to Color.White.copy(alpha = 0.8f), 1.0f to Color.White)
+            Brush.verticalGradient(0.0f to Color.Transparent, 0.85f to Color.Transparent, 0.95f to surfaceColor.copy(alpha = 0.8f), 1.0f to surfaceColor)
         ))
+
         Box(modifier = Modifier.align(Alignment.TopCenter).padding(top = topPadding + 12.dp).size(width = 38.dp, height = 4.dp).background(Color.White.copy(alpha = 0.8f), CircleShape))
 
         Surface(
@@ -241,23 +243,26 @@ private fun DestinationHeroBanner(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = destination.title, color = Color.White, textAlign = TextAlign.Center,
+                text = destination.title, color = Color.White, textAlign = TextAlign.Center, // Kept white for visibility over the image
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold, fontSize = 32.sp, shadow = Shadow(color = Color.Black.copy(alpha = 0.8f), offset = Offset(0f, 2f), blurRadius = 12f))
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = destination.tagline.uppercase(), color = Color.White.copy(alpha = 0.95f), textAlign = TextAlign.Center,
+                text = destination.tagline.uppercase(), color = Color.White.copy(alpha = 0.95f), textAlign = TextAlign.Center, // Kept white
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp, fontSize = 11.sp, shadow = Shadow(color = Color.Black.copy(alpha = 0.9f), offset = Offset(0f, 2f), blurRadius = 12f))
             )
             Spacer(modifier = Modifier.height(20.dp))
             Surface(
-                onClick = onCreateNewTrip, shape = CircleShape, color = Color.White, shadowElevation = 8.dp,
+                onClick = onCreateNewTrip,
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary, // DYNAMIC BACKGROUND
+                shadowElevation = 8.dp,
                 modifier = Modifier.height(48.dp).shadow(elevation = 8.dp, shape = CircleShape)
             ) {
                 Row(modifier = Modifier.padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                    Icon(Icons.Filled.Add, null, tint = Color(0xFF092A3A), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Filled.Add, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp)) // DYNAMIC ICON
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Create a new trip", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, color = Color(0xFF092A3A)))
+                    Text("Create a new trip", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)) // DYNAMIC TEXT
                 }
             }
         }
@@ -271,26 +276,28 @@ fun AllPlacesScreen(
     onNavigateBack: () -> Unit,
     onPlaceClick: (String) -> Unit = {}
 ) {
-    // 1. FETCH FROM REAL REPOSITORY
     val destination = com.example.pocketplanner.data.repository.DestinationRepository.cities.find { it.id == destinationId }
         ?: com.example.pocketplanner.data.repository.DestinationRepository.cities.first()
 
     Scaffold(
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.background, // DYNAMIC BACKGROUND
         topBar = {
             TopAppBar(
                 title = {
                     Column {
-                        Text(text = "Places", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold), color = Color(0xFF092A3A))
-                        Text(text = destination.title, style = MaterialTheme.typography.bodyMedium, color = Color(0xFF4A5568))
+                        Text(text = "Places", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onBackground) // DYNAMIC TEXT
+                        Text(text = destination.title, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Navigate Back", tint = Color(0xFF092A3A))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Navigate Back", tint = MaterialTheme.colorScheme.onBackground) // DYNAMIC ICON
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White, scrolledContainerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background, // DYNAMIC BACKGROUND
+                    scrolledContainerColor = MaterialTheme.colorScheme.background // DYNAMIC BACKGROUND
+                )
             )
         }
     ) { paddingValues ->

@@ -13,7 +13,22 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.telephony" android:required="false"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
             android:name=".PocketPlannerApp"
@@ -22,13 +37,15 @@
             android:fullBackupContent="@xml/backup_rules"
             android:label="@string/app_name"
             android:supportsRtl="true"
-            android:theme="@style/Theme.PocketPlanner">
+            android:theme="@style/Theme.PocketPlanner"
+            android:localeConfig="@xml/locales_config">
         <activity
                 android:name=".MainActivity"
                 android:exported="true"
                 android:label="@string/app_name"
                 android:theme="@style/Theme.PocketPlanner"
-                android:windowSoftInputMode="adjustResize">
+                android:windowSoftInputMode="adjustResize"
+                android:configChanges="locale|layoutDirection|screenSize|orientation">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -42,6 +59,11 @@
                 <data android:scheme="pocketplanner" android:host="trip" />
             </intent-filter>
         </activity>
+
+        <service
+                android:name=".ui.ml.FallDetectionService"
+                android:exported="false"
+                android:foregroundServiceType="health" />
         <service
                 android:name=".core.location.LocationTrackingService"
                 android:foregroundServiceType="location"
@@ -64,6 +86,34 @@
         <activity
                 android:name="com.yalantis.ucrop.UCropActivity"
                 android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
+        <service
+                android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+                android:enabled="false"
+                android:exported="false">
+            <meta-data
+                    android:name="autoStoreLocales"
+                    android:value="true" />
+        </service>
+
+        <!-- Wakes up the screen and bypasses the lock guard -->
+        <activity
+                android:name=".ui.alerts.EmergencyAlertActivity"
+                android:exported="false"
+                android:showOnLockScreen="true"
+                android:showWhenLocked="true"
+                android:turnScreenOn="true"
+                android:theme="@style/Theme.PocketPlanner" />
+
+        <!-- Listens for the phone turning on -->
+        <receiver
+                android:name=".receivers.BootReceiver"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

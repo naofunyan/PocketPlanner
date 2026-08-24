@@ -55,7 +55,7 @@ fun BudgetProgressCard(
 ) {
     Surface(
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
         shadowElevation = 4.dp,
         modifier = Modifier
             .fillMaxWidth()
@@ -67,47 +67,44 @@ fun BudgetProgressCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // 1. ADDED weight(1f) to force this column to respect the icon's space
                 Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
                     Text(
                         "TOTAL SPENT",
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onSurface, // DYNAMIC TEXT
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    // 2. Swapped Row for FlowRow so long numbers wrap instead of squishing
                     FlowRow(
                         horizontalArrangement = Arrangement.Start,
                         verticalArrangement = Arrangement.Bottom
                     ) {
                         Text(
                             currencyFormatter.format(budgetState.totalSpent),
-                            style = MaterialTheme.typography.titleLarge, // 3. Scaled down from headlineMedium for better fit
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E1E1E)
+                            color = MaterialTheme.colorScheme.onSurface // DYNAMIC TEXT
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             " / ${currencyFormatter.format(budgetState.totalBudget)}",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC TEXT
                             modifier = Modifier.padding(bottom = 2.dp)
                         )
                     }
                 }
 
-                // The Icon Surface is now perfectly protected from shrinking
                 Surface(
                     shape = CircleShape,
-                    color = Color(0xFFE3F2FD),
+                    color = MaterialTheme.colorScheme.primaryContainer, // DYNAMIC BACKGROUND
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
                         Icons.Filled.Wallet,
                         contentDescription = null,
-                        tint = Color(0xFF005b9f),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer, // DYNAMIC ICON
                         modifier = Modifier.padding(12.dp)
                     )
                 }
@@ -122,15 +119,15 @@ fun BudgetProgressCard(
                     .fillMaxWidth()
                     .height(10.dp)
                     .clip(RoundedCornerShape(5.dp)),
-                color = if (progress > 0.9f) Color(0xFFD32F2F) else Color(0xFF005b9f),
-                trackColor = Color(0xFFEEEEEE)
+                color = if (progress > 0.9f) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary, // DYNAMIC COLOR
+                trackColor = MaterialTheme.colorScheme.surfaceVariant // DYNAMIC BACKGROUND
             )
             Spacer(modifier = Modifier.height(8.dp))
             val percentStr = "${(progress * 100).toInt()}%"
             Text(
                 "$percentStr of budget used",
                 style = MaterialTheme.typography.labelMedium,
-                color = Color(0xFF005b9f),
+                color = MaterialTheme.colorScheme.primary, // DYNAMIC COLOR
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.End)
             )
@@ -149,7 +146,7 @@ fun CategorySummaryRow(
             "Categories",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF1E1E1E)
+            color = MaterialTheme.colorScheme.onBackground // DYNAMIC TEXT (Fixes the hidden text issue)
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -165,22 +162,20 @@ fun CategorySummaryRow(
 
         val sortedTotals = categoryTotals.toList().sortedByDescending { it.second }
 
-        // 1. Prepare the text measurer for the Canvas labels
         val textMeasurer = rememberTextMeasurer()
-        val labelStyle = MaterialTheme.typography.labelSmall.copy(color = Color.DarkGray, fontWeight = FontWeight.Bold)
+        val labelStyle = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold) // DYNAMIC TEXT
 
         Surface(
             shape = RoundedCornerShape(20.dp),
-            color = Color.White,
+            color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
             shadowElevation = 2.dp,
-            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF5F5F5)),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), // DYNAMIC BORDER
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // 2. The Donut Chart (Expanded to give the lines and text room)
                 Box(
                     modifier = Modifier.fillMaxWidth().height(200.dp),
                     contentAlignment = Alignment.Center
@@ -189,7 +184,6 @@ fun CategorySummaryRow(
                         val canvasWidth = size.width
                         val canvasHeight = size.height
 
-                        // Scale the chart to 50% of the canvas height so labels don't get cut off
                         val chartDiameter = canvasHeight * 0.5f
                         val chartRadius = chartDiameter / 2f
                         val center = Offset(canvasWidth / 2f, canvasHeight / 2f)
@@ -198,19 +192,18 @@ fun CategorySummaryRow(
 
                         if (totalAmount <= 0.0) {
                             drawArc(
-                                color = Color(0xFFEEEEEE),
+                                color = Color(0xFF555555), // Fallback empty state chart color
                                 startAngle = 0f, sweepAngle = 360f, useCenter = false,
                                 topLeft = topLeft, size = chartSize,
                                 style = Stroke(width = 40f, cap = StrokeCap.Butt)
                             )
                         } else {
-                            var startAngle = -90f // 12 o'clock
+                            var startAngle = -90f
 
                             sortedTotals.forEach { (category, amount) ->
                                 if (amount > 0) {
                                     val sweepAngle = ((amount / totalAmount) * 360f).toFloat()
 
-                                    // A. Draw the colored arc
                                     drawArc(
                                         color = getCategoryColor(category),
                                         startAngle = startAngle,
@@ -221,36 +214,30 @@ fun CategorySummaryRow(
                                         style = Stroke(width = 40f, cap = StrokeCap.Butt)
                                     )
 
-                                    // B. Draw the line and text label
                                     val percentage = (amount / totalAmount) * 100
 
-                                    // Only draw labels for slices larger than 2% to prevent text overlap
                                     if (percentage >= 2.0) {
                                         val midAngle = startAngle + (sweepAngle / 2f)
                                         val angleInRad = midAngle * (PI / 180.0)
 
-                                        // Start the line just outside the 40f stroke
                                         val lineStartRadius = chartRadius + 20f
                                         val lineStartX = center.x + lineStartRadius * cos(angleInRad).toFloat()
                                         val lineStartY = center.y + lineStartRadius * sin(angleInRad).toFloat()
 
-                                        // End the line further out
                                         val lineEndRadius = chartRadius + 60f
                                         val lineEndX = center.x + lineEndRadius * cos(angleInRad).toFloat()
                                         val lineEndY = center.y + lineEndRadius * sin(angleInRad).toFloat()
 
                                         drawLine(
-                                            color = Color.LightGray,
+                                            color = Color.Gray, // Static gray for the line pointer
                                             start = Offset(lineStartX, lineStartY),
                                             end = Offset(lineEndX, lineEndY),
                                             strokeWidth = 2f
                                         )
 
-                                        // Measure and draw the percentage text
                                         val percentText = String.format(java.util.Locale.US, "%.1f%%", percentage)
                                         val textLayout = textMeasurer.measure(percentText, labelStyle)
 
-                                        // Push text to the left or right depending on which half of the circle it's on
                                         val textX = if (cos(angleInRad) >= 0) {
                                             lineEndX + 8f
                                         } else {
@@ -274,7 +261,6 @@ fun CategorySummaryRow(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 3. The Color Legend
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -298,12 +284,12 @@ fun CategorySummaryRow(
                                     text = cat,
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E1E1E)
+                                    color = MaterialTheme.colorScheme.onSurface // DYNAMIC TEXT
                                 )
                                 Text(
                                     text = currencyFormatter.format(amount),
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Gray
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant // DYNAMIC TEXT
                                 )
                             }
                         }
@@ -327,7 +313,7 @@ fun TransactionListWidget(
             "Transactions",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF1E1E1E)
+            color = MaterialTheme.colorScheme.onBackground // DYNAMIC TEXT
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -336,21 +322,19 @@ fun TransactionListWidget(
                 modifier = Modifier.fillMaxWidth().padding(32.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No transactions logged yet.", color = Color.Gray)
+                Text("No transactions logged yet.", color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
             }
         } else {
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
                 shadowElevation = 2.dp,
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF5F5F5))
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant) // DYNAMIC BORDER
             ) {
                 Column {
-                    // Grab only the 5 most recent expenses
                     val recentExpenses = expenses.sortedByDescending { it.date }.take(5)
 
                     recentExpenses.forEachIndexed { index, expense ->
-                        // 1. Updated this call to pass the delete command!
                         TransactionRowItem(
                             expense = expense,
                             formatter = currencyFormatter,
@@ -359,11 +343,10 @@ fun TransactionListWidget(
                         )
 
                         if (index < recentExpenses.lastIndex || expenses.size > 5) {
-                            HorizontalDivider(color = Color(0xFFF0F0F0), thickness = 1.dp)
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp) // DYNAMIC DIVIDER
                         }
                     }
 
-                    // Only show the button if there are actually more than 5 transactions
                     if (expenses.size > 5) {
                         Box(
                             modifier = Modifier
@@ -374,7 +357,7 @@ fun TransactionListWidget(
                         ) {
                             Text(
                                 "View more transactions",
-                                color = Color(0xFF4285F4), // Standard actionable blue
+                                color = MaterialTheme.colorScheme.primary, // DYNAMIC TEXT
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.labelLarge
                             )
@@ -392,12 +375,10 @@ fun TransactionRowItem(
     expense: com.example.pocketplanner.data.local.entity.ExpenseEntity,
     formatter: NumberFormat,
     dateFormatter: SimpleDateFormat,
-    onDelete: (com.example.pocketplanner.data.local.entity.ExpenseEntity) -> Unit // 1. Added the delete command!
+    onDelete: (com.example.pocketplanner.data.local.entity.ExpenseEntity) -> Unit
 ) {
-    // 2. Add the dialog state
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    // 3. Add the confirmation dialog
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -406,8 +387,8 @@ fun TransactionRowItem(
             confirmButton = {
                 TextButton(onClick = {
                     showDeleteDialog = false
-                    onDelete(expense) // Tells the database to delete it!
-                }) { Text("Delete", color = Color.Red, fontWeight = FontWeight.Bold) }
+                    onDelete(expense)
+                }) { Text("Delete", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
@@ -421,7 +402,7 @@ fun TransactionRowItem(
             .fillMaxWidth()
             .combinedClickable(
                 onClick = { /* Handle normal tap to view details here later */ },
-                onLongClick = { showDeleteDialog = true } // 4. Triggers the dialog!
+                onLongClick = { showDeleteDialog = true }
             )
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -429,33 +410,29 @@ fun TransactionRowItem(
         Box(
             modifier = Modifier
                 .size(48.dp)
-                .background(Color(0xFFF0F0F0), RoundedCornerShape(12.dp)),
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp)), // DYNAMIC BACKGROUND
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, contentDescription = null, tint = Color.DarkGray, modifier = Modifier.size(24.dp))
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp)) // DYNAMIC ICON
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = expense.description,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E1E1E),
+                color = MaterialTheme.colorScheme.onSurface, // DYNAMIC TEXT
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(4.dp))
             val dateStr = dateFormatter.format(Date(expense.date))
-            Text(dateStr, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+            Text(dateStr, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
         }
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = formatter.format(expense.amount),
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF1E1E1E)
+            color = MaterialTheme.colorScheme.onSurface // DYNAMIC TEXT
         )
     }
 }
-
-// NOTE: The rest of the helper functions (CategoryCard, TransactionRow, getIconForCategory, AddExpenseForm, BottomNavPill)
-// are currently at the bottom of your ExpenseScreen.kt and GlobalWalletScreen.kt files.
-// You can leave them there for now, or move them here if you want to clean up those files!

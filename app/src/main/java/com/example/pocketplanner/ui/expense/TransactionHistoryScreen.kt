@@ -35,12 +35,9 @@ fun TransactionHistoryScreen(
     val expenses by viewModel.expenses.collectAsState(initial = emptyList())
 
     val currencyFormatter = remember { NumberFormat.getCurrencyInstance(Locale("vi", "VN")) }
-    // Formatter for the Row items (can format to time or just date)
     val itemDateFormatter = remember { SimpleDateFormat("MMM dd", Locale.getDefault()) }
-    // Formatter specifically for grouping headers (e.g., "August 21, 2026")
     val headerDateFormatter = remember { SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()) }
 
-    // Group the expenses by the formatted date string
     val groupedExpenses = remember(expenses) {
         expenses
             .sortedByDescending { it.date }
@@ -48,10 +45,10 @@ fun TransactionHistoryScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFFFAFAFA),
+        containerColor = MaterialTheme.colorScheme.background, // <-- DYNAMIC BACKGROUND
         topBar = {
             Surface(
-                color = Color(0xFFFAFAFA),
+                color = MaterialTheme.colorScheme.background, // <-- DYNAMIC BACKGROUND
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -62,7 +59,7 @@ fun TransactionHistoryScreen(
                 ) {
                     Surface(
                         shape = CircleShape,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.surface, // <-- DYNAMIC SURFACE
                         shadowElevation = 2.dp,
                         modifier = Modifier
                             .size(40.dp)
@@ -72,7 +69,7 @@ fun TransactionHistoryScreen(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                             modifier = Modifier.padding(8.dp),
-                            tint = Color.DarkGray
+                            tint = MaterialTheme.colorScheme.onSurface // <-- DYNAMIC ICON
                         )
                     }
                     Spacer(modifier = Modifier.width(16.dp))
@@ -80,7 +77,7 @@ fun TransactionHistoryScreen(
                         "Transaction History",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E1E1E)
+                        color = MaterialTheme.colorScheme.onBackground // <-- DYNAMIC TEXT
                     )
                 }
             }
@@ -91,7 +88,7 @@ fun TransactionHistoryScreen(
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No transactions logged yet.", color = Color.Gray)
+                Text("No transactions logged yet.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
             LazyColumn(
@@ -103,31 +100,26 @@ fun TransactionHistoryScreen(
                     end = 24.dp
                 )
             ) {
-                // Loop through our grouped map: Key is the Date String, Value is the List of Expenses
                 groupedExpenses.forEach { (dateString, dailyExpenses) ->
-
-                    // 1. The Date Header
                     item {
                         Text(
                             text = dateString,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 24.dp, bottom = 12.dp)
                         )
                     }
 
-                    // 2. The Grouped Card for that specific day
                     item {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.surface, // <-- DYNAMIC CARD
                             shadowElevation = 2.dp,
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF5F5F5))
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                         ) {
                             Column {
                                 dailyExpenses.forEachIndexed { index, expense ->
-                                    // --> ADDED THE ONDELETE COMMAND HERE:
                                     TransactionRowItem(
                                         expense = expense,
                                         formatter = currencyFormatter,
@@ -136,7 +128,7 @@ fun TransactionHistoryScreen(
                                     )
 
                                     if (index < dailyExpenses.lastIndex) {
-                                        HorizontalDivider(color = Color(0xFFF0F0F0), thickness = 1.dp)
+                                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
                                     }
                                 }
                             }

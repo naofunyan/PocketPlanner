@@ -40,9 +40,6 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,15 +48,11 @@ fun PlaceDetailsScreen(
     onNavigateBack: () -> Unit,
     onViewTrip: (String) -> Unit,
     viewModel: ItineraryViewModel = hiltViewModel(),
-    // 1. INJECT THE EXPLORE VIEWMODEL HERE
     exploreViewModel: ExploreViewModel = hiltViewModel()
 ) {
-    // 2. COLLECT THE DATABASE STATE
     val savedNames by exploreViewModel.savedPlaces.collectAsState()
 
-    // 1. FETCH FROM REAL REPOSITORY!
     val place = com.example.pocketplanner.data.repository.DestinationRepository.allSubplaces.find { it.name == placeName }
-    // Fallback generator just in case a name gets passed that isn't in the database yet
         ?: com.example.pocketplanner.data.repository.Subplace(
             name = placeName, subtitle = "Discover $placeName", description = "No description available yet.",
             countryName = "Global", flagEmoji = "🌍", heroImageUrl = "https://picsum.photos/seed/${placeName.replace(" ", "")}hero/800/1000",
@@ -73,7 +66,6 @@ fun PlaceDetailsScreen(
     val bottomSheetState = rememberStandardBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
     val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = bottomSheetState)
 
-    // State for the Add to Plan Flow
     val trips by viewModel.trips.collectAsState()
     var showAddToPlanSheet by remember { mutableStateOf(false) }
     var selectedTripForPlan by remember { mutableStateOf<TripEntity?>(null) }
@@ -97,9 +89,9 @@ fun PlaceDetailsScreen(
             scaffoldState = scaffoldState,
             sheetPeekHeight = initialPeekHeight,
             sheetShape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-            sheetContainerColor = Color.White,
+            sheetContainerColor = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
             sheetShadowElevation = 12.dp,
-            containerColor = Color.Black,
+            containerColor = MaterialTheme.colorScheme.background, // DYNAMIC BACKGROUND
             sheetDragHandle = null,
 
             content = {
@@ -122,28 +114,26 @@ fun PlaceDetailsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Surface(
-                            shape = CircleShape, color = Color.White, shadowElevation = 6.dp,
+                            shape = CircleShape, color = MaterialTheme.colorScheme.surface, shadowElevation = 6.dp, // DYNAMIC BACKGROUND
                             modifier = Modifier.size(44.dp).clickable { onNavigateBack() }
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = Color(0xFF1E3A4B), modifier = Modifier.size(22.dp))
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(22.dp)) // DYNAMIC ICON
                             }
                         }
 
-                        // 3. CHECK THE VIEWMODEL STATE INSTEAD OF THE OLD MEMORY LIST
                         val isSaved = savedNames.contains(place.name)
 
                         Surface(
-                            shape = CircleShape, color = Color.White, shadowElevation = 6.dp,
+                            shape = CircleShape, color = MaterialTheme.colorScheme.surface, shadowElevation = 6.dp, // DYNAMIC BACKGROUND
                             modifier = Modifier.size(44.dp).clickable {
-                                // 4. USE THE VIEWMODEL FUNCTION TO SAVE/DELETE FROM ROOM DATABASE
                                 exploreViewModel.toggleSavePlace(place.name, isSaved)
                             }
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = if (isSaved) Icons.Filled.Bookmark else Icons.Default.BookmarkBorder,
-                                    contentDescription = "Bookmark", tint = Color(0xFF1E3A4B), modifier = Modifier.size(22.dp)
+                                    contentDescription = "Bookmark", tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(22.dp) // DYNAMIC ICON
                                 )
                             }
                         }
@@ -191,7 +181,7 @@ fun PlaceDetailsScreen(
                     showAddToPlanSheet = false
                     selectedTripForPlan = null
                 },
-                containerColor = Color.White,
+                containerColor = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
                 windowInsets = WindowInsets(0)
             ) {
                 Column(modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 16.dp)) {
@@ -199,6 +189,7 @@ fun PlaceDetailsScreen(
                     if (selectedTripForPlan == null) {
                         Text(
                             text = "Add to which trip?",
+                            color = MaterialTheme.colorScheme.onSurface, // DYNAMIC TEXT
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
                         )
@@ -207,7 +198,7 @@ fun PlaceDetailsScreen(
                             Text(
                                 text = "You don't have any upcoming trips yet.",
                                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurfaceVariant // DYNAMIC TEXT
                             )
                         } else {
                             LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
@@ -216,11 +207,11 @@ fun PlaceDetailsScreen(
                                         modifier = Modifier.fillMaxWidth().clickable { selectedTripForPlan = trip }.padding(horizontal = 24.dp, vertical = 16.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color(0xFF092A3A))
+                                        Icon(Icons.Default.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary) // DYNAMIC ICON
                                         Spacer(modifier = Modifier.width(16.dp))
                                         Column {
-                                            Text(trip.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                            Text(trip.destination, color = Color.Gray, fontSize = 14.sp)
+                                            Text(trip.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
+                                            Text(trip.destination, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp) // DYNAMIC TEXT
                                         }
                                     }
                                 }
@@ -233,10 +224,12 @@ fun PlaceDetailsScreen(
                         ) {
                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back",
+                                tint = MaterialTheme.colorScheme.onSurface, // DYNAMIC ICON
                                 modifier = Modifier.clickable { selectedTripForPlan = null }.padding(8.dp)
                             )
                             Text(
                                 text = "Select Day", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurface, // DYNAMIC TEXT
                                 modifier = Modifier.padding(start = 8.dp)
                             )
                         }
@@ -271,7 +264,7 @@ fun PlaceDetailsScreen(
                                     }.padding(horizontal = 24.dp, vertical = 16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("Day $targetDay - ${targetDate.format(formatter)}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                                    Text("Day $targetDay - ${targetDate.format(formatter)}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                                 }
                             }
                         }
@@ -285,6 +278,7 @@ fun PlaceDetailsScreen(
 @Composable
 private fun PlaceHeroBanner(place: com.example.pocketplanner.data.repository.Subplace, onAddToPlan: () -> Unit) {
     val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val surfaceColor = MaterialTheme.colorScheme.surface // DYNAMIC SURFACE FOR GRADIENT FADE
 
     Box(modifier = Modifier.fillMaxWidth().height(340.dp + topPadding).clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))) {
         AsyncImage(
@@ -294,9 +288,12 @@ private fun PlaceHeroBanner(place: com.example.pocketplanner.data.repository.Sub
         Box(modifier = Modifier.fillMaxSize().background(
             Brush.verticalGradient(0f to Color.Black.copy(alpha = 0.4f), 0.3f to Color.Transparent, 0.5f to Color.Transparent, 0.85f to Color.Black.copy(alpha = 0.6f), 1f to Color.Black.copy(alpha = 0.1f))
         ))
+
+        // DYNAMIC FADE OVERLAY
         Box(modifier = Modifier.fillMaxSize().background(
-            Brush.verticalGradient(0f to Color.Transparent, 0.85f to Color.Transparent, 0.95f to Color.White.copy(alpha = 0.8f), 1f to Color.White)
+            Brush.verticalGradient(0f to Color.Transparent, 0.85f to Color.Transparent, 0.95f to surfaceColor.copy(alpha = 0.8f), 1f to surfaceColor)
         ))
+
         Box(modifier = Modifier.align(Alignment.TopCenter).padding(top = topPadding + 12.dp).size(width = 38.dp, height = 4.dp).background(Color.White.copy(alpha = 0.8f), CircleShape))
 
         Row(modifier = Modifier.align(Alignment.TopStart).padding(start = 24.dp, top = topPadding + 14.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -305,30 +302,30 @@ private fun PlaceHeroBanner(place: com.example.pocketplanner.data.repository.Sub
             }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = place.countryName, color = Color.White,
+                text = place.countryName, color = Color.White, // Kept white to overlay on image properly
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, shadow = Shadow(Color.Black.copy(alpha = 0.6f), Offset(1f, 1f), 4f))
             )
         }
 
         Column(modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 24.dp, vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = place.name, color = Color.White, textAlign = TextAlign.Center,
+                text = place.name, color = Color.White, textAlign = TextAlign.Center, // Kept white
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold, fontSize = 42.sp, shadow = Shadow(Color.Black.copy(alpha = 0.8f), Offset(0f, 2f), 12f))
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = place.subtitle.uppercase(), color = Color.White.copy(alpha = 0.95f), textAlign = TextAlign.Center,
+                text = place.subtitle.uppercase(), color = Color.White.copy(alpha = 0.95f), textAlign = TextAlign.Center, // Kept white
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp, fontSize = 11.sp, shadow = Shadow(Color.Black.copy(alpha = 0.9f), Offset(0f, 2f), 12f))
             )
             Spacer(modifier = Modifier.height(24.dp))
 
             Surface(
-                onClick = onAddToPlan, shape = CircleShape, color = Color.White, shadowElevation = 8.dp, modifier = Modifier.height(48.dp)
+                onClick = onAddToPlan, shape = CircleShape, color = MaterialTheme.colorScheme.primary, shadowElevation = 8.dp, modifier = Modifier.height(48.dp) // DYNAMIC BACKGROUND
             ) {
                 Row(modifier = Modifier.padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                    Icon(Icons.Filled.Add, null, tint = Color(0xFF092A3A), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Filled.Add, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp)) // DYNAMIC ICON
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Add to plan", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, color = Color(0xFF092A3A)))
+                    Text("Add to plan", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)) // DYNAMIC TEXT
                 }
             }
         }
@@ -362,7 +359,7 @@ fun PlaceDescriptionSection(place: com.example.pocketplanner.data.repository.Sub
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 24.dp)) {
         Text(
             text = place.description,
-            style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFF4A5568), lineHeight = 26.sp, fontSize = 16.sp)
+            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 26.sp, fontSize = 16.sp) // DYNAMIC TEXT
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -370,13 +367,13 @@ fun PlaceDescriptionSection(place: com.example.pocketplanner.data.repository.Sub
         // --- NEW POLISHED INFO CARD ---
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = Color(0xFFF4F6F9), // Soft slate background
+            color = MaterialTheme.colorScheme.surfaceVariant, // DYNAMIC BACKGROUND
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp), // Generous padding inside the box
+                    .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // 1. Opening Hours Row
@@ -384,51 +381,46 @@ fun PlaceDescriptionSection(place: com.example.pocketplanner.data.repository.Sub
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // White circular background for the icon
                     Surface(
                         shape = CircleShape,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
                         modifier = Modifier.size(44.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.Schedule, contentDescription = "Time", tint = Color(0xFF092A3A), modifier = Modifier.size(22.dp))
+                            Icon(Icons.Default.Schedule, contentDescription = "Time", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp)) // DYNAMIC ICON
                         }
                     }
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    // Text takes up the rest of the horizontal space
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = "Opening Hours", style = MaterialTheme.typography.labelMedium, color = Color(0xFF7A869A))
+                        Text(text = "Opening Hours", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                         Spacer(modifier = Modifier.height(2.dp))
-                        Text(text = place.openingTime, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color(0xFF092A3A))
+                        Text(text = place.openingTime, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                     }
                 }
 
-                // A subtle divider line between the two items
-                Divider(color = Color(0xFFE2E2E6), thickness = 1.dp)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp) // DYNAMIC DIVIDER
 
                 // 2. Ticket Info Row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // White circular background for the icon
                     Surface(
                         shape = CircleShape,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
                         modifier = Modifier.size(44.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.Info, contentDescription = "Price", tint = Color(0xFF092A3A), modifier = Modifier.size(22.dp))
+                            Icon(Icons.Default.Info, contentDescription = "Price", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp)) // DYNAMIC ICON
                         }
                     }
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    // Text takes up the rest of the horizontal space
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = "Price", style = MaterialTheme.typography.labelMedium, color = Color(0xFF7A869A))
+                        Text(text = "Price", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                         Spacer(modifier = Modifier.height(2.dp))
-                        Text(text = place.ticketPrice, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color(0xFF092A3A))
+                        Text(text = place.ticketPrice, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                     }
                 }
             }

@@ -67,9 +67,9 @@ fun TripsScreen(
     val trips by viewModel.trips.collectAsState()
     val isGenerating by viewModel.isGenerating.collectAsState()
     val weatherState by viewModel.weatherState.collectAsState()
-    
+
     var showContextMenuForTrip by remember { mutableStateOf<TripEntity?>(null) }
-    
+
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -112,7 +112,7 @@ fun TripsScreen(
 
     val listState = rememberLazyListState()
     var headerHeightPx by remember { mutableFloatStateOf(0f) }
-    val headerHeightDp = with(LocalDensity.current) { 
+    val headerHeightDp = with(LocalDensity.current) {
         if (headerHeightPx > 0) headerHeightPx.toDp() else 300.dp // Fallback height
     }
 
@@ -124,10 +124,10 @@ fun TripsScreen(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background // DYNAMIC
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
-            
+
             // 1. Bottom Layer: Parallax Header
             HomeHeader(
                 userName = userName,
@@ -156,7 +156,7 @@ fun TripsScreen(
                 item {
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.background,
+                        color = MaterialTheme.colorScheme.background, // DYNAMIC
                         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
                     ) {
                         ActionRow(onAddTripClick = onAddTripClick)
@@ -169,13 +169,14 @@ fun TripsScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.background)
-                                .padding(32.dp), 
+                                .background(MaterialTheme.colorScheme.background) // DYNAMIC
+                                .padding(32.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = "Kick things off by adding a future adventure",
                                 style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onBackground, // DYNAMIC TEXT
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
                         }
@@ -192,11 +193,11 @@ fun TripsScreen(
                                 text = "Active Trips",
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.background)
+                                    .background(MaterialTheme.colorScheme.background) // DYNAMIC
                                     .padding(horizontal = 24.dp, vertical = 8.dp),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.primary // DYNAMIC
                             )
                         }
                         items(activeTrips) { trip ->
@@ -212,11 +213,11 @@ fun TripsScreen(
                                 text = "Upcoming Trips",
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.background)
+                                    .background(MaterialTheme.colorScheme.background) // DYNAMIC
                                     .padding(horizontal = 24.dp, vertical = 8.dp),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.primary // DYNAMIC
                             )
                         }
                         items(upcomingTrips) { trip ->
@@ -232,11 +233,11 @@ fun TripsScreen(
                                 text = "Past Trips",
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.background)
+                                    .background(MaterialTheme.colorScheme.background) // DYNAMIC
                                     .padding(horizontal = 24.dp, vertical = 8.dp),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.primary // DYNAMIC
                             )
                         }
                         items(pastTrips) { trip ->
@@ -246,23 +247,24 @@ fun TripsScreen(
                         }
                     }
                 }
-                
+
                 // Bottom filler to ensure we don't see the header at the very bottom if list is short
                 item {
-                    Box(modifier = Modifier.fillMaxWidth().height(150.dp).background(MaterialTheme.colorScheme.background))
+                    Box(modifier = Modifier.fillMaxWidth().height(150.dp).background(MaterialTheme.colorScheme.background)) // DYNAMIC
                 }
             }
         }
     }
 
     val coroutineScope = rememberCoroutineScope()
-    
+
     var tripToDelete by remember { mutableStateOf<com.example.pocketplanner.data.local.entity.TripEntity?>(null) }
 
     if (isGenerating) {
         AlertDialog(
             onDismissRequest = { /* Don't allow dismiss while generating */ },
             title = null,
+            containerColor = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -271,9 +273,9 @@ fun TripsScreen(
                 ) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("AI is planning your trip...", style = MaterialTheme.typography.titleMedium)
+                    Text("AI is planning your trip...", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("This usually takes a few seconds.", style = MaterialTheme.typography.bodyMedium, color = Color.Gray, textAlign = TextAlign.Center)
+                    Text("This usually takes a few seconds.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center) // DYNAMIC TEXT
                 }
             },
             confirmButton = {} // No buttons, user must wait
@@ -283,7 +285,7 @@ fun TripsScreen(
     if (showContextMenuForTrip != null) {
         androidx.compose.material3.ModalBottomSheet(
             onDismissRequest = { showContextMenuForTrip = null },
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
             shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
             windowInsets = androidx.compose.foundation.layout.WindowInsets(0)
         ) {
@@ -294,20 +296,21 @@ fun TripsScreen(
             ) {
                 // Settings
                 androidx.compose.material3.ListItem(
-                    headlineContent = { Text("Trip Settings") },
-                    leadingContent = { Icon(painter = painterResource(id = R.drawable.navsettings), contentDescription = null, modifier = Modifier.size(24.dp)) },
+                    headlineContent = { Text("Trip Settings", color = MaterialTheme.colorScheme.onSurface) }, // DYNAMIC TEXT
+                    leadingContent = { Icon(painter = painterResource(id = R.drawable.navsettings), contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp)) }, // DYNAMIC ICON
                     modifier = Modifier.clickable {
                         val tripId = showContextMenuForTrip?.id
                         showContextMenuForTrip = null
                         if (tripId != null) {
                             onEditTripClick(tripId)
                         }
-                    }
+                    },
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface) // DYNAMIC BACKGROUND
                 )
                 // Share
                 androidx.compose.material3.ListItem(
-                    headlineContent = { Text("Share Trip") },
-                    leadingContent = { Icon(painter = painterResource(id = R.drawable.share), contentDescription = null, modifier = Modifier.size(24.dp)) },
+                    headlineContent = { Text("Share Trip", color = MaterialTheme.colorScheme.onSurface) }, // DYNAMIC TEXT
+                    leadingContent = { Icon(painter = painterResource(id = R.drawable.share), contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp)) }, // DYNAMIC ICON
                     modifier = Modifier.clickable {
                         val trip = showContextMenuForTrip
                         showContextMenuForTrip = null
@@ -315,11 +318,11 @@ fun TripsScreen(
                             coroutineScope.launch {
                                 // 1. Try to generate a postcard image
                                 val imageUri = com.example.pocketplanner.util.ImageGenerator.generateTripPostcard(context, trip)
-                                
+
                                 // 2. Create the rich text with Deep Link
                                 val deepLinkUrl = "pocketplanner://trip/${trip.id}"
                                 val shareText = "✈️ Check out my trip to ${trip.destination}!\n\nImport it directly into PocketPlanner:\n$deepLinkUrl"
-                                
+
                                 // 3. Build and launch intent
                                 val sendIntent = android.content.Intent().apply {
                                     action = android.content.Intent.ACTION_SEND
@@ -336,19 +339,21 @@ fun TripsScreen(
                                 context.startActivity(shareIntent)
                             }
                         }
-                    }
+                    },
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface) // DYNAMIC BACKGROUND
                 )
                 // Delete
                 androidx.compose.material3.ListItem(
-                    headlineContent = { Text("Delete Trip", color = Color.Red) },
-                    leadingContent = { Icon(painter = painterResource(id = R.drawable.delete), contentDescription = null, tint = Color.Red, modifier = Modifier.size(24.dp)) },
+                    headlineContent = { Text("Delete Trip", color = MaterialTheme.colorScheme.error) }, // DYNAMIC TEXT
+                    leadingContent = { Icon(painter = painterResource(id = R.drawable.delete), contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(24.dp)) }, // DYNAMIC ICON
                     modifier = Modifier.clickable {
                         val trip = showContextMenuForTrip
                         showContextMenuForTrip = null
                         if (trip != null) {
                             tripToDelete = trip
                         }
-                    }
+                    },
+                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface) // DYNAMIC BACKGROUND
                 )
             }
         }
@@ -357,13 +362,14 @@ fun TripsScreen(
     if (tripToDelete != null) {
         AlertDialog(
             onDismissRequest = { tripToDelete = null },
-            title = { Text("Delete Trip?") },
-            text = { 
+            containerColor = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
+            title = { Text("Delete Trip?", color = MaterialTheme.colorScheme.onSurface) }, // DYNAMIC TEXT
+            text = {
                 Column {
-                    Text("Are you sure you want to delete this trip?")
+                    Text("Are you sure you want to delete this trip?", color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("All the steps for the trip, including pictures, locations, and text updates will be permanently deleted.", color = Color.DarkGray)
-                } 
+                    Text("All the steps for the trip, including pictures, locations, and text updates will be permanently deleted.", color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                }
             },
             confirmButton = {
                 TextButton(
@@ -372,12 +378,12 @@ fun TripsScreen(
                         tripToDelete = null
                     }
                 ) {
-                    Text("Delete", color = Color.Red)
+                    Text("Delete", color = MaterialTheme.colorScheme.error) // DYNAMIC TEXT
                 }
             },
             dismissButton = {
                 TextButton(onClick = { tripToDelete = null }) {
-                    Text("Cancel")
+                    Text("Cancel", color = MaterialTheme.colorScheme.primary) // DYNAMIC TEXT
                 }
             }
         )
@@ -411,13 +417,13 @@ fun HomeHeader(userName: String, activeTrip: TripEntity?, weatherState: WeatherS
                     val hours = java.util.concurrent.TimeUnit.MILLISECONDS.toHours(diff) % 24
                     val minutes = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(diff) % 60
                     val seconds = java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(diff) % 60
-                    
+
                     val parts = mutableListOf<String>()
                     if (days > 0) parts.add(String.format("%02d days", days))
                     if (hours > 0 || days > 0) parts.add(String.format("%02d hours", hours))
                     parts.add(String.format("%02d minutes", minutes))
                     parts.add(String.format("%02d seconds", seconds))
-                    
+
                     countdownText = "Your trip to ${activeTrip.destination} will begin in ${parts.joinToString(" ")}."
                 }
                 kotlinx.coroutines.delay(1000L)
@@ -428,7 +434,7 @@ fun HomeHeader(userName: String, activeTrip: TripEntity?, weatherState: WeatherS
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primary)
+            .background(MaterialTheme.colorScheme.primary) // Dynamic primary background
     ) {
         Column(
             modifier = Modifier
@@ -446,33 +452,33 @@ fun HomeHeader(userName: String, activeTrip: TripEntity?, weatherState: WeatherS
                 Text(
                     text = "PocketPlanner",
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = MaterialTheme.colorScheme.onPrimary // Dynamic text over primary
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
 
             // Greeting
             Text(
                 text = "$greetingText, $userName!",
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onPrimary
+                color = MaterialTheme.colorScheme.onPrimary // Dynamic text over primary
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
 
             // Live Countdown
             Text(
                 text = countdownText,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f) // Dynamic text over primary
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Weather Pill
             Surface(
-                color = Color.White.copy(alpha = 0.15f),
+                color = Color.White.copy(alpha = 0.15f), // Static transparent white for overlay
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
@@ -482,11 +488,11 @@ fun HomeHeader(userName: String, activeTrip: TripEntity?, weatherState: WeatherS
                     Icon(
                         imageVector = Icons.Filled.WbSunny,
                         contentDescription = "Weather",
-                        tint = MaterialTheme.colorScheme.onPrimary,
+                        tint = MaterialTheme.colorScheme.onPrimary, // Dynamic icon over primary
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    
+
                     val weatherString = when (weatherState) {
                         is WeatherState.Loading -> "Fetching local weather..."
                         is WeatherState.Success -> {
@@ -496,11 +502,11 @@ fun HomeHeader(userName: String, activeTrip: TripEntity?, weatherState: WeatherS
                         }
                         is WeatherState.Error -> "Weather data unavailable."
                     }
-                    
+
                     Text(
                         text = weatherString,
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = MaterialTheme.colorScheme.onPrimary // Dynamic text over primary
                     )
                 }
             }
@@ -521,7 +527,7 @@ fun ActionRow(onAddTripClick: () -> Unit) {
             modifier = Modifier.weight(1f).height(48.dp),
             shape = RoundedCornerShape(24.dp),
             contentPadding = PaddingValues(0.dp), // Override default padding for perfect centering
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary) // DYNAMIC BUTTON
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                 Icon(Icons.Filled.Add, contentDescription = "Add a trip", modifier = Modifier.size(18.dp))
@@ -535,12 +541,12 @@ fun ActionRow(onAddTripClick: () -> Unit) {
             modifier = Modifier.weight(1f).height(48.dp),
             shape = RoundedCornerShape(24.dp),
             contentPadding = PaddingValues(0.dp), // Override default padding for perfect centering
-            border = androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray)
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant) // DYNAMIC BORDER
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                Icon(Icons.Filled.BarChart, contentDescription = "Travel stats", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(18.dp))
+                Icon(Icons.Filled.BarChart, contentDescription = "Travel stats", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(18.dp)) // DYNAMIC ICON
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Travel stats", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold))
+                Text("Travel stats", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleSmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)) // DYNAMIC TEXT
             }
         }
     }
@@ -551,15 +557,15 @@ fun ActionRow(onAddTripClick: () -> Unit) {
 fun TripCard(trip: TripEntity, onClick: () -> Unit = {}, onLongClick: () -> Unit = {}) {
     val dateFormatter = SimpleDateFormat("MMM dd", Locale.getDefault())
     val yearFormatter = SimpleDateFormat("yyyy", Locale.getDefault())
-    
+
     val start = Date(trip.startDate)
     val end = Date(trip.endDate)
     val now = System.currentTimeMillis()
-    
+
     // Add 1 to totalDays so a trip from Aug 15 to Aug 15 is 1 day.
     val totalDays = ((trip.endDate - trip.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1
     val daysSpent = if (now < trip.startDate) 0 else if (now > trip.endDate) totalDays else ((now - trip.startDate) / 86400000L).toInt() + 1
-    
+
     val isTravelingNow = now in trip.startDate..trip.endDate
 
     // Generate a beautiful mock image based on the trip's ID so it stays consistent
@@ -598,11 +604,11 @@ fun TripCard(trip: TripEntity, onClick: () -> Unit = {}, onLongClick: () -> Unit
                         )
                     )
             )
-            
+
             // "NOW TRAVELING" Badge (Top Left)
             if (isTravelingNow || trip.status == "ACTIVE") {
                 Surface(
-                    color = Color(0xFF1E3A4B).copy(alpha = 0.9f),
+                    color = Color(0xFF1E3A4B).copy(alpha = 0.9f), // Static dark overlay for badge visibility over image
                     shape = RoundedCornerShape(percent = 50),
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -615,7 +621,7 @@ fun TripCard(trip: TripEntity, onClick: () -> Unit = {}, onLongClick: () -> Unit
                         Text(
                             text = "#now_travelling",
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = Color.White
+                            color = Color.White // Needs to stay white over dark badge
                         )
                     }
                 }
@@ -632,11 +638,11 @@ fun TripCard(trip: TripEntity, onClick: () -> Unit = {}, onLongClick: () -> Unit
                 Text(
                     text = titleText,
                     style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
-                    color = Color.White
+                    color = Color.White // Text over dark gradient overlay needs to remain white
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -657,7 +663,7 @@ fun TripCard(trip: TripEntity, onClick: () -> Unit = {}, onLongClick: () -> Unit
                                 color = Color.White.copy(alpha = 0.8f)
                             )
                         }
-                        
+
                         // Days
                         Column {
                             Text(

@@ -85,7 +85,7 @@ fun InterpreterScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF3F4F6)) // Light gray background
+            .background(MaterialTheme.colorScheme.background) // DYNAMIC BACKGROUND
             .windowInsetsPadding(WindowInsets.statusBars)
             .imePadding() // Pushes the UI up when the keyboard opens!
     ) {
@@ -117,7 +117,7 @@ fun InterpreterScreen(
                         .padding(bottom = 4.dp)
                         .graphicsLayer(rotationZ = topPanelRotation), // ANIMATED FLIP
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.surface // DYNAMIC BACKGROUND
                 ) {
                     SpeakerPanel(
                         role = SpeakerRole.SPEAKER_A,
@@ -150,16 +150,16 @@ fun InterpreterScreen(
                 ) {
                     IconButton(
                         onClick = { isTopPanelFlipped = !isTopPanelFlipped },
-                        modifier = Modifier.background(Color.White, CircleShape).size(48.dp)
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape).size(48.dp) // DYNAMIC BACKGROUND
                     ) {
-                        Icon(painter = painterResource(id = com.example.pocketplanner.R.drawable.flip), contentDescription = "Rotate Screen", tint = Color.Gray, modifier = Modifier.size(24.dp))
+                        Icon(painter = painterResource(id = com.example.pocketplanner.R.drawable.flip), contentDescription = "Rotate Screen", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp)) // DYNAMIC ICON
                     }
 
                     IconButton(
                         onClick = { showHistory = true },
-                        modifier = Modifier.background(Color.White, CircleShape).size(48.dp)
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape).size(48.dp) // DYNAMIC BACKGROUND
                     ) {
-                        Icon(Icons.Default.History, contentDescription = "History", tint = Color.Gray)
+                        Icon(Icons.Default.History, contentDescription = "History", tint = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC ICON
                     }
                 }
 
@@ -170,7 +170,7 @@ fun InterpreterScreen(
                         .fillMaxWidth()
                         .padding(top = 4.dp),
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.surface // DYNAMIC BACKGROUND
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         SpeakerPanel(
@@ -197,7 +197,7 @@ fun InterpreterScreen(
                         if (mode == ConnectionMode.OFFLINE_MLKIT) {
                             Text(
                                 text = "Offline Mode",
-                                color = Color.Red,
+                                color = MaterialTheme.colorScheme.error, // DYNAMIC TEXT
                                 fontSize = 10.sp,
                                 modifier = Modifier.padding(16.dp).align(Alignment.TopEnd)
                             )
@@ -210,20 +210,24 @@ fun InterpreterScreen(
 
     // --- HISTORY BOTTOM SHEET ---
     if (showHistory) {
-        ModalBottomSheet(onDismissRequest = { showHistory = false }) {
+        ModalBottomSheet(
+            onDismissRequest = { showHistory = false },
+            containerColor = MaterialTheme.colorScheme.surface // DYNAMIC BACKGROUND
+        ) {
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 32.dp)) {
                 Text(
                     text = "Translation History",
                     fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface, // DYNAMIC TEXT
                     fontSize = 20.sp,
                     modifier = Modifier.padding(bottom = 16.dp, top = 8.dp)
                 )
                 if (messages.isEmpty()) {
-                    Text("No history yet.", color = Color.Gray)
+                    Text("No history yet.", color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                 } else {
                     messages.forEach { msg ->
                         Column(modifier = Modifier.padding(bottom = 16.dp)) {
-                            Text(msg.originalText, color = Color.Gray, fontSize = 14.sp)
+                            Text(msg.originalText, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp) // DYNAMIC TEXT
                             Text(msg.translatedText, color = MaterialTheme.colorScheme.primary, fontSize = 16.sp, fontWeight = FontWeight.Medium)
                         }
                     }
@@ -267,10 +271,14 @@ fun LanguagePickerBottomSheet(
         "en" to "English"
     )
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface // DYNAMIC BACKGROUND
+    ) {
         Column(modifier = Modifier.padding(bottom = 32.dp)) {
             Text(
                 text = title,
+                color = MaterialTheme.colorScheme.onSurface, // DYNAMIC TEXT
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
                 modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 16.dp)
@@ -285,10 +293,14 @@ fun LanguagePickerBottomSheet(
                 ) {
                     RadioButton(
                         selected = currentLanguageCode == code,
-                        onClick = { onLanguageSelected(code) }
+                        onClick = { onLanguageSelected(code) },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = MaterialTheme.colorScheme.primary,
+                            unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                     Spacer(modifier = Modifier.width(16.dp))
-                    Text(text = name, fontSize = 16.sp)
+                    Text(text = name, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) // DYNAMIC TEXT
                 }
             }
         }
@@ -332,7 +344,7 @@ fun SpeakerPanel(
             if (lastMessage == null) {
                 Text(
                     text = placeholderText,
-                    color = Color.LightGray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), // DYNAMIC TEXT
                     fontSize = 20.sp,
                     lineHeight = 28.sp,
                     modifier = Modifier.align(Alignment.Center)
@@ -341,7 +353,7 @@ fun SpeakerPanel(
                 if (lastMessage.speaker == role) {
                     Text(
                         text = lastMessage.originalText,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC TEXT
                         fontSize = 24.sp,
                         lineHeight = 32.sp
                     )
@@ -369,17 +381,17 @@ fun SpeakerPanel(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 IconButton(
                     onClick = onReplayPress,
-                    modifier = Modifier.size(48.dp).border(1.dp, Color(0xFFE5E7EB), CircleShape)
+                    modifier = Modifier.size(48.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape) // DYNAMIC BORDER
                 ) {
                     Icon(Icons.Default.Replay, contentDescription = "Replay", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                 }
 
                 IconButton(
                     onClick = onMuteToggle,
-                    modifier = Modifier.size(48.dp).border(1.dp, Color(0xFFE5E7EB), CircleShape)
+                    modifier = Modifier.size(48.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape) // DYNAMIC BORDER
                 ) {
                     val icon = if (isMuted) Icons.Default.VolumeOff else Icons.Default.VolumeUp
-                    val tint = if (isMuted) Color.Gray else MaterialTheme.colorScheme.primary
+                    val tint = if (isMuted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary // DYNAMIC ICON
                     Icon(icon, contentDescription = "Mute Toggle", tint = tint, modifier = Modifier.size(24.dp))
                 }
             }
@@ -388,16 +400,16 @@ fun SpeakerPanel(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = languageName, color = MaterialTheme.colorScheme.primary, fontSize = 15.sp, fontWeight = FontWeight.Medium)
                     if (subLanguageName != null) {
-                        Text(text = subLanguageName, color = Color.Gray, fontSize = 12.sp)
+                        Text(text = subLanguageName, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp) // DYNAMIC TEXT
                     }
                 }
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Select Language", tint = Color.Gray, modifier = Modifier.padding(start = 4.dp))
+                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Select Language", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 4.dp)) // DYNAMIC ICON
             }
 
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .border(1.dp, Color(0xFFE5E7EB), CircleShape)
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape) // DYNAMIC BORDER
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onPress = {
@@ -432,7 +444,7 @@ fun TextEntryScreen(
     Surface(
         modifier = Modifier.fillMaxSize().padding(12.dp),
         shape = RoundedCornerShape(24.dp),
-        color = Color.White
+        color = MaterialTheme.colorScheme.surface // DYNAMIC BACKGROUND
     ) {
         Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
@@ -440,11 +452,11 @@ fun TextEntryScreen(
                     value = text,
                     onValueChange = { text = it },
                     modifier = Modifier.fillMaxSize().focusRequester(focusRequester),
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
+                    textStyle = TextStyle(fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface), // DYNAMIC TEXT
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
                 )
                 if (text.isEmpty()) {
-                    Text(placeholderText, color = Color.Gray, fontSize = 24.sp)
+                    Text(placeholderText, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 24.sp) // DYNAMIC TEXT
                 }
             }
 
@@ -454,13 +466,13 @@ fun TextEntryScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButton(onClick = { if (text.isEmpty()) onCancel() else text = "" }) {
-                    Text(clearText, color = Color.Gray, fontSize = 16.sp)
+                    Text(clearText, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp) // DYNAMIC TEXT
                 }
                 Button(
                     onClick = { onTranslate(text) },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary, // App's primary color
-                        contentColor = MaterialTheme.colorScheme.onPrimary  // High contrast text
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                     enabled = text.isNotBlank(),
                     shape = RoundedCornerShape(50)

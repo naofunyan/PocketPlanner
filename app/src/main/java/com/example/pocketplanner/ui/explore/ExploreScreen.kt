@@ -88,7 +88,7 @@ fun ExploreScreen(
         scaffoldState = scaffoldState,
         sheetPeekHeight = currentPeekHeight,
         sheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        sheetContainerColor = Color.White,
+        sheetContainerColor = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
         sheetShadowElevation = 8.dp,
         containerColor = Color.Transparent,
         sheetDragHandle = {
@@ -114,7 +114,7 @@ fun ExploreScreen(
                     text = "Explore",
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = Color.White, // Kept white for image overlay
                     modifier = Modifier
                         .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 16.dp)
                         .padding(horizontal = 24.dp)
@@ -176,9 +176,6 @@ fun ExploreScreen(
                                 item { Spacer(modifier = Modifier.height(32.dp)) }
                             }
                         } else {
-                            // ---> 2. REMOVED the old DestinationRepository.savedPlaces line. <---
-                            // We are now directly using the 'savedNames' list we collected from the ViewModel at the top of the screen!
-
                             val savedDestinations = savedNames.map { savedTitle ->
                                 com.example.pocketplanner.data.repository.DestinationRepository.allSubplaces.find { it.name == savedTitle }
                                     ?: com.example.pocketplanner.data.repository.Subplace(
@@ -195,8 +192,8 @@ fun ExploreScreen(
                                         modifier = Modifier.fillMaxWidth().padding(top = 64.dp),
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        Icon(Icons.Filled.FavoriteBorder, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(64.dp).padding(bottom = 16.dp))
-                                        Text("No saved destinations yet.", color = Color.Gray)
+                                        Icon(Icons.Filled.FavoriteBorder, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), modifier = Modifier.size(64.dp).padding(bottom = 16.dp)) // DYNAMIC
+                                        Text("No saved destinations yet.", color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                                     }
                                 }
                             } else {
@@ -205,7 +202,7 @@ fun ExploreScreen(
                                         savedDestinations.forEach { dest ->
                                             Surface(
                                                 shape = RoundedCornerShape(16.dp),
-                                                color = Color(0xFFF4F6F9),
+                                                color = MaterialTheme.colorScheme.surfaceVariant, // DYNAMIC BACKGROUND
                                                 modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).clickable { onPlaceClick(dest.name) }
                                             ) {
                                                 Row(
@@ -224,7 +221,7 @@ fun ExploreScreen(
                                                             text = dest.name,
                                                             fontWeight = FontWeight.Bold,
                                                             fontSize = 16.sp,
-                                                            color = Color(0xFF1E3A4B)
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant // DYNAMIC TEXT
                                                         )
                                                         Spacer(modifier = Modifier.height(4.dp))
                                                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -234,7 +231,7 @@ fun ExploreScreen(
                                                     Icon(
                                                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                                                         contentDescription = "View",
-                                                        tint = Color.LightGray
+                                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f) // DYNAMIC
                                                     )
                                                 }
                                             }
@@ -284,14 +281,14 @@ fun TopSegmentedControl(selectedIndex: Int, onIndexSelected: (Int) -> Unit) {
 private fun TabItem(text: String, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
         onClick = onClick,
-        color = if (isSelected) Color(0xFF092A3A) else Color(0xFFE2E2E6),
+        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant, // DYNAMIC
         shape = RoundedCornerShape(12.dp),
         modifier = modifier.height(48.dp)
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Text(
                 text = text,
-                color = if (isSelected) Color.White else Color(0xFF092A3A),
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
             )
         }
@@ -308,7 +305,7 @@ fun CategoryRow(selectedCategory: String?, onCategoryClick: (String) -> Unit) {
     Column {
         Text(
             text = "Browse by travel theme", style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold, color = Color(0xFF1E3A4B),
+            fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, // DYNAMIC TEXT
             modifier = Modifier.padding(horizontal = 24.dp)
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -320,8 +317,8 @@ fun CategoryRow(selectedCategory: String?, onCategoryClick: (String) -> Unit) {
                 val isSelected = selectedCategory == cat.second
                 Surface(
                     shape = CircleShape,
-                    color = if (isSelected) Color(0xFFF0E6FA) else Color.White,
-                    border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0)) else null,
+                    color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface, // DYNAMIC
+                    border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant) else null, // DYNAMIC
                     modifier = Modifier.clip(CircleShape).clickable { onCategoryClick(cat.second) }
                 ) {
                     Row(
@@ -332,7 +329,7 @@ fun CategoryRow(selectedCategory: String?, onCategoryClick: (String) -> Unit) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = cat.second,
-                            color = if (isSelected) Color(0xFF6B4FA9) else Color(0xFF1E3A4B),
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface, // DYNAMIC
                             style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Medium
                         )
                     }
@@ -352,22 +349,24 @@ fun ExploreSearchBar(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Surface(
-        shape = CircleShape, color = Color.White, shadowElevation = 8.dp,
+        shape = CircleShape, color = MaterialTheme.colorScheme.surface, shadowElevation = 8.dp, // DYNAMIC BACKGROUND
         modifier = Modifier.fillMaxWidth().height(56.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Filled.Search, "Search", tint = Color.Gray, modifier = Modifier.size(24.dp))
+            Icon(Icons.Filled.Search, "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp)) // DYNAMIC ICON
             Spacer(modifier = Modifier.width(8.dp))
             TextField(
                 value = query, onValueChange = onQueryChange,
-                placeholder = { Text("Search destinations...", style = MaterialTheme.typography.bodyMedium, color = Color.Gray) },
+                placeholder = { Text("Search destinations...", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) }, // DYNAMIC TEXT
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = MaterialTheme.colorScheme.primary
+                    cursorColor = MaterialTheme.colorScheme.primary, // DYNAMIC CURSOR
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface, // DYNAMIC TEXT
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -378,14 +377,14 @@ fun ExploreSearchBar(
                 modifier = Modifier.weight(1f)
             )
             Surface(
-                shape = CircleShape, color = MaterialTheme.colorScheme.primary,
+                shape = CircleShape, color = MaterialTheme.colorScheme.primary, // DYNAMIC BUTTON
                 modifier = Modifier.size(36.dp).clickable {
                     onSearchSubmit()
                     keyboardController?.hide()
                 }
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, "Go", tint = Color.White, modifier = Modifier.size(20.dp))
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, "Go", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(20.dp)) // DYNAMIC ICON
                 }
             }
         }
@@ -406,14 +405,14 @@ fun ForYouSection(
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "For you", style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold, color = Color(0xFF1E3A4B),
+            fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, // DYNAMIC TEXT
             modifier = Modifier.padding(horizontal = 24.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
 
         if (cities.isEmpty()) {
             Text(
-                text = "No destinations found.", color = Color.Gray,
+                text = "No destinations found.", color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC TEXT
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
         } else {
@@ -489,14 +488,14 @@ fun UnderTheRadarSection(
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Under the radar", style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold, color = Color(0xFF1E3A4B),
+            fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, // DYNAMIC TEXT
             modifier = Modifier.padding(horizontal = 24.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
 
         if (places.isEmpty()) {
             Text(
-                text = "No hidden gems found.", color = Color.Gray,
+                text = "No hidden gems found.", color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC TEXT
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
         } else {
@@ -526,7 +525,6 @@ fun UnderTheRadarCard(
                 model = subplace.heroImageUrl, contentDescription = subplace.name,
                 contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
             )
-            // Slightly darkened the bottom gradient so the smaller white text stays highly readable
             Box(
                 modifier = Modifier.fillMaxSize().background(
                     Brush.verticalGradient(
@@ -538,22 +536,19 @@ fun UnderTheRadarCard(
                 modifier = Modifier.fillMaxWidth().padding(12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top
             ) {
-                Surface(shape = CircleShape, color = Color.White, modifier = Modifier.size(28.dp)) {
+                Surface(shape = CircleShape, color = Color.White.copy(alpha = 0.2f), modifier = Modifier.size(28.dp)) {
                     Box(contentAlignment = Alignment.Center) { Text(text = subplace.flagEmoji, fontSize = 14.sp) }
                 }
             }
             Text(
                 text = subplace.name,
                 color = Color.White,
-                // 1. Scaled down the font size
                 style = MaterialTheme.typography.titleSmall.copy(
                     fontWeight = FontWeight.Bold,
                     shadow = Shadow(Color.Black.copy(alpha = 0.8f), Offset(2f, 2f), 8f)
                 ),
-                // 2. Capped at 2 lines with an ellipsis
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                // 3. Anchored to the bottom left
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .padding(horizontal = 12.dp, vertical = 12.dp)
@@ -576,16 +571,16 @@ fun SearchResultsSection(
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
         Text(
             text = "Search Results", style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold, color = Color(0xFF1E3A4B),
+            fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, // DYNAMIC TEXT
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         if (places.isEmpty()) {
-            Text(text = "No destinations found for \"$query\".", color = Color.Gray)
+            Text(text = "No destinations found for \"$query\".", color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
         } else {
             places.forEach { dest ->
                 Surface(
-                    shape = RoundedCornerShape(16.dp), color = Color(0xFFF4F6F9),
+                    shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceVariant, // DYNAMIC BACKGROUND
                     modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp).clickable { onPlaceClick(dest.name) }
                 ) {
                     Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -595,13 +590,13 @@ fun SearchResultsSection(
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(text = dest.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF1E3A4B))
+                            Text(text = dest.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                             Spacer(modifier = Modifier.height(4.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(text = dest.flagEmoji, fontSize = 14.sp)
                             }
                         }
-                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "View", tint = Color.LightGray)
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "View", tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) // DYNAMIC ICON
                     }
                 }
             }

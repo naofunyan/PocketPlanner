@@ -23,7 +23,7 @@ import androidx.compose.material.icons.filled.Error
 class ImportTripViewModel @Inject constructor(
     private val syncManager: FirestoreSyncManager
 ) : ViewModel() {
-    
+
     fun importSharedTrip(tripId: String, onComplete: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             try {
@@ -49,7 +49,7 @@ fun ImportTripScreen(
 ) {
     var isImporting by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    
+
     LaunchedEffect(tripId) {
         isImporting = true
         viewModel.importSharedTrip(
@@ -64,7 +64,7 @@ fun ImportTripScreen(
             }
         )
     }
-    
+
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -72,19 +72,47 @@ fun ImportTripScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (isImporting) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) // DYNAMIC COLOR
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Importing Trip...", style = MaterialTheme.typography.titleLarge)
+                Text(
+                    text = "Importing Trip...",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground // DYNAMIC TEXT
+                )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Please wait while we download the itinerary details.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                Text(
+                    text = "Please wait while we download the itinerary details.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
             } else if (errorMessage != null) {
-                Icon(Icons.Filled.Error, contentDescription = "Error", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(64.dp))
+                Icon(
+                    imageVector = Icons.Filled.Error,
+                    contentDescription = "Error",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(64.dp)
+                )
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Failed to Import Trip", style = MaterialTheme.typography.titleLarge)
+                Text(
+                    text = "Failed to Import Trip",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground // DYNAMIC TEXT
+                )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(errorMessage ?: "Unknown error", color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
+                Text(
+                    text = errorMessage ?: "Unknown error",
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center
+                )
                 Spacer(modifier = Modifier.height(24.dp))
-                Button(onClick = onCancel) {
+                Button(
+                    onClick = onCancel,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary, // DYNAMIC BUTTON
+                        contentColor = MaterialTheme.colorScheme.onPrimary // DYNAMIC TEXT
+                    )
+                ) {
                     Text("Go Home")
                 }
             }

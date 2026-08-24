@@ -69,7 +69,9 @@ fun MainScreen() {
                         currentDestination?.route?.contains("ExploreDetailsRoute") == false &&
                         currentDestination?.route?.contains("TransactionHistoryRoute") == false &&
                         currentDestination?.route?.contains("AllPlacesRoute") == false &&
-                        currentDestination?.route?.contains("PlaceDetailsRoute") == false
+                        currentDestination?.route?.contains("PlaceDetailsRoute") == false &&
+                        currentDestination?.route?.contains("FallDetectionSettingsRoute") == false &&
+                        currentDestination?.route?.contains("EmergencySharingRoute") == false
 
     OfflineBannerWrapper {
         Scaffold(
@@ -154,11 +156,18 @@ fun MainScreen() {
                                 }
                             )
 
+                            val isSettings = currentDestination?.hierarchy?.any { it.route?.contains("SettingsRoute") == true } == true
                             BottomNavTab(
                                 iconResId = com.example.pocketplanner.R.drawable.navsettings,
                                 label = "Settings",
-                                isSelected = false,
-                                onClick = { /* TODO */ }
+                                isSelected = isSettings,
+                                onClick = {
+                                    navController.navigate(SettingsRoute) {
+                                        popUpTo(HomeRoute) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
                             )
                         }
                     }
@@ -209,13 +218,13 @@ fun MainScreen() {
             }
 
             composable<AuthRoute>(
-                enterTransition = { 
+                enterTransition = {
                     slideIntoContainer(
                         towards = androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Up,
                         animationSpec = tween(400)
                     )
                 },
-                popExitTransition = { 
+                popExitTransition = {
                     slideOutOfContainer(
                         towards = androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Down,
                         animationSpec = tween(400)
@@ -261,7 +270,7 @@ fun MainScreen() {
                 // Grab the currently logged-in user from Firebase
                 val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
                 val uid = currentUser?.uid ?: "guest"
-                
+
                 com.example.pocketplanner.ui.itinerary.TripsScreen(
                     userId = uid,
                     onTripClick = { tripId -> navController.navigate(ItineraryRoute(tripId)) },
@@ -377,9 +386,9 @@ fun MainScreen() {
                         val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid ?: "test_user_id"
                         itineraryViewModel.generateTripWithAI(
-                            userId = userId, 
-                            destination = args.destinations, 
-                            days = days, 
+                            userId = userId,
+                            destination = args.destinations,
+                            days = days,
                             name = name,
                             startDate = start,
                             endDate = end,
@@ -388,7 +397,7 @@ fun MainScreen() {
                             budgetCurrency = budgetCurr,
                             isTrackerEnabled = isTrackerEnabled,
                             trackingMode = trackingMode,
-                            onSuccess = { 
+                            onSuccess = {
                                 navController.popBackStack(HomeRoute, inclusive = false)
                             },
                             onError = { error ->
@@ -406,7 +415,7 @@ fun MainScreen() {
                 val trips by itineraryViewModel.trips.collectAsState()
                 val exchangeRates by itineraryViewModel.exchangeRates.collectAsState()
                 val context = androidx.compose.ui.platform.LocalContext.current
-                
+
                 val existingTrip = trips.find { it.id == args.tripId }
 
                 androidx.compose.runtime.LaunchedEffect(Unit) {
@@ -473,19 +482,19 @@ fun MainScreen() {
                     onDayClick = { dayNumber ->
                         navController.navigate(DayPlanRoute(route.tripId, dayNumber))
                     },
-                    onExpenseClick = { 
+                    onExpenseClick = {
                         navController.navigate(ExpenseRoute(route.tripId)) {
                             popUpTo(route) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
-                        } 
+                        }
                     },
-                    onTrackClick = { 
+                    onTrackClick = {
                         navController.navigate(TrackingRoute(route.tripId)) {
                             popUpTo(route) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
-                        } 
+                        }
                     }
                 )
             }
@@ -519,18 +528,18 @@ fun MainScreen() {
                 com.example.pocketplanner.ui.tracking.TrackingScreen(
                     tripId = args.tripId,
                     onNavigateBack = { navController.popBackStack() },
-                    onPlanClick = { 
+                    onPlanClick = {
                         navController.navigate(ItineraryRoute(args.tripId)) {
                             popUpTo(ItineraryRoute(args.tripId)) { inclusive = false }
                             launchSingleTop = true
-                        } 
+                        }
                     },
-                    onExpenseClick = { 
+                    onExpenseClick = {
                         navController.navigate(ExpenseRoute(args.tripId)) {
                             popUpTo(ItineraryRoute(args.tripId)) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
-                        } 
+                        }
                     }
                 )
             }
@@ -541,41 +550,48 @@ fun MainScreen() {
                 )
             }
 
-            composable<ProfileRoute> {
-                val context = androidx.compose.ui.platform.LocalContext.current
-                val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(24.dp).systemBarsPadding(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "User Profile Settings",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Signed in as: ${currentUser?.email ?: "Unknown"}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-                    )
-                    Spacer(modifier = Modifier.height(32.dp))
-                    Button(
-                        onClick = {
-                            com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
-                            // Navigate to AuthRoute and clear backstack
-                            navController.navigate(WelcomeRoute) {
-                                popUpTo(0) { inclusive = true }
+            composable<SettingsRoute> {
+                com.example.pocketplanner.ui.settings.SettingsScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onLogoutClick = {
+                        // 1. Log out of Firebase
+                        com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                        // 2. Navigate back to the Welcome screen and wipe the backstack!
+                        navController.navigate(WelcomeRoute) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
+                    onDeleteAccountClick = {
+                        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                        user?.delete()?.addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                navController.navigate(WelcomeRoute) {
+                                    popUpTo(0) { inclusive = true }
+                                }
                             }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                    ) {
-                        Text("Sign Out", color = MaterialTheme.colorScheme.onError)
+                        }
+                    },
+                    onNavigateToFallDetection = {
+                        // THIS NOW NAVIGATES TO THE NEW SCREEN
+                        navController.navigate(FallDetectionSettingsRoute)
                     }
-                }
+                )
+            }
+
+            // ADD THIS NEW COMPOSABLE BLOCK RIGHT AFTER SETTINGS:
+            composable<FallDetectionSettingsRoute> {
+                com.example.pocketplanner.ui.settings.FallDetectionSettingsScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToEmergencySharing = {
+                        navController.navigate(EmergencySharingRoute)
+                    }
+                )
+            }
+
+            composable<EmergencySharingRoute> {
+                com.example.pocketplanner.ui.settings.EmergencySharingScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
         }
     }

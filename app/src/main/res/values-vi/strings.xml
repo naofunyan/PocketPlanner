@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">PocketPlanner</string>
+
+    <!-- Màn hình Cài đặt -->
+    <string name="settings_title">Cài đặt</string>
+    <string name="settings_not_logged_in">Chưa đăng nhập</string>
+
+    <string name="settings_safety_emergency">An toàn &amp; Khẩn cấp</string>
+    <string name="settings_fall_detection">Phát hiện té ngã</string>
+    <string name="settings_fall_detection_desc">Kích hoạt SOS khi ngã mạnh</string>
+    <string name="settings_emergency_sos">SOS Khẩn cấp</string>
+    <string name="settings_emergency_sos_desc">Quản lý liên hệ khẩn cấp</string>
+
+    <string name="settings_preferences">Tuỳ chỉnh</string>
+    <string name="settings_language">Ngôn ngữ</string>
+    <string name="settings_language_current">Tiếng Việt</string>
+    <string name="settings_app_theme">Giao diện</string>
+    <string name="settings_theme_system_default">Mặc định hệ thống</string>
+    <string name="settings_theme_light">Sáng</string>
+    <string name="settings_theme_dark">Tối</string>
+    <string name="settings_notifications">Thông báo</string>
+    <string name="settings_notifications_desc">Nhắc nhở và cảnh báo chuyến đi</string>
+
+    <string name="settings_support">Hỗ trợ</string>
+    <string name="settings_help_center">Trung tâm trợ giúp</string>
+    <string name="settings_privacy_policy">Chính sách bảo mật</string>
+
+    <string name="settings_account">Tài khoản</string>
+    <string name="settings_log_out">Đăng xuất</string>
+    <string name="settings_logout_confirm_message">Bạn có chắc muốn đăng xuất chứ?</string>
+    <string name="settings_delete_account">Xóa tài khoản</string>
+    <string name="settings_delete_confirm_message">Mọi thứ sẽ bị xóa?</string>
+    <string name="settings_delete_forever">Xóa vĩnh viễn</string>
+    <string name="settings_version">Phiên bản 1.0.0</string>
+</resources>

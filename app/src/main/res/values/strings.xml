@@ -1,4 +1,37 @@
 <resources>
+    <!-- YOUR EXISTING DATA -->
     <string name="app_name">PocketPlanner</string>
-    <string name="default_web_client_id">869852688410-qc61rb1oe9ai4ohhumvvctsrmoqt7f9l.apps.googleusercontent.com</string>
+    <string name="default_web_client_id" translatable="false">869852688410-qc61rb1oe9ai4ohhumvvctsrmoqt7f9l.apps.googleusercontent.com</string>
+
+    <!-- NEW SETTINGS SCREEN STRINGS -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_not_logged_in">Not logged in</string>
+
+    <string name="settings_safety_emergency">Safety &amp; Emergency</string>
+    <string name="settings_fall_detection">Fall Detection</string>
+    <string name="settings_fall_detection_desc">Trigger SOS on hard falls</string>
+    <string name="settings_emergency_sos">Emergency SOS</string>
+    <string name="settings_emergency_sos_desc">Manage emergency contacts</string>
+
+    <string name="settings_preferences">Preferences</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_current">English</string>
+    <string name="settings_app_theme">App Theme</string>
+    <string name="settings_theme_system_default">System Default</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_notifications_desc">Trip reminders and alerts</string>
+
+    <string name="settings_support">Support</string>
+    <string name="settings_help_center">Help Center</string>
+    <string name="settings_privacy_policy">Privacy Policy</string>
+
+    <string name="settings_account">Account</string>
+    <string name="settings_log_out">Log Out</string>
+    <string name="settings_logout_confirm_message">Are you sure you want to log out of your account?</string>
+    <string name="settings_delete_account">Delete Account</string>
+    <string name="settings_delete_confirm_message">This action cannot be undone. All of your trips, expenses, and personal data will be permanently removed.</string>
+    <string name="settings_delete_forever">Delete Forever</string>
+    <string name="settings_version">Version 1.0.0</string>
 </resources>

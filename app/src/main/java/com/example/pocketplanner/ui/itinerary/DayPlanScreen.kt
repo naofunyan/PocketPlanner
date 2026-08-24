@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -23,18 +24,31 @@ fun DayPlanScreen(
     val places by viewModel.getPlacesForDay(tripId, dayNumber).collectAsState(initial = emptyList())
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background, // DYNAMIC BACKGROUND
         topBar = {
             TopAppBar(
-                title = { Text("Day $dayNumber") },
+                title = { Text("Day $dayNumber", color = MaterialTheme.colorScheme.onBackground) }, // DYNAMIC TEXT
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
-                }
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onBackground // DYNAMIC ICON
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background // DYNAMIC BACKGROUND
+                )
             )
         }
     ) { innerPadding ->
         if (places.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-                Text("Loading places from AI...")
+            Box(
+                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                contentAlignment = Alignment.Center // Centers the loading text nicely
+            ) {
+                Text("Loading places from AI...", color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
             }
         } else {
             LazyColumn(
@@ -43,12 +57,29 @@ fun DayPlanScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(places) { place ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant // DYNAMIC CARD BACKGROUND
+                        )
+                    ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text(place.name, style = MaterialTheme.typography.titleMedium)
-                            Text(place.category, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                            Text(
+                                text = place.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant // DYNAMIC TEXT
+                            )
+                            Text(
+                                text = place.category,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary // DYNAMIC TEXT
+                            )
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(place.notes, style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                text = place.notes,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f) // DYNAMIC TEXT
+                            )
                         }
                     }
                 }

@@ -98,14 +98,16 @@ fun ChatScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background, // DYNAMIC BACKGROUND
         topBar = {
             TopAppBar(
-                title = { Text("AI Assistant") },
+                title = { Text("AI Assistant", color = MaterialTheme.colorScheme.onBackground) }, // DYNAMIC TEXT
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground) // DYNAMIC ICON
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background) // DYNAMIC BACKGROUND
             )
         }
     ) { paddingValues ->
@@ -121,7 +123,7 @@ fun ChatScreen(
                     .weight(1f)
                     .padding(horizontal = 16.dp),
                 reverseLayout = true,
-                contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp), // Top padding pushes newest bubble off the input bar in reverseLayout
+                contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(messages.reversed()) { message ->
@@ -130,13 +132,13 @@ fun ChatScreen(
             }
 
             // Input Bar
-            Surface(shadowElevation = 8.dp, color = Color.White) {
+            Surface(shadowElevation = 8.dp, color = MaterialTheme.colorScheme.surface) { // DYNAMIC BACKGROUND
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp, vertical = 12.dp)
                 ) {
-                    // Image Preview Area (Premium Style)
+                    // Image Preview Area
                     if (selectedBitmap != null) {
                         Box(
                             modifier = Modifier
@@ -157,14 +159,14 @@ fun ChatScreen(
                                     .align(Alignment.TopEnd)
                                     .offset(x = 6.dp, y = (-6).dp)
                                     .size(22.dp)
-                                    .background(Color.DarkGray, CircleShape)
+                                    .background(MaterialTheme.colorScheme.error, CircleShape) // DYNAMIC COLOR
                                     .clickable {
                                         selectedImageUri = null
                                         selectedBitmap = null
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Filled.Close, contentDescription = "Remove Image", tint = Color.White, modifier = Modifier.size(14.dp))
+                                Icon(Icons.Filled.Close, contentDescription = "Remove Image", tint = MaterialTheme.colorScheme.onError, modifier = Modifier.size(14.dp)) // DYNAMIC ICON
                             }
                         }
                     }
@@ -173,14 +175,14 @@ fun ChatScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFFF1F5F9), RoundedCornerShape(28.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(28.dp)) // DYNAMIC BACKGROUND
                             .padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
                         verticalAlignment = Alignment.Bottom
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.addphoto),
                             contentDescription = "Gallery",
-                            tint = Color.Gray,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC ICON
                             modifier = Modifier
                                 .padding(start = 12.dp, bottom = 12.dp, end = 4.dp)
                                 .size(28.dp)
@@ -188,11 +190,11 @@ fun ChatScreen(
                                 .clickable { galleryLauncher.launch("image/*") }
                                 .padding(2.dp)
                         )
-                        
+
                         Icon(
                             painter = painterResource(id = R.drawable.camera),
                             contentDescription = "Camera",
-                            tint = Color.Gray,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC ICON
                             modifier = Modifier
                                 .padding(start = 4.dp, bottom = 12.dp, end = 4.dp)
                                 .size(28.dp)
@@ -208,13 +210,13 @@ fun ChatScreen(
                             contentAlignment = Alignment.CenterStart
                         ) {
                             if (inputText.isEmpty()) {
-                                Text("Ask anything...", color = Color.Gray, fontSize = 16.sp)
+                                Text("Ask anything...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), fontSize = 16.sp) // DYNAMIC TEXT
                             }
                             BasicTextField(
                                 value = inputText,
                                 onValueChange = { inputText = it },
                                 modifier = Modifier.fillMaxWidth(),
-                                textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
+                                textStyle = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface), // DYNAMIC TEXT
                                 maxLines = 4,
                                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
                             )
@@ -229,7 +231,7 @@ fun ChatScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(40.dp)
-                                        .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary, CircleShape) // DYNAMIC BUTTON
                                         .clickable {
                                             viewModel.sendMessage(inputText, selectedBitmap)
                                             inputText = ""
@@ -238,10 +240,10 @@ fun ChatScreen(
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Color.White, modifier = Modifier.size(18.dp))
+                                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp)) // DYNAMIC ICON
                                 }
                             } else {
-                                IconButton(onClick = { 
+                                IconButton(onClick = {
                                     val intent = android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                                         putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL, android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                                         putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, "Speak now...")
@@ -252,7 +254,7 @@ fun ChatScreen(
                                         android.widget.Toast.makeText(context, "Speech recognition not available", android.widget.Toast.LENGTH_SHORT).show()
                                     }
                                 }) {
-                                    Icon(Icons.Filled.Mic, contentDescription = "Voice Input", tint = Color.DarkGray)
+                                    Icon(Icons.Filled.Mic, contentDescription = "Voice Input", tint = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC ICON
                                 }
                             }
                         }
@@ -265,10 +267,11 @@ fun ChatScreen(
 
 @Composable
 fun ChatBubble(message: ChatMessage) {
-    val backgroundColor = if (message.isFromUser) MaterialTheme.colorScheme.primary else Color(0xFFF0F0F0)
-    val textColor = if (message.isFromUser) Color.White else Color.Black
+    // User gets primary color, AI gets surfaceVariant color
+    val backgroundColor = if (message.isFromUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    val textColor = if (message.isFromUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
     val alignment = if (message.isFromUser) Alignment.CenterEnd else Alignment.CenterStart
-    
+
     val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
     val context = androidx.compose.ui.platform.LocalContext.current
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
@@ -295,7 +298,7 @@ fun ChatBubble(message: ChatMessage) {
                     }
                     .padding(16.dp)
             ) {
-                // If there's an image, render it above the text!
+                // If there's an image, render it above the text
                 if (message.imageBitmap != null) {
                     Image(
                         bitmap = message.imageBitmap.asImageBitmap(),

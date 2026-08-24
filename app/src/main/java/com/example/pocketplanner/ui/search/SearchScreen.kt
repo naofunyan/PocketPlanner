@@ -42,9 +42,9 @@ fun SearchScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    
+
     var isSearchActive by remember { mutableStateOf(false) }
-    
+
     // Start empty, users will add destinations via the search bar
     val selectedDestinations = remember { mutableStateListOf<MapboxPlace>() }
 
@@ -55,8 +55,8 @@ fun SearchScreen(
         }
         FullScreenAutocomplete(
             viewModel = viewModel,
-            onClose = { 
-                isSearchActive = false 
+            onClose = {
+                isSearchActive = false
                 viewModel.clearSearch()
             },
             onDestinationSelected = { dest ->
@@ -69,24 +69,24 @@ fun SearchScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFFFAFAFA), // Off-white matching the mockup
+        containerColor = MaterialTheme.colorScheme.background, // DYNAMIC BACKGROUND
         topBar = {
             CenterAlignedTopAppBar(
-                title = { 
+                title = {
                     Text(
-                        "New trip", 
+                        "New trip",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             letterSpacing = 1.sp
                         ),
-                        color = Color(0xFF001F3F) // Deep navy color
+                        color = MaterialTheme.colorScheme.onBackground // DYNAMIC TEXT
                     )
                 },
                 navigationIcon = {
                     Surface(
                         shape = CircleShape,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
                         shadowElevation = 2.dp,
                         modifier = Modifier
                             .padding(start = 16.dp)
@@ -98,9 +98,9 @@ fun SearchScreen(
                             modifier = Modifier.fillMaxSize()
                         ) {
                             Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack, 
-                                contentDescription = "Back", 
-                                tint = MaterialTheme.colorScheme.primary, 
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -125,7 +125,7 @@ fun SearchScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(28.dp)
                 ) {
-                    Text("Continue", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Continue", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary) // DYNAMIC TEXT
                 }
             }
         }
@@ -138,25 +138,25 @@ fun SearchScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             Text(
                 text = "Where are you going?",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF001F3F),
+                    color = MaterialTheme.colorScheme.onBackground, // DYNAMIC TEXT
                     textAlign = TextAlign.Center
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             // Search Input
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
                 shadowElevation = 8.dp,
-                border = BorderStroke(1.dp, Color(0xFFEEEEEE)),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), // DYNAMIC BORDER
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp)
@@ -175,18 +175,18 @@ fun SearchScreen(
                         modifier = Modifier.size(28.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    
+
                     Text(
                         text = "Search for destinations",
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC TEXT
                         fontSize = 18.sp,
                         modifier = Modifier.weight(1f)
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             // Selected Destinations
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -197,66 +197,66 @@ fun SearchScreen(
                     Text(
                         text = "Add the destinations you want to visit.\nYou can always add more later.",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC TEXT
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 } else {
                     selectedDestinations.forEach { dest ->
-                    Surface(
-                        shape = RoundedCornerShape(24.dp),
-                        color = Color.White,
-                        shadowElevation = 2.dp,
-                        modifier = Modifier.wrapContentWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        Surface(
+                            shape = RoundedCornerShape(24.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant, // DYNAMIC BACKGROUND
+                            shadowElevation = 2.dp,
+                            modifier = Modifier.wrapContentWidth()
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .background(Color(0xFFF0F4F8), CircleShape),
-                                contentAlignment = Alignment.Center
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                if (dest.emojiFlag != null) {
-                                    Text(text = dest.emojiFlag, style = MaterialTheme.typography.bodyMedium)
-                                } else {
-                                    Icon(
-                                        imageVector = Icons.Filled.LocationOn,
-                                        contentDescription = null,
-                                        tint = Color(0xFF6C829D),
-                                        modifier = Modifier.size(14.dp)
-                                    )
+                                Box(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .background(MaterialTheme.colorScheme.primaryContainer, CircleShape), // DYNAMIC BACKGROUND
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (dest.emojiFlag != null) {
+                                        Text(text = dest.emojiFlag, style = MaterialTheme.typography.bodyMedium)
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.Filled.LocationOn,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onPrimaryContainer, // DYNAMIC ICON
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
                                 }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Text(
+                                    text = dest.mainText,
+                                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant // DYNAMIC TEXT
+                                )
+
+                                Spacer(modifier = Modifier.width(4.dp))
+
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = "Remove",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC ICON
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .clickable { selectedDestinations.remove(dest) }
+                                )
                             }
-                            
-                            Spacer(modifier = Modifier.width(8.dp))
-                            
-                            Text(
-                                text = dest.mainText,
-                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium),
-                                color = Color(0xFF001F3F)
-                            )
-                            
-                            Spacer(modifier = Modifier.width(4.dp))
-                            
-                            Icon(
-                                imageVector = Icons.Filled.Close,
-                                contentDescription = "Remove",
-                                tint = Color.LightGray,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .clickable { selectedDestinations.remove(dest) }
-                            )
                         }
                     }
-                } // closes forEach
-                } // closes else
-            } // closes selected destinations column
-        } // closes parent column
-    } // closes inner padding
-} // closes SearchScreen
+                }
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -268,15 +268,15 @@ fun FullScreenAutocomplete(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    
+
     val focusRequester = remember { FocusRequester() }
-    
+
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }
 
     Scaffold(
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.background, // DYNAMIC BACKGROUND
         topBar = {
             Box(
                 modifier = Modifier
@@ -286,9 +286,9 @@ fun FullScreenAutocomplete(
             ) {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
                     shadowElevation = 2.dp,
-                    border = BorderStroke(1.dp, Color(0xFFEEEEEE)),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), // DYNAMIC BORDER
                     modifier = Modifier.fillMaxWidth().height(56.dp)
                 ) {
                     Row(
@@ -296,9 +296,9 @@ fun FullScreenAutocomplete(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = onClose) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color(0xFF003366))
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC ICON
                         }
-                        
+
                         TextField(
                             value = searchQuery,
                             onValueChange = { viewModel.onQueryChange(it) },
@@ -312,14 +312,14 @@ fun FullScreenAutocomplete(
                                 unfocusedIndicatorColor = Color.Transparent,
                                 cursorColor = MaterialTheme.colorScheme.primary
                             ),
-                            placeholder = { Text("Search for destinations", color = Color.LightGray) },
+                            placeholder = { Text("Search for destinations", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) }, // DYNAMIC TEXT
                             singleLine = true,
-                            textStyle = TextStyle(fontSize = 18.sp, color = Color(0xFF003366))
+                            textStyle = TextStyle(fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                         )
-                        
+
                         if (searchQuery.isNotEmpty()) {
                             IconButton(onClick = { viewModel.clearSearch() }) {
-                                Icon(Icons.Filled.Close, contentDescription = "Clear", tint = Color(0xFF003366))
+                                Icon(Icons.Filled.Close, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC ICON
                             }
                         }
                     }
@@ -334,7 +334,7 @@ fun FullScreenAutocomplete(
         ) {
             if (searchResults.isNotEmpty()) {
                 val groupedResults = searchResults.groupBy { it.placeType }
-                
+
                 LazyColumn {
                     groupedResults.forEach { (type, items) ->
                         item {
@@ -342,65 +342,65 @@ fun FullScreenAutocomplete(
                                 text = type.uppercase(),
                                 style = MaterialTheme.typography.labelMedium.copy(
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF6C829D) // Muted blue-gray
+                                    color = MaterialTheme.colorScheme.primary // DYNAMIC TEXT
                                 ),
                                 modifier = Modifier.padding(start = 24.dp, top = 24.dp, bottom = 8.dp)
                             )
                         }
-                        
+
                         items(items.size) { index ->
                             val result = items[index]
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    onDestinationSelected(result)
-                                    onClose()
-                                }
-                                .padding(horizontal = 24.dp, vertical = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
+                            Row(
                                 modifier = Modifier
-                                    .size(32.dp)
-                                    .background(Color(0xFFF0F4F8), CircleShape),
-                                contentAlignment = Alignment.Center
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onDestinationSelected(result)
+                                        onClose()
+                                    }
+                                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                if (result.emojiFlag != null) {
-                                    Text(text = result.emojiFlag, style = MaterialTheme.typography.bodyLarge)
-                                } else {
-                                    Icon(
-                                        imageVector = Icons.Filled.LocationOn,
-                                        contentDescription = null,
-                                        tint = Color(0xFF6C829D),
-                                        modifier = Modifier.size(18.dp)
-                                    )
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape), // DYNAMIC BACKGROUND
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (result.emojiFlag != null) {
+                                        Text(text = result.emojiFlag, style = MaterialTheme.typography.bodyLarge)
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.Filled.LocationOn,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC ICON
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
                                 }
-                            }
-                            
-                            Spacer(modifier = Modifier.width(16.dp))
-                            
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = result.mainText,
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.Medium,
-                                        color = Color(0xFF003366) // Dark blue matching screenshot
-                                    )
-                                )
-                                if (result.secondaryText.isNotEmpty()) {
+
+                                Spacer(modifier = Modifier.width(16.dp))
+
+                                Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = result.secondaryText,
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            color = Color(0xFF003366).copy(alpha = 0.7f) // Slightly faded blue
+                                        text = result.mainText,
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.Medium,
+                                            color = MaterialTheme.colorScheme.onSurface // DYNAMIC TEXT
                                         )
                                     )
+                                    if (result.secondaryText.isNotEmpty()) {
+                                        Text(
+                                            text = result.secondaryText,
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant // DYNAMIC TEXT
+                                            )
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
-                    }
-                } // closes LazyColumn
+                }
             } else if (isLoading) {
                 Box(modifier = Modifier.fillMaxWidth().padding(top = 24.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.primary)

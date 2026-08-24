@@ -39,13 +39,12 @@ fun TrackingScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         // 1. Full Screen Map Background Placeholder
         Image(
-            painter = rememberAsyncImagePainter("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1080&auto=format&fit=crop"), 
-            // Using a generic map-like satellite image from Unsplash as placeholder
+            painter = rememberAsyncImagePainter("https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1080&auto=format&fit=crop"),
             contentDescription = "Satellite Map Background",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
-        
+
         // Dark gradient overlay to make text readable
         Box(
             modifier = Modifier
@@ -54,7 +53,7 @@ fun TrackingScreen(
         )
 
         val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-        
+
         // 2. Top Controls
         Row(
             modifier = Modifier
@@ -66,7 +65,7 @@ fun TrackingScreen(
             // Back Button Pill
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
                 modifier = Modifier.clickable(onClick = onNavigateBack)
             ) {
                 Row(
@@ -74,17 +73,15 @@ fun TrackingScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack, 
-                        contentDescription = "Back", 
-                        tint = Color(0xFF005b9f),
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.primary, // DYNAMIC ICON
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Back", color = Color(0xFF005b9f), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text("Back", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 14.sp) // DYNAMIC TEXT
                 }
             }
-
-            // (Only back button remains in this row)
         }
 
         // 3. Center Map Overlay (Route Pin)
@@ -94,33 +91,33 @@ fun TrackingScreen(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Surface(
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
                     shadowElevation = 8.dp
                 ) {
                     Text(
                         "Add step",
-                        color = Color(0xFF01579B), // Dark blue text
+                        color = MaterialTheme.colorScheme.primary, // DYNAMIC TEXT
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
-                // Arrow pointing down from pill
+
                 Box(modifier = Modifier.size(12.dp)) {
-                    // Custom draw triangle or just simple layout, omit for brevity
+                    // Custom draw triangle placeholder
                 }
-                
+
                 // Blue Marker Dot
                 Surface(
                     shape = CircleShape,
-                    color = Color(0xFF29B6F6),
-                    border = androidx.compose.foundation.BorderStroke(3.dp, Color.White),
+                    color = MaterialTheme.colorScheme.primary, // DYNAMIC BACKGROUND
+                    border = androidx.compose.foundation.BorderStroke(3.dp, MaterialTheme.colorScheme.surface), // DYNAMIC BORDER
                     modifier = Modifier.size(24.dp)
                 ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Add", tint = Color.White, modifier = Modifier.padding(2.dp))
+                    Icon(Icons.Filled.Add, contentDescription = "Add", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.padding(2.dp)) // DYNAMIC ICON
                 }
-                
-                // Mock route line text
+
                 Spacer(modifier = Modifier.height(32.dp))
+                // Text floating directly over the map remains white for visibility
                 Text("N/A", color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
             }
         }
@@ -142,7 +139,8 @@ fun TrackingScreen(
                 item {
                     Surface(
                         shape = RoundedCornerShape(24.dp),
-                        color = Color(0xFF0F1722).copy(alpha = 0.95f),
+                        color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
+                        shadowElevation = 4.dp, // Added elevation since it is floating
                         modifier = Modifier
                             .width(160.dp)
                             .height(180.dp)
@@ -154,42 +152,44 @@ fun TrackingScreen(
                         ) {
                             Surface(
                                 shape = CircleShape,
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.primaryContainer, // DYNAMIC BACKGROUND
                                 modifier = Modifier.size(40.dp)
                             ) {
-                                Icon(Icons.Filled.Home, contentDescription = "Home", tint = Color(0xFF0F1722), modifier = Modifier.padding(8.dp))
+                                Icon(Icons.Filled.Home, contentDescription = "Home", tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.padding(8.dp)) // DYNAMIC ICON
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text("Trip started", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text("Trip started", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 16.sp) // DYNAMIC TEXT
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text("SAT 8 AUG 2026", color = Color.Gray, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text("SAT 8 AUG 2026", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp, fontWeight = FontWeight.Bold) // DYNAMIC TEXT
                             Spacer(modifier = Modifier.height(24.dp))
                             // Red Blinking Dot Indicator
                             Box(
                                 modifier = Modifier
                                     .size(12.dp)
-                                    .background(Color(0xFFE91E63), CircleShape)
+                                    .background(MaterialTheme.colorScheme.error, CircleShape) // DYNAMIC COLOR
                             )
                         }
                     }
                 }
-                
+
                 // Plus button separator
                 item {
                     Surface(
                         shape = CircleShape,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
+                        shadowElevation = 4.dp,
                         modifier = Modifier.size(32.dp)
                     ) {
-                        Icon(Icons.Filled.Add, contentDescription = "Add", tint = Color.Black, modifier = Modifier.padding(4.dp))
+                        Icon(Icons.Filled.Add, contentDescription = "Add", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(4.dp)) // DYNAMIC ICON
                     }
                 }
 
-                // Ho Chi Minh City Card
+                // Location Card
                 item {
                     Surface(
                         shape = RoundedCornerShape(24.dp),
-                        color = Color(0xFF0F1722).copy(alpha = 0.95f),
+                        color = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
+                        shadowElevation = 4.dp,
                         modifier = Modifier
                             .width(280.dp)
                             .height(180.dp)
@@ -198,25 +198,25 @@ fun TrackingScreen(
                             // Suggested Badge
                             Surface(
                                 shape = RoundedCornerShape(16.dp),
-                                color = Color(0xFF1E2A38),
+                                color = MaterialTheme.colorScheme.secondaryContainer, // DYNAMIC BACKGROUND
                                 modifier = Modifier.align(Alignment.End)
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                                 ) {
-                                    Icon(Icons.Filled.LocationOn, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
+                                    Icon(Icons.Filled.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(12.dp)) // DYNAMIC ICON
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Suggested", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text("Suggested", color = MaterialTheme.colorScheme.onSecondaryContainer, fontSize = 12.sp, fontWeight = FontWeight.Bold) // DYNAMIC TEXT
                                 }
                             }
-                            
+
                             Spacer(modifier = Modifier.weight(1f))
-                            
-                            Text("N/A", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                            
+
+                            Text("N/A", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 20.sp) // DYNAMIC TEXT
+
                             Spacer(modifier = Modifier.height(16.dp))
-                            
+
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -225,16 +225,16 @@ fun TrackingScreen(
                                 // Trash icon
                                 Surface(
                                     shape = CircleShape,
-                                    color = Color(0xFF1E2A38),
+                                    color = MaterialTheme.colorScheme.errorContainer, // DYNAMIC BACKGROUND
                                     modifier = Modifier.size(40.dp)
                                 ) {
-                                    Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = Color.White, modifier = Modifier.padding(8.dp))
+                                    Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.padding(8.dp)) // DYNAMIC ICON
                                 }
-                                
+
                                 // Add Step Button
                                 Surface(
                                     shape = RoundedCornerShape(20.dp),
-                                    color = Color.White,
+                                    color = MaterialTheme.colorScheme.primary, // DYNAMIC BACKGROUND
                                     modifier = Modifier
                                         .weight(1f)
                                         .padding(start = 16.dp)
@@ -246,9 +246,9 @@ fun TrackingScreen(
                                         verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier.fillMaxSize()
                                     ) {
-                                        Icon(Icons.Filled.Add, contentDescription = null, tint = Color(0xFF0F1722), modifier = Modifier.size(16.dp))
+                                        Icon(Icons.Filled.Add, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(16.dp)) // DYNAMIC ICON
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Add step", color = Color(0xFF0F1722), fontWeight = FontWeight.Bold)
+                                        Text("Add step", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold) // DYNAMIC TEXT
                                     }
                                 }
                             }
@@ -259,7 +259,7 @@ fun TrackingScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 5. Custom Bottom Nav Pill (Dark version)
+            // 5. Custom Bottom Nav Pill
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -267,7 +267,7 @@ fun TrackingScreen(
             ) {
                 Surface(
                     shape = RoundedCornerShape(30.dp),
-                    color = Color(0xFFF2F2F2),
+                    color = MaterialTheme.colorScheme.surfaceVariant, // DYNAMIC BACKGROUND
                     shadowElevation = 0.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -289,7 +289,7 @@ fun TrackingScreen(
 @Composable
 fun BottomNavPill(text: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Surface(
-        color = if (isSelected) Color(0xFF4694DA) else Color.Transparent,
+        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, // DYNAMIC BACKGROUND
         shape = RoundedCornerShape(30.dp),
         modifier = modifier
             .clip(RoundedCornerShape(30.dp))
@@ -302,7 +302,7 @@ fun BottomNavPill(text: String, isSelected: Boolean, modifier: Modifier = Modifi
             Text(
                 text = text,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                color = if (isSelected) Color.White else Color.Gray,
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC TEXT
                 fontSize = 14.sp
             )
         }
