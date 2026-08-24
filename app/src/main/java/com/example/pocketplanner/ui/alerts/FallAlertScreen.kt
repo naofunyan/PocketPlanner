@@ -43,7 +43,7 @@ import kotlin.math.roundToInt
 fun FallAlertScreen(
     onCancel: () -> Unit,
     onEmergencyTriggered: () -> Unit,
-    viewModel: SettingsViewModel = hiltViewModel() // Injected to read DataStore preferences
+    viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     var timeLeft by remember { mutableIntStateOf(30) }
@@ -51,24 +51,41 @@ fun FallAlertScreen(
     // Safety flag to ensure we only trigger the SOS once
     var hasTriggered by remember { mutableStateOf(false) }
 
-    // Collect DataStore settings silently in the background
+    // Collect standard emergency DataStore settings silently in the background
     val contacts by viewModel.emergencyContacts.collectAsState()
     val isAudioEnabled by viewModel.attachAudioEnabled.collectAsState()
     val isPicturesEnabled by viewModel.attachPicturesEnabled.collectAsState()
     val emergencyNumber by viewModel.emergencyNumber.collectAsState()
+
+    // Collect Medical DataStore settings
+    val shareMedicalInfo by viewModel.shareDuringEmergencyEnabled.collectAsState()
+    val bloodType by viewModel.medicalBloodType.collectAsState()
+    val allergies by viewModel.medicalAllergies.collectAsState()
+    val conditions by viewModel.medicalConditions.collectAsState()
+    val notes by viewModel.medicalNotes.collectAsState()
 
     // The Master Trigger Function
     val triggerSos = {
         if (!hasTriggered) {
             hasTriggered = true
 
-            // 1. Fire the background manager
+            // Format a clean summary of the critical info
+            val medicalSummary = buildString {
+                if (bloodType.isNotBlank()) append("Blood: $bloodType | ")
+                if (allergies.isNotBlank()) append("Allergies: $allergies | ")
+                if (conditions.isNotBlank()) append("Conditions: $conditions | ")
+                if (notes.isNotBlank()) append("Notes: $notes")
+            }.trimEnd(' ', '|')
+
+            // 1. Fire the background manager with the medical payload
             val emergencyManager = EmergencyActionManager(context)
             emergencyManager.executeSosSequence(
                 savedContacts = contacts,
                 emergencyNumber = emergencyNumber,
                 attachAudio = isAudioEnabled,
-                attachPicture = isPicturesEnabled
+                attachPicture = isPicturesEnabled,
+                shareMedicalInfo = shareMedicalInfo,
+                medicalSummary = medicalSummary
             )
 
             // 2. Notify the navigation graph to move to the success/confirmation screen
@@ -106,7 +123,6 @@ fun FallAlertScreen(
             delay(1000L)
             timeLeft--
         } else {
-            // Replaced the raw callback with our safe trigger
             triggerSos()
         }
     }
@@ -176,7 +192,7 @@ fun FallAlertScreen(
                 containerColor = Color.Transparent,
                 contentColor = MaterialTheme.colorScheme.onErrorContainer,
                 isOutlined = true,
-                onSwipeComplete = { triggerSos() } // Replaced raw callback
+                onSwipeComplete = { triggerSos() }
             )
         }
     }

@@ -67,4 +67,7 @@ object FallDetectionSettingsRoute
 object EmergencySharingRoute
 
 @Serializable
+object MedicalInfoRoute
+
+@Serializable
 object ProfileRoute

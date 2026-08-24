@@ -70,7 +70,8 @@ fun MainScreen() {
                         currentDestination?.route?.contains("AllPlacesRoute") == false &&
                         currentDestination?.route?.contains("PlaceDetailsRoute") == false &&
                         currentDestination?.route?.contains("FallDetectionSettingsRoute") == false &&
-                        currentDestination?.route?.contains("EmergencySharingRoute") == false
+                        currentDestination?.route?.contains("EmergencySharingRoute") == false &&
+                        currentDestination?.route?.contains("MedicalInfoRoute") == false
 
     OfflineBannerWrapper {
         Scaffold(
@@ -539,7 +540,8 @@ fun MainScreen() {
                     onNavigateToFallDetection = {
                         // THIS NOW NAVIGATES TO THE NEW SCREEN
                         navController.navigate(FallDetectionSettingsRoute)
-                    }
+                    },
+                    onNavigateToMedicalInfo = { navController.navigate(MedicalInfoRoute) }
                 )
             }
 
@@ -555,6 +557,12 @@ fun MainScreen() {
 
             composable<EmergencySharingRoute> {
                 com.example.pocketplanner.ui.settings.EmergencySharingScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<MedicalInfoRoute> {
+                com.example.pocketplanner.ui.settings.MedicalInfoScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

@@ -39,7 +39,9 @@ class EmergencyActionManager(private val context: Context) {
         savedContacts: Set<String>,
         emergencyNumber: String,
         attachAudio: Boolean,
-        attachPicture: Boolean
+        attachPicture: Boolean,
+        shareMedicalInfo: Boolean = false, // <-- NEW PARAMETER
+        medicalSummary: String = ""        // <-- NEW PARAMETER
     ) {
         scope.launch {
             try {
@@ -62,7 +64,16 @@ class EmergencyActionManager(private val context: Context) {
                 val mediaString = if (mediaLinks.isNotEmpty()) "\nMedia: ${mediaLinks.joinToString(" | ")}" else ""
 
                 // 3. Construct Final Message
-                val message = "🚨 SOS! I need help.\nLocation: $locationUrl$mediaString"
+                val message = buildString {
+                    append("🚨 SOS! I need help. Calling $emergencyNumber.\n")
+                    append("Location: $locationUrl")
+                    if (mediaString.isNotEmpty()) append(mediaString)
+
+                    // NEW: Append medical data if the user toggled it ON
+                    if (shareMedicalInfo && medicalSummary.isNotEmpty()) {
+                        append("\n\nMEDICAL INFO:\n$medicalSummary")
+                    }
+                }
 
                 // 4. Dispatch SMS
                 val phoneNumbers = savedContacts.mapNotNull { it.split("|").getOrNull(1) }

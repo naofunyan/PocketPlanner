@@ -42,6 +42,7 @@ import com.example.pocketplanner.R
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.painter.Painter
+import com.example.pocketplanner.ui.navigation.MedicalInfoRoute
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +51,7 @@ fun SettingsScreen(
     onLogoutClick: () -> Unit,
     onDeleteAccountClick: () -> Unit = {},
     onNavigateToFallDetection: () -> Unit = {},
+    onNavigateToMedicalInfo: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val user = FirebaseAuth.getInstance().currentUser
@@ -197,10 +199,9 @@ fun SettingsScreen(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp, modifier = Modifier.padding(start = 56.dp))
                     SettingsActionRow(
                         icon = Icons.Default.LocalHospital,
-                        title = stringResource(id = R.string.settings_emergency_sos),
-                        subtitle = stringResource(id = R.string.settings_emergency_sos_desc),
+                        title = "Medical info",
                         iconTint = MaterialTheme.colorScheme.error,
-                        onClick = { /* TODO */ }
+                        onClick = onNavigateToMedicalInfo
                     )
                 }
             }
