@@ -40,9 +40,6 @@ data class ItineraryRoute(val tripId: String)
 data class ExpenseRoute(val tripId: String)
 
 @Serializable
-data class TrackingRoute(val tripId: String)
-
-@Serializable
 data class ImportTripRoute(val tripId: String)
 
 @Serializable

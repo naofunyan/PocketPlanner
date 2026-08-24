@@ -91,15 +91,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import com.example.pocketplanner.BuildConfig
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
+import com.mapbox.maps.plugin.annotation.generated.createPolylineAnnotationManager
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalPermissionsApi::class)
 @Composable
 fun ItineraryScreen(
     tripId: String,
     onNavigateBack: () -> Unit,
     onDayClick: (dayNumber: Int) -> Unit,
     onExpenseClick: () -> Unit,
-    onTrackClick: () -> Unit,
     viewModel: ItineraryViewModel = hiltViewModel()
 ) {
     val trip by viewModel.getTrip(tripId).collectAsState(initial = null)
@@ -556,37 +560,64 @@ fun ItineraryScreen(
                                 mapViewportState = mapViewportState,
                                 mapInitOptionsFactory = { ctx ->
                                     com.mapbox.maps.MapInitOptions(
-                                        ctx,
-                                        textureView = true
+                                        context = ctx,
+                                        textureView = true,
+                                        styleUri = com.mapbox.maps.Style.MAPBOX_STREETS
                                     )
                                 }
                             ) {
-                                MapEffect(Unit) { mapView ->
-                                    mapView.mapboxMap.loadStyle(Style.MAPBOX_STREETS) { style ->
+                                MapEffect(places, currentDayColorHex) { mapView ->
+                                    mapView.mapboxMap.loadStyle(com.mapbox.maps.Style.MAPBOX_STREETS) { style ->
                                         mapView.location.updateSettings {
                                             enabled = true
                                             pulsingEnabled = true
                                             locationPuck = com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck(withBearing = true)
                                         }
+
+                                        val annotationApi = mapView.annotations
+                                        val polylineManager = annotationApi.createPolylineAnnotationManager()
+                                        val pointManager = annotationApi.createPointAnnotationManager()
+
+                                        val routePoints = places.map { Point.fromLngLat(it.lng, it.lat) }
+                                        if (routePoints.size > 1) {
+                                            val polylineOptions = com.mapbox.maps.plugin.annotation.generated.PolylineAnnotationOptions()
+                                                .withPoints(routePoints)
+                                                .withLineColor(currentDayColorHex)
+                                                .withLineWidth(4.0)
+                                                .withLineJoin(com.mapbox.maps.extension.style.layers.properties.generated.LineJoin.ROUND)
+                                            polylineManager.create(polylineOptions)
+
+                                            // Fetch real directions route in the background
+                                            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                                                val route = com.example.pocketplanner.utils.RouteFetcher.getRoute(
+                                                    routePoints,
+                                                    com.example.pocketplanner.BuildConfig.MAPBOX_ACCESS_TOKEN
+                                                )
+                                                if (route != null) {
+                                                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                                        polylineManager.deleteAll()
+                                                        val newOptions = com.mapbox.maps.plugin.annotation.generated.PolylineAnnotationOptions()
+                                                            .withPoints(route)
+                                                            .withLineColor(currentDayColorHex)
+                                                            .withLineWidth(4.0)
+                                                            .withLineJoin(com.mapbox.maps.extension.style.layers.properties.generated.LineJoin.ROUND)
+                                                        polylineManager.create(newOptions)
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        val pointOptionsList = places.mapIndexed { index, place ->
+                                            val bitmap = createNumberedMarkerBitmap(index + 1, currentDayColorHex)
+                                            val imageId = "marker_${currentDayColorHex}_$index"
+                                            style.addImage(imageId, bitmap)
+
+                                            com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions()
+                                                .withPoint(Point.fromLngLat(place.lng, place.lat))
+                                                .withIconImage(imageId)
+                                        }
+                                        pointManager.create(pointOptionsList)
                                     }
-                                }
-
-                                val routePoints = places.map { Point.fromLngLat(it.lng, it.lat) }
-                                if (routePoints.size > 1) {
-                                    PolylineAnnotation(
-                                        points = routePoints,
-                                        lineColorString = currentDayColorHex,
-                                        lineWidth = 4.0,
-                                        lineJoin = com.mapbox.maps.extension.style.layers.properties.generated.LineJoin.ROUND
-                                    )
-                                }
-
-                                places.forEachIndexed { index, place ->
-                                    val bitmap = androidx.compose.runtime.remember(index, currentDayColorHex) { createNumberedMarkerBitmap(index + 1, currentDayColorHex) }
-                                    PointAnnotation(
-                                        point = Point.fromLngLat(place.lng, place.lat),
-                                        iconImageBitmap = bitmap
-                                    )
                                 }
                             }
 
@@ -630,7 +661,6 @@ fun ItineraryScreen(
                         ) {
                             BottomNavPill("Plan", true, Modifier.weight(1f)) { }
                             BottomNavPill("Expense", false, Modifier.weight(1f)) { onExpenseClick() }
-                            BottomNavPill("Track", false, Modifier.weight(1f)) { onTrackClick() }
                         }
                     }
                 }

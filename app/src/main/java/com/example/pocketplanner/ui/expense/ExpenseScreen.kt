@@ -89,7 +89,6 @@ fun ExpenseScreen(
     tripId: String,
     onNavigateBack: () -> Unit,
     onPlanClick: () -> Unit,
-    onTrackClick: () -> Unit,
     onNavigateToHistory: () -> Unit,
     viewModel: ExpenseViewModel = hiltViewModel()
 ) {
@@ -225,7 +224,6 @@ fun ExpenseScreen(
                     ) {
                         BottomNavPill("Plan", false, Modifier.weight(1f)) { onPlanClick() }
                         BottomNavPill("Expense", true, Modifier.weight(1f)) { }
-                        BottomNavPill("Track", false, Modifier.weight(1f)) { onTrackClick() }
                     }
                 }
             }

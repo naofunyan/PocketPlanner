@@ -34,6 +34,10 @@ import coil.compose.AsyncImage
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import com.mapbox.geojson.Point
+import com.mapbox.maps.extension.compose.MapboxMap
+import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +54,35 @@ fun ExploreDetailsScreen(
     val destination = com.example.pocketplanner.data.repository.DestinationRepository.cities.find { it.id == destinationId }
         ?: com.example.pocketplanner.data.repository.DestinationRepository.cities.first()
 
-    val mapImageUrl = "https://picsum.photos/seed/${destination.id.replace(" ", "")}map/1000/1200"
+    // We intentionally shift the latitude SOUTH (subtract ~0.08 degrees) so the city center 
+    // moves UP into the visible top half of the screen, safely above the Bottom Sheet.
+    val cityCoordinates = mapOf(
+        "Ho Chi Minh City" to Point.fromLngLat(106.7009, 10.6969), // D1 is ~10.7769
+        "Hanoi" to Point.fromLngLat(105.8523, 20.9485),            // Old Qtr is ~21.0285
+        "Da Nang" to Point.fromLngLat(108.2208, 15.9865),          // Dragon Bridge is ~16.0665
+        "Hue" to Point.fromLngLat(107.5772, 16.3882)               // Imperial City is ~16.4682
+    )
+    val centerPoint = cityCoordinates[destination.id] ?: Point.fromLngLat(108.2772, 14.1183)
+
+    val mapViewportState = rememberMapViewportState {
+        setCameraOptions {
+            center(centerPoint)
+            zoom(2.0)
+            pitch(0.0)
+        }
+    }
+
+    LaunchedEffect(destination.id) {
+        kotlinx.coroutines.delay(400)
+        mapViewportState.flyTo(
+            com.mapbox.maps.CameraOptions.Builder()
+                .center(centerPoint)
+                .zoom(11.0)
+                .pitch(45.0)
+                .build(),
+            com.mapbox.maps.plugin.animation.MapAnimationOptions.Builder().duration(2500).build()
+        )
+    }
 
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val initialPeekHeight = screenHeight * 0.52f
@@ -69,11 +101,28 @@ fun ExploreDetailsScreen(
 
         content = {
             Box(modifier = Modifier.fillMaxSize()) {
-                AsyncImage(
-                    model = mapImageUrl,
-                    contentDescription = "Map View",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                MapboxMap(
+                    Modifier.fillMaxSize(),
+                    mapViewportState = mapViewportState,
+                    mapInitOptionsFactory = { ctx ->
+                        com.mapbox.maps.MapInitOptions(
+                            context = ctx,
+                            textureView = true,
+                            styleUri = com.mapbox.maps.Style.MAPBOX_STREETS
+                        )
+                    }
+                )
+                
+                // Add a top gradient to make the back/bookmark buttons pop
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Black.copy(alpha = 0.4f), Color.Transparent)
+                            )
+                        )
                 )
 
                 Row(

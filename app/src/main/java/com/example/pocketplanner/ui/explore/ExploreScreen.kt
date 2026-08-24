@@ -42,6 +42,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
+import com.mapbox.maps.extension.compose.MapboxMap
+import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
+import com.mapbox.geojson.Point
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -60,6 +63,26 @@ fun ExploreScreen(
 
     var isMapExpanded by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+
+    val vietnamCenter = Point.fromLngLat(108.2772, 14.0583)
+    val mapViewportState = rememberMapViewportState {
+        setCameraOptions {
+            center(vietnamCenter)
+            zoom(0.0) // Start completely zoomed out
+            pitch(0.0)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(500)
+        mapViewportState.flyTo(
+            com.mapbox.maps.CameraOptions.Builder()
+                .center(vietnamCenter)
+                .zoom(4.5)
+                .build(),
+            com.mapbox.maps.plugin.animation.MapAnimationOptions.Builder().duration(3000).build()
+        )
+    }
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
@@ -104,11 +127,27 @@ fun ExploreScreen(
         },
         content = { innerPadding ->
             Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-                AsyncImage(
-                    model = "https://picsum.photos/seed/mapholder/800/1000",
-                    contentDescription = "Map Background",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                MapboxMap(
+                    Modifier.fillMaxSize(),
+                    mapViewportState = mapViewportState,
+                    mapInitOptionsFactory = { ctx ->
+                        com.mapbox.maps.MapInitOptions(
+                            context = ctx,
+                            textureView = true,
+                            styleUri = com.mapbox.maps.Style.MAPBOX_STREETS
+                        )
+                    }
+                )
+                // Add a top gradient to make the "Explore" text pop against the map
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Black.copy(alpha = 0.6f), Color.Transparent)
+                            )
+                        )
                 )
                 Text(
                     text = "Explore",

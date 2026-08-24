@@ -64,7 +64,6 @@ fun MainScreen() {
                         currentDestination?.route?.contains("EditTripDetailsRoute") == false &&
                         currentDestination?.route?.contains("ItineraryRoute") == false &&
                         currentDestination?.route?.contains("ExpenseRoute") == false &&
-                        currentDestination?.route?.contains("TrackingRoute") == false &&
                         currentDestination?.route?.contains("ChatRoute") == false &&
                         currentDestination?.route?.contains("ExploreDetailsRoute") == false &&
                         currentDestination?.route?.contains("TransactionHistoryRoute") == false &&
@@ -484,23 +483,15 @@ fun MainScreen() {
                     },
                     onExpenseClick = {
                         navController.navigate(ExpenseRoute(route.tripId)) {
-                            popUpTo(route) { saveState = true }
+                            popUpTo(route) { inclusive = false }
                             launchSingleTop = true
-                            restoreState = true
                         }
                     },
-                    onTrackClick = {
-                        navController.navigate(TrackingRoute(route.tripId)) {
-                            popUpTo(route) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
+                    
                 )
             }
 
             composable<ExpenseRoute> { backStackEntry ->
-                // 1. Declare 'args' so the rest of your code can use it!
                 val args = backStackEntry.toRoute<ExpenseRoute>()
 
                 com.example.pocketplanner.ui.expense.ExpenseScreen(
@@ -512,37 +503,11 @@ fun MainScreen() {
                             launchSingleTop = true
                         }
                     },
-                    onTrackClick = {
-                        navController.navigate(TrackingRoute(args.tripId)) {
-                            popUpTo(ItineraryRoute(args.tripId)) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
                     onNavigateToHistory = { navController.navigate(TransactionHistoryRoute(args.tripId)) }
                 )
             }
 
-            composable<TrackingRoute> { backStackEntry ->
-                val args = backStackEntry.toRoute<TrackingRoute>()
-                com.example.pocketplanner.ui.tracking.TrackingScreen(
-                    tripId = args.tripId,
-                    onNavigateBack = { navController.popBackStack() },
-                    onPlanClick = {
-                        navController.navigate(ItineraryRoute(args.tripId)) {
-                            popUpTo(ItineraryRoute(args.tripId)) { inclusive = false }
-                            launchSingleTop = true
-                        }
-                    },
-                    onExpenseClick = {
-                        navController.navigate(ExpenseRoute(args.tripId)) {
-                            popUpTo(ItineraryRoute(args.tripId)) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                )
-            }
+            
 
             composable<ChatRoute> {
                 com.example.pocketplanner.ui.chat.AiHubScreen(
@@ -624,3 +589,4 @@ fun BottomNavTab(iconResId: Int, label: String, isSelected: Boolean, onClick: ()
         )
     }
 }
+

@@ -40,7 +40,9 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-
+import com.mapbox.geojson.Point
+import com.mapbox.maps.extension.compose.MapboxMap
+import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaceDetailsScreen(
@@ -60,6 +62,37 @@ fun PlaceDetailsScreen(
             openingTime = "Check local times", ticketPrice = "Varies", theme = "Saved"
         )
 
+    val subplaceCoordinates = mapOf(
+        "The Independence Palace" to Point.fromLngLat(106.6953, 10.7770),
+        "War Remnants Museum" to Point.fromLngLat(106.6924, 10.7794),
+        "Cu Chi Tunnels" to Point.fromLngLat(106.4616, 11.1420),
+        "Saigon Zoo & Botanical Gardens" to Point.fromLngLat(106.7054, 10.7877),
+        "Banh Mi Huynh Hoa" to Point.fromLngLat(106.6917, 10.7712),
+        "Hoa Lo Prison" to Point.fromLngLat(105.8464, 21.0252),
+        "Ho Chi Minh Mausoleum" to Point.fromLngLat(105.8348, 21.0368),
+        "St. Joseph's Cathedral" to Point.fromLngLat(105.8488, 21.0286),
+        "Hoan Kiem Walking Street" to Point.fromLngLat(105.8523, 21.0285),
+        "Bun Cha Huong Lien" to Point.fromLngLat(105.8546, 21.0163),
+        "Ba Na Hills SunWorld" to Point.fromLngLat(107.9953, 15.9961),
+        "Son Tra Beach" to Point.fromLngLat(108.2831, 16.1260),
+        "Golden Bridge" to Point.fromLngLat(107.9942, 15.9950),
+        "Hue Imperial City (The Citadel)" to Point.fromLngLat(107.5772, 16.4682),
+        "Thien Mu Pagoda" to Point.fromLngLat(107.5451, 16.4534),
+        "Lang Co Beach" to Point.fromLngLat(108.0683, 16.2483),
+        "Bach Ma National Park" to Point.fromLngLat(107.8540, 16.1965)
+    )
+    val basePoint = subplaceCoordinates[place.name] ?: Point.fromLngLat(106.7009, 10.7769)
+    // Shift camera south so place appears in top visible half
+    val centerPoint = Point.fromLngLat(basePoint.longitude(), basePoint.latitude() - 0.008)
+
+    val mapViewportState = rememberMapViewportState {
+        setCameraOptions {
+            center(centerPoint)
+            zoom(6.0)
+            pitch(0.0)
+        }
+    }
+
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val initialPeekHeight = screenHeight * 0.52f
 
@@ -73,10 +106,20 @@ fun PlaceDetailsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(place.name) {
         val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
         val userId = currentUser?.uid ?: "test_user_id"
         viewModel.loadTrips(userId)
+
+        kotlinx.coroutines.delay(400)
+        mapViewportState.flyTo(
+            com.mapbox.maps.CameraOptions.Builder()
+                .center(centerPoint)
+                .zoom(15.0)
+                .pitch(60.0)
+                .build(),
+            com.mapbox.maps.plugin.animation.MapAnimationOptions.Builder().duration(2500).build()
+        )
     }
 
     Scaffold(
@@ -96,11 +139,28 @@ fun PlaceDetailsScreen(
 
             content = {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    AsyncImage(
-                        model = place.mapImageUrl,
-                        contentDescription = "Map View",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
+                    MapboxMap(
+                        Modifier.fillMaxSize(),
+                        mapViewportState = mapViewportState,
+                        mapInitOptionsFactory = { ctx ->
+                            com.mapbox.maps.MapInitOptions(
+                                context = ctx,
+                                textureView = true,
+                                styleUri = com.mapbox.maps.Style.MAPBOX_STREETS
+                            )
+                        }
+                    )
+
+                    // Add a top gradient to make the back/bookmark buttons pop
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp)
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(Color.Black.copy(alpha = 0.4f), Color.Transparent)
+                                )
+                            )
                     )
 
                     Row(
