@@ -4,36 +4,27 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Share
@@ -46,7 +37,6 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -55,8 +45,6 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.DayOfWeek
-import java.time.temporal.WeekFields
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -69,28 +57,21 @@ import coil.compose.rememberAsyncImagePainter
 import java.text.SimpleDateFormat
 import java.util.*
 import android.Manifest
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material.icons.filled.NotificationsActive
-import com.mapbox.common.MapboxOptions
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.maps.extension.compose.MapEffect
-import com.mapbox.maps.Style
 import com.mapbox.maps.CameraOptions
 import com.mapbox.geojson.Point
-import com.mapbox.maps.extension.compose.annotation.generated.PointAnnotation
-import com.mapbox.maps.extension.compose.annotation.generated.PolylineAnnotation
 import com.mapbox.maps.plugin.locationcomponent.location
-import com.mapbox.maps.plugin.viewport.viewport
 import android.location.Geocoder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import com.example.pocketplanner.BuildConfig
+import com.example.pocketplanner.util.RouteFetcher
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.createPolylineAnnotationManager
@@ -589,7 +570,7 @@ fun ItineraryScreen(
 
                                             // Fetch real directions route in the background
                                             kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-                                                val route = com.example.pocketplanner.utils.RouteFetcher.getRoute(
+                                                val route = RouteFetcher.getRoute(
                                                     routePoints,
                                                     com.example.pocketplanner.BuildConfig.MAPBOX_ACCESS_TOKEN
                                                 )

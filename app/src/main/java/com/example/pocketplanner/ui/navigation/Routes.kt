@@ -71,3 +71,6 @@ object MedicalInfoRoute
 
 @Serializable
 object ProfileRoute
+
+@Serializable
+data class ImmersiveExperienceRoute(val placeName: String)

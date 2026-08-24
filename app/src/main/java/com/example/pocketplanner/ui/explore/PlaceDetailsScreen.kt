@@ -2,6 +2,8 @@ package com.example.pocketplanner.ui.explore
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.res.painterResource
+import com.example.pocketplanner.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -49,6 +51,7 @@ fun PlaceDetailsScreen(
     placeName: String,
     onNavigateBack: () -> Unit,
     onViewTrip: (String) -> Unit,
+    onImmersiveExperienceClick: (String) -> Unit = {},
     viewModel: ItineraryViewModel = hiltViewModel(),
     exploreViewModel: ExploreViewModel = hiltViewModel()
 ) {
@@ -222,6 +225,35 @@ fun PlaceDetailsScreen(
                             ) {
                                 items(place.highlights) { highlight ->
                                     PlaceHighlightCard(highlight = highlight)
+                                }
+                            }
+                        }
+                    }
+
+                    val supportedImmersivePlaces = setOf(
+                        "The Independence Palace",
+                        "War Remnants Museum",
+                        "Cu Chi Tunnels",
+                        "Hoa Lo Prison",
+                        "Hue Imperial City (The Citadel)",
+                        "Thien Mu Pagoda",
+                        "Bach Ma National Park"
+                    )
+
+                    if (place.name in supportedImmersivePlaces) {
+                        item {
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Surface(
+                                    shape = CircleShape, color = MaterialTheme.colorScheme.secondary, shadowElevation = 8.dp, modifier = Modifier.height(48.dp)
+                                        .clip(CircleShape)
+                                        .clickable { onImmersiveExperienceClick(place.name) }
+                                ) {
+                                    Row(modifier = Modifier.padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                                        Icon(painter = painterResource(id = R.drawable.impression), null, tint = MaterialTheme.colorScheme.onSecondary, modifier = Modifier.size(18.dp))
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Absolute Experience", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondary))
+                                    }
                                 }
                             }
                         }

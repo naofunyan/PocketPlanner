@@ -71,7 +71,8 @@ fun MainScreen() {
                         currentDestination?.route?.contains("PlaceDetailsRoute") == false &&
                         currentDestination?.route?.contains("FallDetectionSettingsRoute") == false &&
                         currentDestination?.route?.contains("EmergencySharingRoute") == false &&
-                        currentDestination?.route?.contains("MedicalInfoRoute") == false
+                        currentDestination?.route?.contains("MedicalInfoRoute") == false &&
+                        currentDestination?.route?.contains("ImmersiveExperienceRoute") == false
 
     OfflineBannerWrapper {
         Scaffold(
@@ -339,7 +340,18 @@ fun MainScreen() {
                     // Triggered when they click "View" on the success Snackbar!
                     onViewTrip = { tripId ->
                         navController.navigate(ItineraryRoute(tripId))
+                    },
+                    onImmersiveExperienceClick = { name ->
+                        navController.navigate(ImmersiveExperienceRoute(name))
                     }
+                )
+            }
+
+            composable<ImmersiveExperienceRoute> { backStackEntry ->
+                val args = backStackEntry.toRoute<ImmersiveExperienceRoute>()
+                com.example.pocketplanner.ui.explore.ImmersiveExperienceScreen(
+                    placeName = args.placeName,
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
 

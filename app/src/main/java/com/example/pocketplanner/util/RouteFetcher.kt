@@ -1,4 +1,4 @@
-package com.example.pocketplanner.utils
+package com.example.pocketplanner.util
 
 import com.mapbox.geojson.Point
 import com.mapbox.geojson.LineString
