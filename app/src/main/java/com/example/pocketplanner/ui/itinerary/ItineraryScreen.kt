@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.material.icons.filled.Close
@@ -166,6 +167,8 @@ fun ItineraryScreen(
         } else {
             Box(modifier = Modifier.fillMaxSize()) {
                 var showCalendarSheet by remember { mutableStateOf(false) }
+                var showSearchSheet by remember { mutableStateOf(false) }
+                var searchQuery by remember { mutableStateOf("") }
 
                 val context = LocalContext.current
                 val density = LocalDensity.current.density
@@ -304,14 +307,16 @@ fun ItineraryScreen(
                                         shape = RoundedCornerShape(20.dp),
                                         color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant, // DYNAMIC BACKGROUND
                                         border = if (!isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant) else null, // DYNAMIC BORDER
-                                        modifier = Modifier.clickable { selectedDay = dayNum }
+                                        modifier = Modifier.height(40.dp).clickable { selectedDay = dayNum }
                                     ) {
-                                        Text(
-                                            text = dateString,
-                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC TEXT
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
-                                        )
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Text(
+                                                text = dateString,
+                                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC TEXT
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                modifier = Modifier.padding(horizontal = 16.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -332,8 +337,29 @@ fun ItineraryScreen(
                                 currentCal.add(Calendar.DAY_OF_YEAR, selectedDay - 1)
                                 val currentDateStr = dateFormatter.format(currentCal.time)
 
-                                Column {
-                                    Text(currentDateStr, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground) // DYNAMIC TEXT
+                                Text(currentDateStr, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground) // DYNAMIC TEXT
+                                
+                                val isOptimizing by viewModel.isOptimizingRoute.collectAsState()
+                                
+                                if (isOptimizing) {
+                                    androidx.compose.material3.CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        color = MaterialTheme.colorScheme.primary,
+                                        strokeWidth = 2.dp
+                                    )
+                                } else if (places.size > 1) {
+                                    androidx.compose.material3.TextButton(
+                                        onClick = { viewModel.optimizeRouteForDay(tripId, selectedDay, trip?.destination ?: "") },
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.SwapVert,
+                                            contentDescription = "Optimize Route",
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("Optimize Route", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    }
                                 }
                             }
 
@@ -556,6 +582,7 @@ fun ItineraryScreen(
                                         }
 
                                         val annotationApi = mapView.annotations
+                                        annotationApi.cleanup()
                                         val polylineManager = annotationApi.createPolylineAnnotationManager()
                                         val pointManager = annotationApi.createPointAnnotationManager()
 
@@ -655,6 +682,128 @@ fun ItineraryScreen(
                     )
                 }
 
+                // Add Place FAB
+                FloatingActionButton(
+                    onClick = { showSearchSheet = true },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 16.dp, bottom = 96.dp),
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add Place")
+                }
+
+                // Search Places Modal Bottom Sheet
+                if (showSearchSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = {
+                            showSearchSheet = false
+                            viewModel.clearSearchResults()
+                            searchQuery = ""
+                        },
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        windowInsets = WindowInsets.statusBars
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(0.8f) // Take up 80% of screen height
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            Text("Add a Place", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            val geminiSuggestion by viewModel.geminiSuggestion.collectAsState()
+                            LaunchedEffect(geminiSuggestion) {
+                                geminiSuggestion?.let {
+                                    searchQuery = it
+                                    viewModel.clearGeminiSuggestion()
+                                }
+                            }
+
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = { q ->
+                                    searchQuery = q
+                                    viewModel.searchPlaces(q, cachedLat, cachedLng, trip?.destination ?: "")
+                                },
+                                label = { Text("Enter a place name...") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            Button(
+                                onClick = { 
+                                    if (trip != null) {
+                                        viewModel.searchWithGemini(searchQuery, trip!!.destination)
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                ),
+                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp, pressedElevation = 8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Lightbulb,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (searchQuery.isBlank()) "Suggest a Random Place" else "Can't find it? Let Gemini locate it",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            if (isSearchingPlaces) {
+                                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                            } else {
+                                Spacer(modifier = Modifier.height(4.dp))
+                            }
+
+                            LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                                itemsIndexed(searchResults) { index, result ->
+                                    if (result.fsqId == "err") {
+                                        Text(result.name, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(16.dp))
+                                    } else {
+                                        Surface(
+                                            modifier = Modifier.fillMaxWidth().clickable {
+                                                viewModel.addSelectedPlace(tripId, selectedDay, result)
+                                                showSearchSheet = false
+                                                viewModel.clearSearchResults()
+                                                searchQuery = ""
+                                            }.padding(vertical = 8.dp),
+                                            color = Color.Transparent
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(androidx.compose.material.icons.Icons.Filled.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(end = 16.dp))
+                                                Column {
+                                                    Text(result.name, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                                    Text(result.address, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                                }
+                                            }
+                                        }
+                                        if (index < searchResults.lastIndex) {
+                                            HorizontalDivider()
+                                        }
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.navigationBarsPadding())
+                        }
+                    }
+                }
 
                 // Place Options Bottom Sheet
                 if (placeMenuTarget != null) {

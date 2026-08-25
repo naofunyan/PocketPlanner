@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
@@ -467,6 +468,86 @@ class ItineraryViewModel @Inject constructor(
 
     fun getTrip(tripId: String) = tripRepository.getTrip(tripId)
 
+    private val _geminiSuggestion = MutableStateFlow<String?>(null)
+    val geminiSuggestion: StateFlow<String?> = _geminiSuggestion.asStateFlow()
+
+    fun clearGeminiSuggestion() {
+        _geminiSuggestion.value = null
+    }
+
+    fun searchWithGemini(query: String, destinationCity: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _isSearchingPlaces.value = true
+            try {
+                val prompt = if (query.isBlank()) {
+                    "You are a local tour guide in $destinationCity. Suggest EXACTLY 1 specific, highly-rated place (landmark, cafe, hidden gem) that a tourist MUST visit in $destinationCity. Return a JSON object with keys: 'name', 'address', 'lat' (approximate latitude float), 'lng' (approximate longitude float), and 'category' (e.g. 'Cafe', 'Museum'). Return ONLY valid JSON, no markdown formatting."
+                } else {
+                    "The user is searching for '$query' in $destinationCity. Provide the real details for this place so it can be mapped. Return a JSON object with keys: 'name' (clean official name), 'address' (estimated street address), 'lat' (approximate latitude float), 'lng' (approximate longitude float), and 'category'. Return ONLY valid JSON, no markdown formatting."
+                }
+                
+                val jsonPayload = JSONObject()
+                val contentsArray = JSONArray()
+                val partsArray = JSONArray()
+                val textPart = JSONObject().put("text", prompt)
+                partsArray.put(textPart)
+                
+                val contentObj = JSONObject().put("role", "user").put("parts", partsArray)
+                contentsArray.put(contentObj)
+                jsonPayload.put("contents", contentsArray)
+
+                val url = URL(endpointUrl)
+                val conn = url.openConnection() as HttpURLConnection
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Content-Type", "application/json")
+                conn.doOutput = true
+
+                conn.outputStream.use { os ->
+                    val input = jsonPayload.toString().toByteArray(Charsets.UTF_8)
+                    os.write(input, 0, input.size)
+                }
+
+                if (conn.responseCode == 200) {
+                    val response = conn.inputStream.bufferedReader().use { it.readText() }
+                    val root = JSONObject(response)
+                    val candidates = root.optJSONArray("candidates")
+                    if (candidates != null && candidates.length() > 0) {
+                        val firstCandidate = candidates.getJSONObject(0)
+                        val content = firstCandidate.optJSONObject("content")
+                        val parts = content?.optJSONArray("parts")
+                        if (parts != null && parts.length() > 0) {
+                            var text = parts.getJSONObject(0).optString("text", "").trim()
+                            text = text.replace("```json", "").replace("```", "").trim()
+                            
+                            if (text.isNotBlank()) {
+                                try {
+                                    val obj = JSONObject(text)
+                                    val result = SearchResult(
+                                        fsqId = "gemini_${System.currentTimeMillis()}",
+                                        name = obj.optString("name", query.ifBlank { "Unknown AI Place" }),
+                                        address = obj.optString("address", destinationCity),
+                                        lat = obj.optDouble("lat", 0.0),
+                                        lng = obj.optDouble("lng", 0.0),
+                                        category = obj.optString("category", "Gemini Pick") + " ✨"
+                                    )
+                                    _searchResults.value = listOf(result)
+                                } catch (e: Exception) {
+                                    _searchResults.value = listOf(SearchResult("err", "Gemini Error", "Could not parse AI response", 0.0, 0.0, "Error"))
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    _searchResults.value = listOf(SearchResult("err", "Gemini API Error", conn.responseCode.toString(), 0.0, 0.0, "Error"))
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _searchResults.value = listOf(SearchResult("err", "Exception", e.message ?: "Unknown", 0.0, 0.0, "Error"))
+            } finally {
+                _isSearchingPlaces.value = false
+            }
+        }
+    }
+
     fun searchPlaces(query: String, lat: Double?, lng: Double?, destinationCity: String) {
         searchJob?.cancel()
         if (query.isBlank()) {
@@ -483,7 +564,8 @@ class ItineraryViewModel @Inject constructor(
                     if (lat != null && lng != null && lat != 0.0 && lng != 0.0) {
                         proximity = "&proximity=$lng,$lat"
                     }
-                    val queryUrl = "https://api.mapbox.com/geocoding/v5/mapbox.places/${java.net.URLEncoder.encode(query, "UTF-8")}.json?access_token=$mapboxToken&types=poi$proximity&limit=10"
+                    // Limit search to Vietnam (country=vn)
+                    val queryUrl = "https://api.mapbox.com/geocoding/v5/mapbox.places/${java.net.URLEncoder.encode(query, "UTF-8")}.json?access_token=$mapboxToken$proximity&country=vn&limit=10"
                     
                     val url = URL(queryUrl)
                     val conn = url.openConnection() as HttpURLConnection
@@ -587,6 +669,84 @@ class ItineraryViewModel @Inject constructor(
     fun deletePlace(place: PlaceEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             placeDao.deletePlace(place)
+        }
+    }
+
+    fun updatePlace(place: PlaceEntity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            placeDao.updatePlace(place)
+        }
+    }
+
+    private val _isOptimizingRoute = MutableStateFlow(false)
+    val isOptimizingRoute: StateFlow<Boolean> = _isOptimizingRoute.asStateFlow()
+
+    fun optimizeRouteForDay(tripId: String, dayNumber: Int, destinationCity: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _isOptimizingRoute.value = true
+            try {
+                val currentPlaces = tripRepository.getPlacesForDay(tripId, dayNumber).firstOrNull() ?: emptyList()
+                if (currentPlaces.size < 2) return@launch // Nothing to optimize
+
+                val placesJsonStr = org.json.JSONArray(currentPlaces.map { 
+                    org.json.JSONObject().put("id", it.id).put("name", it.name).put("category", it.category)
+                }).toString()
+
+                val prompt = "You are a master trip planner in $destinationCity. The user has these places scheduled for today: $placesJsonStr. Re-order these places geographically to minimize travel time, and assign realistic start and end times between 08:30 AM and 09:00 PM based on what time of day is best for each category (e.g. cafes in morning, bars at night) and typical opening hours for these specific locations. Return a JSON array of objects, where each object has exactly: 'id' (the exact id from input), 'startTime' (e.g. '08:30 AM'), and 'endTime' (e.g. '10:00 AM'). Ensure the times are strictly sequential and do not overlap, with at least 15-30 minutes of travel time between places. Return ONLY the raw valid JSON array."
+                
+                val jsonPayload = JSONObject()
+                val contentsArray = JSONArray()
+                val partsArray = JSONArray()
+                val textPart = JSONObject().put("text", prompt)
+                partsArray.put(textPart)
+                
+                val contentObj = JSONObject().put("role", "user").put("parts", partsArray)
+                contentsArray.put(contentObj)
+                jsonPayload.put("contents", contentsArray)
+
+                val url = URL(endpointUrl)
+                val conn = url.openConnection() as HttpURLConnection
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Content-Type", "application/json")
+                conn.doOutput = true
+
+                conn.outputStream.use { os ->
+                    val input = jsonPayload.toString().toByteArray(Charsets.UTF_8)
+                    os.write(input, 0, input.size)
+                }
+
+                if (conn.responseCode == 200) {
+                    val response = conn.inputStream.bufferedReader().use { it.readText() }
+                    val root = JSONObject(response)
+                    val candidates = root.optJSONArray("candidates")
+                    if (candidates != null && candidates.length() > 0) {
+                        val firstCandidate = candidates.getJSONObject(0)
+                        val content = firstCandidate.optJSONObject("content")
+                        val parts = content?.optJSONArray("parts")
+                        if (parts != null && parts.length() > 0) {
+                            var text = parts.getJSONObject(0).optString("text", "").trim()
+                            text = text.replace("```json", "").replace("```", "").trim()
+                            
+                            val jsonArray = JSONArray(text)
+                            for (i in 0 until jsonArray.length()) {
+                                val obj = jsonArray.getJSONObject(i)
+                                val id = obj.optString("id")
+                                val startTime = obj.optString("startTime")
+                                val endTime = obj.optString("endTime")
+                                
+                                val place = currentPlaces.find { it.id == id }
+                                if (place != null && startTime.isNotBlank() && endTime.isNotBlank()) {
+                                    placeDao.updatePlace(place.copy(startTime = startTime, endTime = endTime))
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch(e: Exception) {
+               e.printStackTrace()
+            } finally {
+                _isOptimizingRoute.value = false
+            }
         }
     }
 
