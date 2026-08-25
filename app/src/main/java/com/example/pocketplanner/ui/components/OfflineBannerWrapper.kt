@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -39,15 +40,15 @@ fun OfflineBannerWrapper(content: @Composable () -> Unit) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFD32F2F)) // Red offline color
+                    .background(MaterialTheme.colorScheme.error) // Red offline color
                     .statusBarsPadding()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Icon(Icons.Filled.WifiOff, contentDescription = "Offline", tint = Color.White, modifier = Modifier.size(16.dp))
+                Icon(Icons.Filled.WifiOff, contentDescription = "Offline", tint = MaterialTheme.colorScheme.onError, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("You're offline. Changes will sync later.", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text("You're offline. Changes will sync later.", color = MaterialTheme.colorScheme.onError, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
 

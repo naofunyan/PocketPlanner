@@ -100,10 +100,10 @@ fun WelcomeScreen(
                 Text(
                     "Get Started", 
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Forward Arrow", tint = Color.White)
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Forward Arrow", tint = MaterialTheme.colorScheme.onPrimary)
             }
             
             Spacer(modifier = Modifier.height(32.dp))

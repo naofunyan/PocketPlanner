@@ -24,7 +24,7 @@ import com.example.pocketplanner.data.local.entity.TripEntity
         AlertEntity::class, PlaceDetailsEntity::class, TicketEntity::class,
         SavedPlaceEntity::class // <-- ADDED THIS
     ],
-    version = 17, // <-- BUMPED TO 16
+    version = 20,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

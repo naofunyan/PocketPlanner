@@ -74,3 +74,6 @@ object ProfileRoute
 
 @Serializable
 data class ImmersiveExperienceRoute(val placeName: String)
+
+@Serializable
+data class TripSummaryRoute(val tripId: String)

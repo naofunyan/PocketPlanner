@@ -10,5 +10,9 @@ class ExpenseRepository @Inject constructor(
     fun getExpenses(tripId: String) = expenseDao.getExpensesForTrip(tripId)
     fun getTotalSpent(tripId: String) = expenseDao.getTotalSpentForTrip(tripId)
     suspend fun addExpense(expense: ExpenseEntity) = expenseDao.insertExpense(expense)
-    suspend fun deleteExpense(expense: ExpenseEntity) = expenseDao.deleteExpense(expense)
+    suspend fun deleteExpense(expense: ExpenseEntity) = expenseDao.insertExpense(expense.copy(
+        isDeleted = true,
+        isSyncedWithCloud = false,
+        updatedAt = System.currentTimeMillis()
+    ))
 }

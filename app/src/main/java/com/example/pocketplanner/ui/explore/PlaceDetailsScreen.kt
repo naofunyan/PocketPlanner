@@ -326,7 +326,7 @@ fun PlaceDetailsScreen(
                             )
                         }
 
-                        val durationDays = ((selectedTripForPlan!!.endDate - selectedTripForPlan!!.startDate) / 86400000).toInt() + 1
+                        val durationDays = if (selectedTripForPlan!!.isOpenEnded) ((System.currentTimeMillis() - selectedTripForPlan!!.startDate) / 86400000).toInt().coerceAtLeast(0) + 1 else ((selectedTripForPlan!!.endDate - selectedTripForPlan!!.startDate) / 86400000).toInt() + 1
 
                         LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
                             items(durationDays) { index ->

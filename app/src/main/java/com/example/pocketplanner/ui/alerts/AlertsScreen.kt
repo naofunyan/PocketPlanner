@@ -62,8 +62,8 @@ fun AlertsScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Surface(shape = CircleShape, color = Color(0xFF005b9f).copy(alpha = 0.1f), modifier = Modifier.size(48.dp)) {
-                                Icon(Icons.Filled.LocationOn, contentDescription = null, tint = Color(0xFF005b9f), modifier = Modifier.padding(12.dp))
+                            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), modifier = Modifier.size(48.dp)) {
+                                Icon(Icons.Filled.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(12.dp))
                             }
                             Spacer(modifier = Modifier.width(16.dp))
                             Column {

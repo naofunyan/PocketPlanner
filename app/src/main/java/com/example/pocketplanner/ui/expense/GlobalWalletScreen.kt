@@ -67,13 +67,13 @@ fun GlobalWalletScreen(
     val selectedTabIndex = pagerState.currentPage
     val coroutineScope = rememberCoroutineScope()
 
-    var showTripSelector by remember { mutableStateOf(false) }
-    var showAddSheet by remember { mutableStateOf(false) }
+    var showTripSelector by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    var showAddSheet by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
 
     val currencyFormatter = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
     val dateFormatter = SimpleDateFormat("MMM dd", Locale.getDefault())
 
-    var showAddTicketSheet by remember { mutableStateOf(false) }
+    var showAddTicketSheet by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     var viewingTicket by remember { mutableStateOf<com.example.pocketplanner.data.local.entity.TicketEntity?>(null) }
 
     Scaffold(
@@ -113,7 +113,7 @@ fun GlobalWalletScreen(
                         Text(
                             text = trip?.let {
                                 if (it.name.isNotBlank()) it.name else "Trip to ${it.destination}"
-                            } ?: if (allTrips.isEmpty()) "No Trips Available" else "Loading...",
+                            } ?: if (allTrips.isEmpty()) "No Trips Available" else "Select a Trip",
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground, // <-- DYNAMIC
@@ -126,8 +126,8 @@ fun GlobalWalletScreen(
 
                     if (trip != null) {
                         val startStr = dateFormatter.format(Date(trip!!.startDate))
-                        val endStr = dateFormatter.format(Date(trip!!.endDate))
-                        val days = ((trip!!.endDate - trip!!.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1
+                        val endStr = if (trip!!.isOpenEnded) "Ongoing" else dateFormatter.format(Date(trip!!.endDate))
+                        val days = if (trip!!.isOpenEnded) ((System.currentTimeMillis() - trip!!.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1 else ((trip!!.endDate - trip!!.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1
                         Text(
                             text = "$startStr - $endStr • $days Days",
                             style = MaterialTheme.typography.bodyMedium,
@@ -165,8 +165,8 @@ fun GlobalWalletScreen(
                 modifier = Modifier.fillMaxSize()
             ) { page ->
                 if (page == 0) {
-                    if (allTrips.isEmpty()) {
-                        EmptyWalletState()
+                    if (allTrips.isEmpty() || selectedTripId == null) {
+                        EmptyWalletState(hasTrips = allTrips.isNotEmpty())
                     } else {
                         ExpenseTabContent(
                             budgetState = budgetState,
@@ -197,13 +197,23 @@ fun GlobalWalletScreen(
 
     // --- BOTTOM SHEETS ---
     if (showTripSelector) {
-        ModalBottomSheet(onDismissRequest = { showTripSelector = false }, containerColor = MaterialTheme.colorScheme.surface) { // <-- DYNAMIC
-            LazyColumn(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
+        val sortedTrips = remember(allTrips) {
+            allTrips.sortedByDescending { it.startDate }
+        }
+        ModalBottomSheet(
+            onDismissRequest = { showTripSelector = false }, 
+            containerColor = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(vertical = 16.dp)
+            ) {
                 item {
-                    Text("Select a Trip", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) // <-- DYNAMIC
+                    Text("Select a Trip", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(horizontal = 24.dp))
                     Spacer(modifier = Modifier.height(16.dp))
                 }
-                items(allTrips) { t ->
+                items(sortedTrips) { t ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -211,18 +221,18 @@ fun GlobalWalletScreen(
                                 viewModel.selectTrip(t.id)
                                 showTripSelector = false
                             }
-                            .padding(vertical = 16.dp),
+                            .padding(horizontal = 24.dp, vertical = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = if (t.name.isNotBlank()) t.name else "Trip to ${t.destination}",
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface // <-- DYNAMIC
+                            color = MaterialTheme.colorScheme.onSurface
                         )
 
                         if (t.id == selectedTripId) {
                             Spacer(modifier = Modifier.weight(1f))
-                            Icon(Icons.Filled.Check, contentDescription = "Selected", tint = MaterialTheme.colorScheme.primary) // <-- DYNAMIC
+                            Icon(Icons.Filled.Check, contentDescription = "Selected", tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }
@@ -241,12 +251,15 @@ fun GlobalWalletScreen(
             modifier = Modifier.fillMaxHeight(),
             dragHandle = null
         ) {
+            val context = androidx.compose.ui.platform.LocalContext.current
             AddExpenseForm(
                 exchangeRates = exchangeRates,
                 onDismiss = { showAddSheet = false },
-                onSave = { amount, category, desc, date -> viewModel.addExpense(category, amount, desc, date)
+                onSave = { amount, category, desc, date -> 
+                    viewModel.addExpense(category, amount, desc, date)
                     showAddSheet = false
-                }
+                },
+                onScanReceipt = { uri -> viewModel.scanReceipt(uri, context) }
             )
         }
     }
@@ -345,13 +358,16 @@ fun ExpenseTabContent(
 }
 
 @Composable
-fun EmptyWalletState() {
+fun EmptyWalletState(hasTrips: Boolean = false) {
     Column(
         modifier = Modifier.fillMaxSize().padding(top = 100.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(Icons.Filled.Wallet, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(64.dp)) // <-- DYNAMIC
+        Icon(Icons.Filled.Wallet, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(64.dp))
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Create a trip to start tracking expenses.", color = MaterialTheme.colorScheme.onSurfaceVariant) // <-- DYNAMIC
+        Text(
+            text = if (hasTrips) "No active trips. Select a trip to view expenses." else "Create a trip to start tracking expenses.", 
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }

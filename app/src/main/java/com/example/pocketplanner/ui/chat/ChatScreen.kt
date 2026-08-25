@@ -5,6 +5,9 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -49,9 +52,11 @@ import androidx.compose.foundation.gestures.detectTapGestures
 @Composable
 fun ChatScreen(
     onNavigateBack: () -> Unit,
-    viewModel: ChatViewModel = hiltViewModel()
+    viewModel: ChatViewModel = hiltViewModel(),
+    settingsViewModel: com.example.pocketplanner.ui.settings.SettingsViewModel = hiltViewModel()
 ) {
     val messages by viewModel.messages.collectAsState()
+    val locationAccessEnabled by settingsViewModel.locationAccessEnabled.collectAsState()
     var inputText by remember { mutableStateOf("") }
 
     // State for Image Picker
@@ -233,10 +238,23 @@ fun ChatScreen(
                                         .size(40.dp)
                                         .background(MaterialTheme.colorScheme.primary, CircleShape) // DYNAMIC BUTTON
                                         .clickable {
-                                            viewModel.sendMessage(inputText, selectedBitmap)
+                                            val textToSend = inputText
+                                            val bitmapToSend = selectedBitmap
                                             inputText = ""
                                             selectedImageUri = null
                                             selectedBitmap = null
+                                            
+                                            if (locationAccessEnabled && ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                                                val fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(context)
+                                                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                                                    val locStr = if (location != null) "${location.latitude}, ${location.longitude}" else null
+                                                    viewModel.sendMessage(textToSend, bitmapToSend, locStr)
+                                                }.addOnFailureListener {
+                                                    viewModel.sendMessage(textToSend, bitmapToSend, null)
+                                                }
+                                            } else {
+                                                viewModel.sendMessage(textToSend, bitmapToSend, null)
+                                            }
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {

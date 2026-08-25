@@ -12,19 +12,19 @@ import kotlinx.coroutines.flow.Flow
 interface TicketDao {
 
     // Get ALL tickets, sorted newest first
-    @Query("SELECT * FROM tickets ORDER BY dateTime DESC")
+    @Query("SELECT * FROM tickets WHERE isDeleted = 0 ORDER BY dateTime DESC")
     fun getAllTickets(): Flow<List<TicketEntity>>
 
     // Get tickets linked to a specific trip
-    @Query("SELECT * FROM tickets WHERE tripId = :tripId ORDER BY dateTime DESC")
+    @Query("SELECT * FROM tickets WHERE tripId = :tripId AND isDeleted = 0 ORDER BY dateTime DESC")
     fun getTicketsForTrip(tripId: String): Flow<List<TicketEntity>>
 
     // Get standalone tickets (not linked to any trip)
-    @Query("SELECT * FROM tickets WHERE tripId IS NULL ORDER BY dateTime DESC")
+    @Query("SELECT * FROM tickets WHERE tripId IS NULL AND isDeleted = 0 ORDER BY dateTime DESC")
     fun getUnlinkedTickets(): Flow<List<TicketEntity>>
 
     // Get a single ticket by ID
-    @Query("SELECT * FROM tickets WHERE id = :id LIMIT 1")
+    @Query("SELECT * FROM tickets WHERE id = :id AND isDeleted = 0 LIMIT 1")
     fun getTicketById(id: String): Flow<TicketEntity?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

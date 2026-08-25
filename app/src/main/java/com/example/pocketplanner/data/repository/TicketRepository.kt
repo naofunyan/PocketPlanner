@@ -2,12 +2,12 @@ package com.example.pocketplanner.data.repository
 
 import com.example.pocketplanner.data.local.dao.TicketDao
 import com.example.pocketplanner.data.local.entity.TicketEntity
-import com.example.pocketplanner.data.sync.FirestoreSyncManager
+import com.example.pocketplanner.core.offline.SyncScheduler
 import javax.inject.Inject
 
 class TicketRepository @Inject constructor(
     private val ticketDao: TicketDao,
-    private val syncManager: FirestoreSyncManager
+    private val syncScheduler: SyncScheduler
 ) {
     fun getAllTickets() = ticketDao.getAllTickets()
     fun getTicketsForTrip(tripId: String) = ticketDao.getTicketsForTrip(tripId)
@@ -16,15 +16,21 @@ class TicketRepository @Inject constructor(
 
     suspend fun addTicket(ticket: TicketEntity) {
         // Save locally first (offline-first)
-        ticketDao.insertTicket(ticket)
+        val newTicket = ticket.copy(isSyncedWithCloud = false, updatedAt = System.currentTimeMillis())
+        ticketDao.insertTicket(newTicket)
         // Push to cloud in background
-        syncManager.pushTicketToCloud(ticket)
+        syncScheduler.scheduleSync()
     }
 
     suspend fun deleteTicket(ticket: TicketEntity) {
-        // Delete locally first
-        ticketDao.deleteTicket(ticket)
-        // Delete from cloud
-        syncManager.deleteTicketFromCloud(ticket.id)
+        // Soft delete locally
+        val deletedTicket = ticket.copy(
+            isDeleted = true,
+            isSyncedWithCloud = false,
+            updatedAt = System.currentTimeMillis()
+        )
+        ticketDao.insertTicket(deletedTicket)
+        // Push the tombstone to cloud in background
+        syncScheduler.scheduleSync()
     }
 }

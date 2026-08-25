@@ -138,26 +138,6 @@ fun ExploreScreen(
                         )
                     }
                 )
-                // Add a top gradient to make the "Explore" text pop against the map
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color.Black.copy(alpha = 0.6f), Color.Transparent)
-                            )
-                        )
-                )
-                Text(
-                    text = "Explore",
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White, // Kept white for image overlay
-                    modifier = Modifier
-                        .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 16.dp)
-                        .padding(horizontal = 24.dp)
-                )
             }
         },
         sheetContent = {

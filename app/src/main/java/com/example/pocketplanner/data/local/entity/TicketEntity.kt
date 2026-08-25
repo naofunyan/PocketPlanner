@@ -18,5 +18,7 @@ data class TicketEntity(
     val confirmationCode: String? = null,  // Booking/confirmation code
     val notes: String = "",                // User notes
     val createdAt: Long = System.currentTimeMillis(),
-    val isSyncedWithCloud: Boolean = false
+    val isSyncedWithCloud: Boolean = false,
+    val updatedAt: Long = System.currentTimeMillis(),
+    val isDeleted: Boolean = false
 )

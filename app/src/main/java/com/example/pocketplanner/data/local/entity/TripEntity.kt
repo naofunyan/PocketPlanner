@@ -17,5 +17,11 @@ data class TripEntity(
     val photoUrl: String? = null,
     val isTrackerEnabled: Boolean = false,
     val trackingMode: String = "Balanced",
-    val isSyncedWithCloud: Boolean = false
+    val isSyncedWithCloud: Boolean = false,
+    val aiDiary: String? = null,
+    val isPublished: Boolean = false,
+    val shareId: String? = null,
+    val updatedAt: Long = System.currentTimeMillis(),
+    val isDeleted: Boolean = false,
+    val isOpenEnded: Boolean = false
 )

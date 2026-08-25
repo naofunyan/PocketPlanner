@@ -243,7 +243,7 @@ fun TranslateScreen(
                     if (uiState.mode != TranslateMode.LIVE) viewModel.switchMode(TranslateMode.LIVE)
                     else onNavigateBack()
                 }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                 }
 
                 // Language Selector Pill
@@ -299,7 +299,7 @@ fun TranslateScreen(
                 }
 
                 IconButton(onClick = { galleryLauncher.launch("image/*") }) {
-                    Icon(Icons.Default.PhotoLibrary, contentDescription = "Gallery", tint = Color.Black)
+                    Icon(Icons.Default.PhotoLibrary, contentDescription = "Gallery", tint = Color.White)
                 }
             }
 

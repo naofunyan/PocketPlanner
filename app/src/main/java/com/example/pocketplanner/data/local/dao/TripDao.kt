@@ -13,12 +13,20 @@ interface TripDao {
     suspend fun insertTrip(trip: TripEntity)
 
     // Flow automatically updates the UI when the database changes!
-    @Query("SELECT * FROM trips WHERE userId = :userId ORDER BY startDate ASC")
+    @Query("SELECT * FROM trips WHERE userId = :userId AND isDeleted = 0 ORDER BY startDate ASC")
     fun getAllTripsForUser(userId: String): Flow<List<TripEntity>>
 
-    @Query("SELECT * FROM trips WHERE id = :tripId")
+    @Query("SELECT * FROM trips WHERE id = :tripId AND isDeleted = 0")
     fun getTripFlow(tripId: String): Flow<TripEntity?>
 
-    @Query("DELETE FROM trips WHERE id = :tripId")
-    suspend fun deleteTripById(tripId: String)
+    // Soft delete
+    @Query("UPDATE trips SET isDeleted = 1, isSyncedWithCloud = 0, updatedAt = :timestamp WHERE id = :tripId")
+    suspend fun deleteTripById(tripId: String, timestamp: Long = System.currentTimeMillis())
+    
+    // For syncing
+    @Query("SELECT * FROM trips WHERE userId = :userId AND isSyncedWithCloud = 0")
+    suspend fun getUnsyncedTrips(userId: String): List<TripEntity>
+    
+    @Query("SELECT * FROM trips WHERE id = :tripId LIMIT 1")
+    suspend fun getTripByIdDirect(tripId: String): TripEntity?
 }

@@ -18,10 +18,16 @@ interface ExpenseDao {
     suspend fun deleteExpense(expense: ExpenseEntity)
 
     // Flow automatically updates the UI when a new expense is added
-    @Query("SELECT * FROM expenses WHERE tripId = :tripId ORDER BY date DESC")
+    @Query("SELECT * FROM expenses WHERE tripId = :tripId AND isDeleted = 0 ORDER BY date DESC")
     fun getExpensesForTrip(tripId: String): Flow<List<ExpenseEntity>>
 
     // Calculates the total spent across all expenses for a trip
-    @Query("SELECT SUM(convertedAmountVND) FROM expenses WHERE tripId = :tripId")
+    @Query("SELECT SUM(convertedAmountVND) FROM expenses WHERE tripId = :tripId AND isDeleted = 0")
     fun getTotalSpentForTrip(tripId: String): Flow<Double?>
+
+    @Query("SELECT * FROM expenses WHERE tripId = :tripId AND isSyncedWithCloud = 0")
+    suspend fun getUnsyncedExpensesForTrip(tripId: String): List<ExpenseEntity>
+
+    @Query("SELECT * FROM expenses WHERE id = :expenseId LIMIT 1")
+    suspend fun getExpenseByIdDirect(expenseId: String): ExpenseEntity?
 }

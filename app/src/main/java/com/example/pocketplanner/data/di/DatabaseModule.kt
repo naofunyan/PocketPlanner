@@ -20,6 +20,12 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
+    val MIGRATION_19_20 = object : androidx.room.migration.Migration(19, 20) {
+        override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE trips ADD COLUMN isOpenEnded INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
@@ -28,6 +34,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "pocketplanner.db"
         )
+        .addMigrations(MIGRATION_19_20)
         .fallbackToDestructiveMigration()
         .build()
     }

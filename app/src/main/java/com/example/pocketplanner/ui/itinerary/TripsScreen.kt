@@ -55,7 +55,7 @@ import com.google.android.gms.location.LocationServices
 fun TripsScreen(
     viewModel: ItineraryViewModel = hiltViewModel(),
     userId: String,
-    onTripClick: (tripId: String) -> Unit = {},
+    onTripClick: (tripId: String, isPast: Boolean) -> Unit = { _, _ -> },
     onEditTripClick: (tripId: String) -> Unit = {},
     onAddTripClick: () -> Unit = {}
 ) {
@@ -183,9 +183,9 @@ fun TripsScreen(
                     }
                 } else {
                     val now = System.currentTimeMillis()
-                    val activeTrips = trips.filter { now in it.startDate..it.endDate || it.status == "ACTIVE" }.sortedBy { it.startDate }
-                    val upcomingTrips = trips.filter { now < it.startDate && it.status != "ACTIVE" }.sortedBy { it.startDate }
-                    val pastTrips = trips.filter { now > it.endDate && it.status != "ACTIVE" }.sortedByDescending { it.endDate }
+                    val activeTrips = trips.filter { (now in it.startDate..it.endDate && !it.isOpenEnded) || it.status == "ACTIVE" || (it.isOpenEnded && now >= it.startDate && it.status != "PAST") }.sortedBy { it.startDate }
+                    val upcomingTrips = trips.filter { now < it.startDate && it.status != "ACTIVE" && it.status != "PAST" }.sortedBy { it.startDate }
+                    val pastTrips = trips.filter { (!it.isOpenEnded && now > it.endDate && it.status != "ACTIVE") || it.status == "PAST" }.sortedByDescending { it.endDate }
 
                     if (activeTrips.isNotEmpty()) {
                         item {
@@ -202,7 +202,7 @@ fun TripsScreen(
                         }
                         items(activeTrips) { trip ->
                             Box(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
-                                TripCard(trip = trip, onClick = { onTripClick(trip.id) }, onLongClick = { showContextMenuForTrip = trip })
+                                TripCard(trip = trip, onClick = { onTripClick(trip.id, false) }, onLongClick = { showContextMenuForTrip = trip })
                             }
                         }
                     }
@@ -222,7 +222,7 @@ fun TripsScreen(
                         }
                         items(upcomingTrips) { trip ->
                             Box(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
-                                TripCard(trip = trip, onClick = { onTripClick(trip.id) }, onLongClick = { showContextMenuForTrip = trip })
+                                TripCard(trip = trip, onClick = { onTripClick(trip.id, false) }, onLongClick = { showContextMenuForTrip = trip })
                             }
                         }
                     }
@@ -242,7 +242,7 @@ fun TripsScreen(
                         }
                         items(pastTrips) { trip ->
                             Box(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
-                                TripCard(trip = trip, onClick = { onTripClick(trip.id) }, onLongClick = { showContextMenuForTrip = trip })
+                                TripCard(trip = trip, onClick = { onTripClick(trip.id, true) }, onLongClick = { showContextMenuForTrip = trip })
                             }
                         }
                     }
@@ -563,10 +563,10 @@ fun TripCard(trip: TripEntity, onClick: () -> Unit = {}, onLongClick: () -> Unit
     val now = System.currentTimeMillis()
 
     // Add 1 to totalDays so a trip from Aug 15 to Aug 15 is 1 day.
-    val totalDays = ((trip.endDate - trip.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1
-    val daysSpent = if (now < trip.startDate) 0 else if (now > trip.endDate) totalDays else ((now - trip.startDate) / 86400000L).toInt() + 1
+    val totalDays = if (trip.isOpenEnded) 0 else ((trip.endDate - trip.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1
+    val daysSpent = if (now < trip.startDate) 0 else if (trip.isOpenEnded) ((now - trip.startDate) / 86400000L).toInt() + 1 else if (now > trip.endDate) totalDays else ((now - trip.startDate) / 86400000L).toInt() + 1
 
-    val isTravelingNow = now in trip.startDate..trip.endDate
+    val isTravelingNow = (trip.isOpenEnded && now >= trip.startDate) || (!trip.isOpenEnded && now in trip.startDate..trip.endDate)
 
     // Generate a beautiful mock image based on the trip's ID so it stays consistent
     val mockImageUrl = "https://picsum.photos/seed/${trip.id}/800/400"
@@ -653,7 +653,7 @@ fun TripCard(trip: TripEntity, onClick: () -> Unit = {}, onLongClick: () -> Unit
                         // Date / Year
                         Column {
                             Text(
-                                text = "${dateFormatter.format(start)} - ${dateFormatter.format(end)}",
+                                text = if (trip.isOpenEnded) "${dateFormatter.format(start)} - Ongoing" else "${dateFormatter.format(start)} - ${dateFormatter.format(end)}",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                 color = Color.White
                             )
@@ -667,7 +667,7 @@ fun TripCard(trip: TripEntity, onClick: () -> Unit = {}, onLongClick: () -> Unit
                         // Days
                         Column {
                             Text(
-                                text = "$daysSpent/$totalDays",
+                                text = if (trip.isOpenEnded) "Day $daysSpent" else "$daysSpent/$totalDays",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                 color = Color.White
                             )

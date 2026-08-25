@@ -64,7 +64,7 @@ class ChatViewModel @Inject constructor(
         )
     }
 
-    fun sendMessage(userText: String, imageBitmap: Bitmap? = null) {
+    fun sendMessage(userText: String, imageBitmap: Bitmap? = null, locationStr: String? = null) {
         if (userText.isBlank() && imageBitmap == null) return
 
         val userMessage = ChatMessage(text = userText, isFromUser = true, imageBitmap = imageBitmap)
@@ -77,9 +77,16 @@ class ChatViewModel @Inject constructor(
                 // 1. Build Multi-modal Parts Array
                 val partsArray = JSONArray()
 
-                if (userText.isNotBlank()) {
+                val fullText = buildString {
+                    if (locationStr != null) {
+                        append("[System Context: The user is currently at coordinates $locationStr]\n")
+                    }
+                    append(userText)
+                }
+
+                if (fullText.isNotBlank()) {
                     partsArray.put(JSONObject().apply {
-                        put("text", userText)
+                        put("text", fullText)
                     })
                 }
 

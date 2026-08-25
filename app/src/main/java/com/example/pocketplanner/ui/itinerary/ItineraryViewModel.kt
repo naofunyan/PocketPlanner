@@ -826,6 +826,7 @@ class ItineraryViewModel @Inject constructor(
         budgetCurrency: String? = null,
         isTrackerEnabled: Boolean = false,
         trackingMode: String = "Balanced",
+        isOpenEnded: Boolean = false,
         onSuccess: () -> Unit, 
         onError: (String) -> Unit
     ) {
@@ -905,7 +906,8 @@ class ItineraryViewModel @Inject constructor(
                     status = "UPCOMING",
                     photoUrl = photoUrl,
                     isTrackerEnabled = isTrackerEnabled,
-                    trackingMode = trackingMode
+                    trackingMode = trackingMode,
+                    isOpenEnded = isOpenEnded
                 )
                 tripRepository.createTrip(newTrip)
 
@@ -981,6 +983,7 @@ class ItineraryViewModel @Inject constructor(
         newBudgetCurrency: String?,
         isTrackerEnabled: Boolean,
         trackingMode: String,
+        isOpenEnded: Boolean = false,
         newPhotoUrl: String? = null,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
@@ -1003,8 +1006,8 @@ class ItineraryViewModel @Inject constructor(
                     }
                 }
                 
-                val oldTotalDays = ((oldTrip.endDate - oldTrip.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1
-                val newTotalDays = ((newEnd - newStart) / 86400000L).toInt().coerceAtLeast(0) + 1
+                val oldTotalDays = if (oldTrip.isOpenEnded) 3 else ((oldTrip.endDate - oldTrip.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1
+                val newTotalDays = if (isOpenEnded) 3 else ((newEnd - newStart) / 86400000L).toInt().coerceAtLeast(0) + 1
                 val budgetChanged = kotlin.math.abs(budgetInVnd - oldTrip.budget) > 1.0
                 
                 if (newTotalDays > oldTotalDays || budgetChanged) {
@@ -1013,7 +1016,7 @@ class ItineraryViewModel @Inject constructor(
                 
                 if (newTotalDays < oldTotalDays) {
                     tripRepository.deletePlacesForDaysGreaterThan(tripId, newTotalDays)
-                } else if (newTotalDays > oldTotalDays) {
+                } else if (newTotalDays > oldTotalDays && !isOpenEnded) { // If open-ended, don't auto-extend itinerary on edit
                     // Extend itinerary
                     val existingPlaces = tripRepository.getAllPlacesForTrip(tripId).firstOrNull() ?: emptyList()
                     val visitedPlacesStr = if (existingPlaces.isNotEmpty()) {
@@ -1162,6 +1165,7 @@ class ItineraryViewModel @Inject constructor(
                     budget = budgetInVnd,
                     isTrackerEnabled = isTrackerEnabled,
                     trackingMode = trackingMode,
+                    isOpenEnded = isOpenEnded,
                     photoUrl = newPhotoUrl ?: oldTrip.photoUrl
                 )
                 

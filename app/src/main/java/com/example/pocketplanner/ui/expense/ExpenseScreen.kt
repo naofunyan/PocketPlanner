@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +42,7 @@ import java.text.SimpleDateFormat
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -147,8 +149,8 @@ fun ExpenseScreen(
                         Spacer(modifier = Modifier.height(4.dp))
                         if (trip != null) {
                             val startStr = dateFormatter.format(Date(trip!!.startDate))
-                            val endStr = dateFormatter.format(Date(trip!!.endDate))
-                            val days = ((trip!!.endDate - trip!!.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1
+                            val endStr = if (trip!!.isOpenEnded) "Ongoing" else dateFormatter.format(Date(trip!!.endDate))
+                            val days = if (trip!!.isOpenEnded) ((System.currentTimeMillis() - trip!!.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1 else ((trip!!.endDate - trip!!.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1
                             Text(
                                 text = "$startStr - $endStr • $days Days",
                                 style = MaterialTheme.typography.bodyMedium,
@@ -240,11 +242,13 @@ fun ExpenseScreen(
             modifier = Modifier.fillMaxHeight(),
             dragHandle = null
         ) {
+            val context = LocalContext.current
             AddExpenseForm(
                 onDismiss = { showAddSheet = false },
                 onSave = { amount, category, desc, date -> viewModel.addExpense(category, amount, desc, date)
                     showAddSheet = false
-                }
+                },
+                onScanReceipt = { uri -> viewModel.scanReceipt(uri, context) }
             )
         }
     }
@@ -414,14 +418,17 @@ fun BottomNavPill(text: String, isSelected: Boolean, modifier: Modifier = Modifi
 fun AddExpenseForm(
     exchangeRates: Map<String, Double> = emptyMap(),
     onSave: (amount: Double, category: String, desc: String, date: Long) -> Unit,
-    onDismiss: () -> Unit = {}
+    onDismiss: () -> Unit = {},
+    onScanReceipt: suspend (android.net.Uri) -> ScannedReceipt? = { null }
 ) {
-    var rawVndAmount by remember { mutableStateOf(0.0) }
-    var amountText by remember { mutableStateOf(TextFieldValue("")) }
-    var isUsd by remember { mutableStateOf(false) }
+    var rawVndAmount by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(0.0) }
+    var amountText by androidx.compose.runtime.saveable.rememberSaveable(stateSaver = androidx.compose.ui.text.input.TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
+    var isUsd by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
 
-    var category by remember { mutableStateOf("Food") }
-    var notes by remember { mutableStateOf("") }
+    var category by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("Food") }
+    var notes by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("") }
+    var isScanning by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     data class CategoryItem(val name: String, val icon: androidx.compose.ui.graphics.vector.ImageVector, val color: Color)
 
@@ -465,18 +472,59 @@ fun AddExpenseForm(
     val displayDate = dateFormatter.format(java.util.Date(selectedMillis))
 
     val context = LocalContext.current
-    var receiptUri by remember { mutableStateOf<android.net.Uri?>(null) }
-    var tempCameraUri by remember { mutableStateOf<android.net.Uri?>(null) }
-    var showImageSourceDialog by remember { mutableStateOf(false) }
+    var receiptUriString by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf<String?>(null) }
+    var tempCameraUriString by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf<String?>(null) }
+    
+    val receiptUri = receiptUriString?.let { android.net.Uri.parse(it) }
+    val tempCameraUri = tempCameraUriString?.let { android.net.Uri.parse(it) }
+    
+    var showImageSourceDialog by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+
+    val handleScan = { uri: android.net.Uri ->
+        coroutineScope.launch {
+            isScanning = true
+            val result = onScanReceipt(uri)
+            if (result != null) {
+                isUsd = result.currency == "USD"
+                rawVndAmount = result.amount
+                
+                val vndRate = exchangeRates["VND"] ?: 25000.0
+                if (isUsd) {
+                    val usdVal = if (vndRate > 0) rawVndAmount / vndRate else 0.0
+                    val formattedUsd = String.format(java.util.Locale.US, "%.2f", usdVal)
+                    amountText = androidx.compose.ui.text.input.TextFieldValue(text = formattedUsd, selection = androidx.compose.ui.text.TextRange(formattedUsd.length))
+                } else {
+                    val formatter = java.text.DecimalFormat("#,###")
+                    val formattedVnd = formatter.format(rawVndAmount).replace(",", ".")
+                    amountText = androidx.compose.ui.text.input.TextFieldValue(text = formattedVnd, selection = androidx.compose.ui.text.TextRange(formattedVnd.length))
+                }
+
+                val foundCat = categories.find { it.name.equals(result.category, ignoreCase = true) }
+                if (foundCat != null) category = foundCat.name
+                if (result.notes.isNotEmpty()) notes = result.notes
+            } else {
+                android.widget.Toast.makeText(context, "Failed to analyze receipt. Please try again.", android.widget.Toast.LENGTH_SHORT).show()
+            }
+            isScanning = false
+        }
+    }
 
     val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia(),
-        onResult = { uri -> if (uri != null) receiptUri = uri }
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri -> 
+            if (uri != null) {
+                receiptUriString = uri.toString()
+            }
+        }
     )
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
-        onResult = { success -> if (success) receiptUri = tempCameraUri }
+        onResult = { success -> 
+            if (success && tempCameraUri != null) {
+                receiptUriString = tempCameraUri.toString()
+            }
+        }
     )
 
     Column(
@@ -751,30 +799,83 @@ fun AddExpenseForm(
                                 Text("Tap to upload receipt", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                             }
                         }
-                    } else {
-                        Box(modifier = Modifier.fillMaxWidth().height(200.dp)) {
-                            AsyncImage(
-                                model = receiptUri,
-                                contentDescription = "Receipt",
-                                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clip(RoundedCornerShape(16.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Filled.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Upload a receipt to auto-fill with AI",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
                             )
-                            Surface(
-                                shape = CircleShape,
-                                color = Color.Black.copy(alpha = 0.6f),
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(8.dp)
-                                    .clickable { receiptUri = null }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Close,
-                                    contentDescription = "Remove",
-                                    tint = Color.White,
-                                    modifier = Modifier.padding(4.dp).size(20.dp)
+                        }
+                    } else {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Box(modifier = Modifier.fillMaxWidth().height(200.dp)) {
+                                AsyncImage(
+                                    model = receiptUri,
+                                    contentDescription = "Receipt",
+                                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(16.dp))
                                 )
+                                if (!isScanning) {
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = Color.Black.copy(alpha = 0.6f),
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(8.dp)
+                                            .clickable { receiptUriString = null }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Close,
+                                            contentDescription = "Remove",
+                                            tint = Color.White,
+                                            modifier = Modifier.padding(4.dp).size(20.dp)
+                                        )
+                                    }
+                                } else {
+                                    Surface(
+                                        color = Color.Black.copy(alpha = 0.5f),
+                                        modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(16.dp))
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.fillMaxSize(),
+                                            verticalArrangement = Arrangement.Center,
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            CircularProgressIndicator(color = Color.White)
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Text("Scanning receipt...", color = Color.White, style = MaterialTheme.typography.labelMedium)
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(12.dp))
+                            
+                            Button(
+                                onClick = { 
+                                    receiptUri?.let { handleScan(it) } 
+                                },
+                                enabled = !isScanning,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                if (isScanning) {
+                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), color = MaterialTheme.colorScheme.onPrimary)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Scanning...", color = MaterialTheme.colorScheme.onPrimary)
+                                } else {
+                                    Icon(Icons.Filled.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Auto-fill with AI", color = MaterialTheme.colorScheme.onPrimary)
+                                }
                             }
                         }
                     }
@@ -843,7 +944,7 @@ fun AddExpenseForm(
                     TextButton(
                         onClick = {
                             showImageSourceDialog = false
-                            galleryLauncher.launch(androidx.activity.result.PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                            galleryLauncher.launch("image/*")
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -858,7 +959,7 @@ fun AddExpenseForm(
                             showImageSourceDialog = false
                             val tempFile = File.createTempFile("receipt_", ".jpg", context.cacheDir)
                             val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", tempFile)
-                            tempCameraUri = uri
+                            tempCameraUriString = uri.toString()
                             cameraLauncher.launch(uri)
                         },
                         modifier = Modifier.fillMaxWidth()

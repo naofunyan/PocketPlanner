@@ -17,5 +17,9 @@ data class PlaceEntity(
     val startTime: String = "",
     val endTime: String = "",
     val photoUrl: String? = null,
-    val isVisited: Boolean = false
+    val isVisited: Boolean = false,
+    val userRating: Int? = null,
+    val isSyncedWithCloud: Boolean = false,
+    val updatedAt: Long = System.currentTimeMillis(),
+    val isDeleted: Boolean = false
 )

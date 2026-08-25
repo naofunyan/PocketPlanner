@@ -70,7 +70,7 @@ object ImageGenerator {
         textPaint.textSize = 50f
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
         val dateFormat = SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
-        val dateString = "${dateFormat.format(Date(trip.startDate))} - ${dateFormat.format(Date(trip.endDate))}"
+        val dateString = if (trip.isOpenEnded) "${dateFormat.format(Date(trip.startDate))} - Ongoing" else "${dateFormat.format(Date(trip.startDate))} - ${dateFormat.format(Date(trip.endDate))}"
         canvas.drawText(dateString, 80f, destinationY + 80f, textPaint)
         
         // Draw App Branding

@@ -72,7 +72,8 @@ fun MainScreen() {
                         currentDestination?.route?.contains("FallDetectionSettingsRoute") == false &&
                         currentDestination?.route?.contains("EmergencySharingRoute") == false &&
                         currentDestination?.route?.contains("MedicalInfoRoute") == false &&
-                        currentDestination?.route?.contains("ImmersiveExperienceRoute") == false
+                        currentDestination?.route?.contains("ImmersiveExperienceRoute") == false &&
+                        currentDestination?.route?.contains("TripSummaryRoute") == false
 
     OfflineBannerWrapper {
         Scaffold(
@@ -249,7 +250,10 @@ fun MainScreen() {
             }
 
             composable<ImportTripRoute>(
-                deepLinks = listOf(androidx.navigation.navDeepLink { uriPattern = "pocketplanner://trip/{tripId}" })
+                deepLinks = listOf(
+                    androidx.navigation.navDeepLink { uriPattern = "pocketplanner://trip/{tripId}" },
+                    androidx.navigation.navDeepLink { uriPattern = "https://pocketplanner.app/trip/{tripId}" }
+                )
             ) { backStackEntry ->
                 val args = backStackEntry.toRoute<ImportTripRoute>()
                 com.example.pocketplanner.ui.itinerary.ImportTripScreen(
@@ -274,7 +278,13 @@ fun MainScreen() {
 
                 com.example.pocketplanner.ui.itinerary.TripsScreen(
                     userId = uid,
-                    onTripClick = { tripId -> navController.navigate(ItineraryRoute(tripId)) },
+                    onTripClick = { tripId, isPast -> 
+                        if (isPast) {
+                            navController.navigate(TripSummaryRoute(tripId))
+                        } else {
+                            navController.navigate(ItineraryRoute(tripId)) 
+                        }
+                    },
                     onEditTripClick = { tripId -> navController.navigate(EditTripDetailsRoute(tripId)) },
                     onAddTripClick = { navController.navigate(SearchRoute) }
                 )
@@ -394,7 +404,7 @@ fun MainScreen() {
                     existingTrips = trips,
                     exchangeRates = exchangeRates,
                     onNavigateBack = { navController.popBackStack() },
-                    onCreateTrip = { days, name, start, end, customPhotoUrl, budgetAmt, budgetCurr, isTrackerEnabled, trackingMode ->
+                    onCreateTrip = { days, name, start, end, customPhotoUrl, budgetAmt, budgetCurr, isTrackerEnabled, trackingMode, isOpenEnded ->
                         val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
                         val userId = currentUser?.uid ?: "test_user_id"
                         itineraryViewModel.generateTripWithAI(
@@ -409,6 +419,7 @@ fun MainScreen() {
                             budgetCurrency = budgetCurr,
                             isTrackerEnabled = isTrackerEnabled,
                             trackingMode = trackingMode,
+                            isOpenEnded = isOpenEnded,
                             onSuccess = {
                                 navController.popBackStack(HomeRoute, inclusive = false)
                             },
@@ -449,7 +460,7 @@ fun MainScreen() {
                         editTripId = existingTrip.id,
                         existingTripData = existingTrip,
                         onNavigateBack = { navController.popBackStack() },
-                        onCreateTrip = { _, name, start, end, photoUrl, budgetAmt, budgetCurr, isTrackerEnabled, trackingMode ->
+                        onCreateTrip = { _, name, start, end, photoUrl, budgetAmt, budgetCurr, isTrackerEnabled, trackingMode, isOpenEnded ->
                             itineraryViewModel.updateTripSettings(
                                 tripId = existingTrip.id,
                                 newName = name,
@@ -459,6 +470,7 @@ fun MainScreen() {
                                 newBudgetCurrency = budgetCurr,
                                 isTrackerEnabled = isTrackerEnabled,
                                 trackingMode = trackingMode,
+                                isOpenEnded = isOpenEnded,
                                 newPhotoUrl = photoUrl,
                                 onSuccess = {
                                     navController.popBackStack()
@@ -524,6 +536,14 @@ fun MainScreen() {
 
             composable<ChatRoute> {
                 com.example.pocketplanner.ui.chat.AiHubScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable<TripSummaryRoute> { backStackEntry ->
+                val args = backStackEntry.toRoute<TripSummaryRoute>()
+                com.example.pocketplanner.ui.summary.TripSummaryScreen(
+                    tripId = args.tripId,
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

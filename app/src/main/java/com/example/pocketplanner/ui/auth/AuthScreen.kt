@@ -383,7 +383,7 @@ fun FormField(
                     val description = if (passwordVisible) "Hide password" else "Show password"
 
                     IconButton(onClick = { onPasswordVisibilityChange?.invoke(!passwordVisible) }) {
-                        Icon(imageVector = image, contentDescription = description, tint = Color.Gray)
+                        Icon(imageVector = image, contentDescription = description, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             } else null,

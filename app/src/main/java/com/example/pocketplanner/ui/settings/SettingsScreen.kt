@@ -4,6 +4,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,6 +23,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
@@ -31,6 +37,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -83,9 +92,57 @@ fun SettingsScreen(
         }
     }
 
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            viewModel.updateNotifications(true)
+        } else {
+            Toast.makeText(context, "Notification permission is required for alerts.", Toast.LENGTH_LONG).show()
+            viewModel.updateNotifications(false)
+        }
+    }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            viewModel.updateLocationAccess(true)
+        } else {
+            Toast.makeText(context, "Location permission is required for AI context.", Toast.LENGTH_LONG).show()
+            viewModel.updateLocationAccess(false)
+        }
+    }
+
     // Observe persistent DataStore values
     val fallDetectionEnabled by viewModel.fallDetectionEnabled.collectAsState()
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
+    val locationAccessEnabled by viewModel.locationAccessEnabled.collectAsState()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, notificationsEnabled, locationAccessEnabled) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                // Sync notification permission
+                val hasNotificationPerm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                } else true
+                if (notificationsEnabled && !hasNotificationPerm) {
+                    viewModel.updateNotifications(false)
+                }
+
+                // Sync location permission
+                val hasLocationPerm = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                if (locationAccessEnabled && !hasLocationPerm) {
+                    viewModel.updateLocationAccess(false)
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     var showLanguageSheet by remember { mutableStateOf(false) }
     var showThemeSheet by remember { mutableStateOf(false) }
@@ -228,7 +285,45 @@ fun SettingsScreen(
                         title = stringResource(id = R.string.settings_notifications),
                         subtitle = stringResource(id = R.string.settings_notifications_desc),
                         isChecked = notificationsEnabled,
-                        onCheckedChange = { viewModel.updateNotifications(it) }
+                        onCheckedChange = { isChecked ->
+                            if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                val hasPermission = ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.POST_NOTIFICATIONS
+                                ) == PackageManager.PERMISSION_GRANTED
+                                
+                                if (hasPermission) {
+                                    viewModel.updateNotifications(true)
+                                } else {
+                                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                }
+                            } else {
+                                viewModel.updateNotifications(isChecked)
+                            }
+                        }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp, modifier = Modifier.padding(start = 56.dp))
+                    SettingsToggleRow(
+                        icon = Icons.Default.LocationOn,
+                        title = "Location Context",
+                        subtitle = "Allows the AI to know your current location. Uses minimal battery.",
+                        isChecked = locationAccessEnabled,
+                        onCheckedChange = { isChecked ->
+                            if (isChecked) {
+                                val hasPermission = ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.ACCESS_FINE_LOCATION
+                                ) == PackageManager.PERMISSION_GRANTED
+                                
+                                if (hasPermission) {
+                                    viewModel.updateLocationAccess(true)
+                                } else {
+                                    locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                                }
+                            } else {
+                                viewModel.updateLocationAccess(false)
+                            }
+                        }
                     )
                 }
             }

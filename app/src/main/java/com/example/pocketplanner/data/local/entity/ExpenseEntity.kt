@@ -13,5 +13,7 @@ data class ExpenseEntity(
     val convertedAmountVND: Double, // We sum this column to calculate total spent
     val description: String,
     val date: Long,
-    val isSyncedWithCloud: Boolean = false // Ready for FirestoreSyncManager later
+    val isSyncedWithCloud: Boolean = false, // Ready for FirestoreSyncManager later
+    val updatedAt: Long = System.currentTimeMillis(),
+    val isDeleted: Boolean = false
 )

@@ -4,24 +4,29 @@ import com.example.pocketplanner.data.local.dao.PlaceDao
 import com.example.pocketplanner.data.local.dao.TripDao
 import com.example.pocketplanner.data.local.entity.PlaceEntity
 import com.example.pocketplanner.data.local.entity.TripEntity
-import com.example.pocketplanner.data.sync.FirestoreSyncManager
+import com.example.pocketplanner.core.offline.SyncScheduler
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class TripRepository @Inject constructor(
     private val tripDao: TripDao,
     private val placeDao: PlaceDao,
-    private val syncManager: FirestoreSyncManager
+    private val syncScheduler: SyncScheduler
 ) {
     fun getAllTrips(userId: String): Flow<List<TripEntity>> {
         return tripDao.getAllTripsForUser(userId)
     }
 
     suspend fun createTrip(trip: TripEntity) {
-        // Save locally for immediate offline use
-        tripDao.insertTrip(trip)
-        // Push to the cloud in the background
-        syncManager.pushTripToCloud(trip)
+        val newTrip = trip.copy(isSyncedWithCloud = false, updatedAt = System.currentTimeMillis())
+        tripDao.insertTrip(newTrip)
+        syncScheduler.scheduleSync()
+    }
+
+    suspend fun updateTrip(trip: TripEntity) {
+        val updatedTrip = trip.copy(isSyncedWithCloud = false, updatedAt = System.currentTimeMillis())
+        tripDao.insertTrip(updatedTrip)
+        syncScheduler.scheduleSync()
     }
 
     fun getTrip(tripId: String): Flow<TripEntity?> {
@@ -29,16 +34,14 @@ class TripRepository @Inject constructor(
     }
 
     suspend fun deleteTrip(tripId: String) {
-        // Delete locally first for immediate UI update
+        // Soft Delete locally first for immediate UI update
         tripDao.deleteTripById(tripId)
-        // Push delete to the cloud
-        syncManager.deleteTripFromCloud(tripId)
+        syncScheduler.scheduleSync()
     }
     suspend fun savePlaces(places: List<PlaceEntity>) {
-        placeDao.insertPlaces(places)
-        if (places.isNotEmpty()) {
-            syncManager.pushPlacesToCloud(places.first().tripId, places)
-        }
+        val unsyncedPlaces = places.map { it.copy(isSyncedWithCloud = false, updatedAt = System.currentTimeMillis()) }
+        placeDao.insertPlaces(unsyncedPlaces)
+        syncScheduler.scheduleSync()
     }
     fun getPlacesForDay(tripId: String, dayNumber: Int): Flow<List<PlaceEntity>> {
         return placeDao.getPlacesForDay(tripId, dayNumber)
@@ -48,5 +51,6 @@ class TripRepository @Inject constructor(
     }
     suspend fun deletePlacesForDaysGreaterThan(tripId: String, maxDayNumber: Int) {
         placeDao.deletePlacesForDaysGreaterThan(tripId, maxDayNumber)
+        syncScheduler.scheduleSync()
     }
 }

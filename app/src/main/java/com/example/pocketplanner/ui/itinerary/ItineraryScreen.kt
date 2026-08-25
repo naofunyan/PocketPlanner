@@ -270,9 +270,15 @@ fun ItineraryScreen(
                                 )
                             }
 
-                            val diffInMillies = Math.abs(trip!!.endDate - trip!!.startDate)
-                            val daysCount = (diffInMillies / 86400000L).toInt() + 1
-                            val totalDays = if (daysCount <= 0) 1 else daysCount
+                            val totalDays = if (trip!!.isOpenEnded) {
+                                val elapsed = ((System.currentTimeMillis() - trip!!.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1
+                                val maxDay = allPlaces.maxOfOrNull { it.dayNumber } ?: 1
+                                Math.max(elapsed, maxDay)
+                            } else {
+                                val diffInMillies = Math.abs(trip!!.endDate - trip!!.startDate)
+                                val daysCount = (diffInMillies / 86400000L).toInt() + 1
+                                if (daysCount <= 0) 1 else daysCount
+                            }
 
                             // Date Tabs Row
                             LazyRow(
@@ -911,7 +917,7 @@ fun ItineraryScreen(
 
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(vertical = 8.dp)) // DYNAMIC DIVIDER
 
-                                val durationDays = if (trip != null) ((trip!!.endDate - trip!!.startDate) / 86400000).toInt() + 1 else 1
+                                val durationDays = if (trip != null) (if (trip!!.isOpenEnded) ((System.currentTimeMillis() - trip!!.startDate) / 86400000).toInt().coerceAtLeast(0) + 1 else ((trip!!.endDate - trip!!.startDate) / 86400000).toInt() + 1) else 1
                                 LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)) {
                                     items(durationDays) { index ->
                                         val targetDay = index + 1
@@ -956,7 +962,7 @@ fun ItineraryScreen(
                 // Rearrange Bottom Sheet
                 if (showRearrangeSheet) {
                     var rearrangeTab by remember { mutableStateOf("Places") }
-                    val durationDays = if (trip != null) ((trip!!.endDate - trip!!.startDate) / 86400000).toInt() + 1 else 1
+                    val durationDays = if (trip != null) (if (trip!!.isOpenEnded) ((System.currentTimeMillis() - trip!!.startDate) / 86400000).toInt().coerceAtLeast(0) + 1 else ((trip!!.endDate - trip!!.startDate) / 86400000).toInt() + 1) else 1
 
                     ModalBottomSheet(
                         onDismissRequest = { showRearrangeSheet = false },

@@ -16,6 +16,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URL
+import android.content.Context
+import android.net.Uri
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
+import com.example.pocketplanner.BuildConfig
+import java.io.ByteArrayOutputStream
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -80,13 +89,11 @@ class ExpenseViewModel @Inject constructor(
                         val now = System.currentTimeMillis()
 
                         // 1. Currently active trip
-                        val activeTrip = trips.firstOrNull { it.startDate <= now && it.endDate >= now }
+                        val activeTrip = trips.firstOrNull { it.startDate <= now && (it.isOpenEnded || it.endDate >= now) }
                         // 2. Closest upcoming trip
                         val upcomingTrip = trips.filter { it.startDate > now }.minByOrNull { it.startDate }
-                        // 3. Most recent past trip
-                        val pastTrip = trips.filter { it.endDate < now }.maxByOrNull { it.endDate }
 
-                        _selectedTripId.value = (activeTrip ?: upcomingTrip ?: pastTrip ?: trips.firstOrNull())?.id
+                        _selectedTripId.value = (activeTrip ?: upcomingTrip)?.id
                     }
                 }
             }
@@ -142,10 +149,119 @@ class ExpenseViewModel @Inject constructor(
 
     fun deleteExpense(expense: ExpenseEntity) {
         viewModelScope.launch {
-            // Make sure your ExpenseRepository has a deleteExpense function!
             expenseRepository.deleteExpense(expense)
         }
+    }
+
+    suspend fun scanReceipt(uri: Uri, context: Context): ScannedReceipt? = withContext(Dispatchers.IO) {
+        try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return@withContext null
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream.close()
+            
+            val maxDim = 1024
+            val scale = maxDim.toFloat() / maxOf(bitmap.width, bitmap.height)
+            val scaledBitmap = if (scale < 1f) {
+                Bitmap.createScaledBitmap(bitmap, (bitmap.width * scale).toInt(), (bitmap.height * scale).toInt(), true)
+            } else {
+                bitmap
+            }
+            
+            val outputStream = ByteArrayOutputStream()
+            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream)
+            val base64Image = Base64.encodeToString(outputStream.toByteArray(), Base64.NO_WRAP)
+            
+            if (scaledBitmap != bitmap) scaledBitmap.recycle()
+            bitmap.recycle()
+
+            val vertexApiKey = BuildConfig.VERTEX_API_KEY
+            val aiEndpoint = "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-3.7-flash:generateContent?key=$vertexApiKey"
+            
+            val prompt = """
+                You are an AI expense tracker. Analyze this receipt and extract the details.
+                Return ONLY a JSON object matching this exact schema, without any markdown formatting:
+                {
+                  "amount": 12.50,
+                  "currency": "VND" or "USD",
+                  "category": "Food", // must be one of: Food, Transport, Lodging, Shopping, Activities, Bills, Groceries, Books, Gaming, Other
+                  "notes": "Starbucks" // Merchant name or brief description
+                }
+            """.trimIndent()
+            
+            val payload = JSONObject().apply {
+                put("contents", org.json.JSONArray().apply {
+                    put(JSONObject().apply {
+                        put("role", "user")
+                        put("parts", org.json.JSONArray().apply {
+                            put(JSONObject().apply {
+                                put("text", prompt)
+                            })
+                            put(JSONObject().apply {
+                                put("inlineData", JSONObject().apply {
+                                    put("mimeType", "image/jpeg")
+                                    put("data", base64Image)
+                                })
+                            })
+                        })
+                    })
+                })
+                put("generationConfig", JSONObject().apply {
+                    put("temperature", 0.1)
+                })
+            }
+            
+            val url = URL(aiEndpoint)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.doOutput = true
+            
+            OutputStreamWriter(connection.outputStream).use { writer ->
+                writer.write(payload.toString())
+            }
+            
+            if (connection.responseCode == 200) {
+                val responseText = connection.inputStream.bufferedReader().readText()
+                val responseJson = JSONObject(responseText)
+                
+                val candidates = responseJson.optJSONArray("candidates")
+                if (candidates != null && candidates.length() > 0) {
+                    val content = candidates.getJSONObject(0).optJSONObject("content")
+                    val parts = content?.optJSONArray("parts")
+                    if (parts != null && parts.length() > 0) {
+                        var text = parts.getJSONObject(0).optString("text")
+                        
+                        if (text.startsWith("```json")) {
+                            text = text.substringAfter("```json").substringBeforeLast("```").trim()
+                        } else if (text.startsWith("```")) {
+                            text = text.substringAfter("```").substringBeforeLast("```").trim()
+                        }
+                        
+                        val extracted = JSONObject(text)
+                        return@withContext ScannedReceipt(
+                            amount = extracted.optDouble("amount", 0.0),
+                            currency = extracted.optString("currency", "VND"),
+                            category = extracted.optString("category", "Other"),
+                            notes = extracted.optString("notes", "")
+                        )
+                    }
+                }
+            } else {
+                val errorText = connection.errorStream?.bufferedReader()?.readText()
+                android.util.Log.e("ExpenseViewModel", "API Error: ${connection.responseCode} - $errorText")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return@withContext null
     }
 }
 
 data class BudgetState(val totalBudget: Double, val totalSpent: Double, val remaining: Double)
+
+data class ScannedReceipt(
+    val amount: Double,
+    val currency: String,
+    val category: String,
+    val notes: String
+)

@@ -41,8 +41,19 @@ class FirestoreSyncManager @Inject constructor(
         }
 
         try {
-            // Push the data to Firestore
-            tripsCollection.document(trip.id).set(trip).await()
+            val docRef = tripsCollection.document(trip.id)
+            val cloudDoc = docRef.get().await()
+            
+            if (cloudDoc.exists()) {
+                val cloudUpdatedAt = cloudDoc.getLong("updatedAt") ?: 0L
+                if (trip.updatedAt < cloudUpdatedAt) {
+                    Log.d("SyncManager", "Cloud trip is newer, skipping push for ${trip.id}")
+                    return
+                }
+            }
+
+            // Push the data to Firestore (acts as tombstone if isDeleted == true)
+            docRef.set(trip).await()
 
             // Mark it as synced locally
             tripDao.insertTrip(trip.copy(isSyncedWithCloud = true))
@@ -62,15 +73,26 @@ class FirestoreSyncManager @Inject constructor(
             val snapshot = tripsCollection.whereEqualTo("userId", user.uid).get().await()
 
             for (document in snapshot.documents) {
-                val trip = document.toObject(TripEntity::class.java)
-                if (trip != null) {
-                    tripDao.insertTrip(trip.copy(isSyncedWithCloud = true))
+                val cloudTrip = document.toObject(TripEntity::class.java)
+                if (cloudTrip != null) {
+                    val localTrip = tripDao.getTripByIdDirect(cloudTrip.id)
+                    if (localTrip == null || cloudTrip.updatedAt > localTrip.updatedAt) {
+                        tripDao.insertTrip(cloudTrip.copy(isSyncedWithCloud = true))
+                    }
                     
                     // Also pull places
                     val placesSnapshot = document.reference.collection("places").get().await()
-                    val placesList = placesSnapshot.documents.mapNotNull { it.toObject(PlaceEntity::class.java) }
-                    if (placesList.isNotEmpty()) {
-                        placeDao.insertPlaces(placesList)
+                    val cloudPlaces = placesSnapshot.documents.mapNotNull { it.toObject(PlaceEntity::class.java) }
+                    
+                    val placesToInsert = mutableListOf<PlaceEntity>()
+                    for (cloudPlace in cloudPlaces) {
+                        val localPlace = placeDao.getPlaceByIdDirect(cloudPlace.id)
+                        if (localPlace == null || cloudPlace.updatedAt > localPlace.updatedAt) {
+                            placesToInsert.add(cloudPlace.copy(isSyncedWithCloud = true))
+                        }
+                    }
+                    if (placesToInsert.isNotEmpty()) {
+                        placeDao.insertPlaces(placesToInsert)
                     }
                 }
             }
@@ -83,12 +105,17 @@ class FirestoreSyncManager @Inject constructor(
     suspend fun pushPlacesToCloud(tripId: String, places: List<PlaceEntity>) {
         if (auth.currentUser == null) return
         try {
-            val batch = firestore.batch()
             val placesRef = tripsCollection.document(tripId).collection("places")
-            places.forEach { place ->
-                batch.set(placesRef.document(place.id), place)
+            
+            for (place in places) {
+                val cloudDoc = placesRef.document(place.id).get().await()
+                if (cloudDoc.exists()) {
+                    val cloudUpdatedAt = cloudDoc.getLong("updatedAt") ?: 0L
+                    if (place.updatedAt < cloudUpdatedAt) continue
+                }
+                placesRef.document(place.id).set(place).await()
+                placeDao.insertPlaces(listOf(place.copy(isSyncedWithCloud = true)))
             }
-            batch.commit().await()
             Log.d("SyncManager", "Successfully pushed places to cloud for trip $tripId")
         } catch (e: Exception) {
             Log.e("SyncManager", "Failed to push places: ${e.message}")
@@ -148,6 +175,38 @@ class FirestoreSyncManager @Inject constructor(
     }
 
     // ============================================================
+    //  PUSH UNSYNCED CHANGES (BACKGROUND WORKER)
+    // ============================================================
+    
+    suspend fun pushUnsyncedLocalChangesToCloud() {
+        val user = auth.currentUser ?: return
+        
+        try {
+            // Push unsynced trips
+            val unsyncedTrips = tripDao.getUnsyncedTrips(user.uid)
+            for (trip in unsyncedTrips) {
+                pushTripToCloud(trip)
+                
+                // Then push unsynced places for this trip
+                val unsyncedPlaces = placeDao.getUnsyncedPlacesForTrip(trip.id)
+                if (unsyncedPlaces.isNotEmpty()) {
+                    pushPlacesToCloud(trip.id, unsyncedPlaces)
+                }
+            }
+            
+            // Push unsynced tickets
+            val unsyncedTickets = ticketDao.getUnsyncedTickets(user.uid)
+            for (ticket in unsyncedTickets) {
+                pushTicketToCloud(ticket)
+            }
+            
+            Log.d("SyncManager", "Successfully pushed all unsynced local changes to cloud.")
+        } catch (e: Exception) {
+            Log.e("SyncManager", "Failed to push unsynced changes: ${e.message}")
+        }
+    }
+
+    // ============================================================
     //  TICKET SYNC
     // ============================================================
 
@@ -162,10 +221,20 @@ class FirestoreSyncManager @Inject constructor(
         }
 
         try {
+            val docRef = ticketsCollection.document(ticket.id)
+            val cloudDoc = docRef.get().await()
+            if (cloudDoc.exists()) {
+                val cloudUpdatedAt = cloudDoc.getLong("updatedAt") ?: 0L
+                if (ticket.updatedAt < cloudUpdatedAt) {
+                    Log.d("SyncManager", "Cloud ticket is newer, skipping push for ${ticket.id}")
+                    return
+                }
+            }
+
             // 1. Upload original image to Firebase Storage
             val imageFile = File(ticket.imageUri)
             var imageUrl = ""
-            if (imageFile.exists()) {
+            if (imageFile.exists() && !ticket.isDeleted) {
                 val imageRef = storageRef.child("tickets/${user.uid}/${ticket.id}_original.jpg")
                 imageRef.putFile(android.net.Uri.fromFile(imageFile)).await()
                 imageUrl = imageRef.downloadUrl.await().toString()
@@ -175,7 +244,7 @@ class FirestoreSyncManager @Inject constructor(
             var thumbUrl = ""
             ticket.thumbnailUri?.let { thumbPath ->
                 val thumbFile = File(thumbPath)
-                if (thumbFile.exists()) {
+                if (thumbFile.exists() && !ticket.isDeleted) {
                     val thumbRef = storageRef.child("tickets/${user.uid}/${ticket.id}_thumb.jpg")
                     thumbRef.putFile(android.net.Uri.fromFile(thumbFile)).await()
                     thumbUrl = thumbRef.downloadUrl.await().toString()
@@ -196,10 +265,12 @@ class FirestoreSyncManager @Inject constructor(
                 "ocrRawText" to ticket.ocrRawText,
                 "confirmationCode" to ticket.confirmationCode,
                 "notes" to ticket.notes,
-                "createdAt" to ticket.createdAt
+                "createdAt" to ticket.createdAt,
+                "updatedAt" to ticket.updatedAt,
+                "isDeleted" to ticket.isDeleted
             )
 
-            ticketsCollection.document(ticket.id).set(ticketData).await()
+            docRef.set(ticketData).await()
 
             // 4. Mark as synced locally
             ticketDao.insertTicket(ticket.copy(isSyncedWithCloud = true, userId = user.uid))
@@ -222,21 +293,24 @@ class FirestoreSyncManager @Inject constructor(
             for (document in snapshot.documents) {
                 val ticketId = document.getString("id") ?: continue
 
-                // Skip if already exists locally and is synced
+                // Compare timestamps for LWW
+                val cloudUpdatedAt = document.getLong("updatedAt") ?: 0L
                 val existingTicket = ticketDao.getTicketByIdDirect(ticketId)
-                if (existingTicket != null && existingTicket.isSyncedWithCloud) continue
+                if (existingTicket != null && cloudUpdatedAt <= existingTicket.updatedAt) {
+                    continue // Local is newer or same
+                }
 
                 // Download original image from Storage
                 val imageUrl = document.getString("imageUrl") ?: ""
-                var localImagePath = ""
-                if (imageUrl.isNotBlank()) {
+                var localImagePath = existingTicket?.imageUri ?: ""
+                if (imageUrl.isNotBlank() && localImagePath.isBlank()) {
                     localImagePath = downloadImageFromStorage(imageUrl, "${ticketId}_original.jpg")
                 }
 
                 // Download thumbnail
                 val thumbUrl = document.getString("thumbnailUrl") ?: ""
-                var localThumbPath: String? = null
-                if (thumbUrl.isNotBlank()) {
+                var localThumbPath: String? = existingTicket?.thumbnailUri
+                if (thumbUrl.isNotBlank() && localThumbPath.isNullOrBlank()) {
                     localThumbPath = downloadImageFromStorage(thumbUrl, "${ticketId}_thumb.jpg")
                 }
 
@@ -254,6 +328,8 @@ class FirestoreSyncManager @Inject constructor(
                     confirmationCode = document.getString("confirmationCode"),
                     notes = document.getString("notes") ?: "",
                     createdAt = document.getLong("createdAt") ?: System.currentTimeMillis(),
+                    updatedAt = cloudUpdatedAt,
+                    isDeleted = document.getBoolean("isDeleted") ?: false,
                     isSyncedWithCloud = true
                 )
                 ticketDao.insertTicket(ticket)

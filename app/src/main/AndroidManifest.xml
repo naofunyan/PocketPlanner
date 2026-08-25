@@ -58,6 +58,14 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="pocketplanner" android:host="trip" />
             </intent-filter>
+
+            <!-- Web Deep Link for shared trips -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="pocketplanner.app" android:pathPrefix="/trip/" />
+            </intent-filter>
         </activity>
 
         <service

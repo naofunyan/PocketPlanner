@@ -31,6 +31,7 @@ class SettingsViewModel @Inject constructor(
         // App Preferences
         val THEME_MODE = intPreferencesKey("theme_mode")
         val NOTIFICATIONS = booleanPreferencesKey("notifications")
+        val LOCATION_ACCESS = booleanPreferencesKey("location_access")
 
         // Fall Detection & Safety
         val FALL_DETECTION = booleanPreferencesKey("fall_detection")
@@ -65,6 +66,9 @@ class SettingsViewModel @Inject constructor(
 
     val notificationsEnabled = dataStore.data.map { it[NOTIFICATIONS] ?: true }
         .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+    val locationAccessEnabled = dataStore.data.map { it[LOCATION_ACCESS] ?: false }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     // Fall Detection & Safety
     val fallDetectionEnabled = dataStore.data.map { it[FALL_DETECTION] ?: false }
@@ -113,6 +117,10 @@ class SettingsViewModel @Inject constructor(
 
     fun updateNotifications(enabled: Boolean) = viewModelScope.launch {
         dataStore.edit { it[NOTIFICATIONS] = enabled }
+    }
+
+    fun updateLocationAccess(enabled: Boolean) = viewModelScope.launch {
+        dataStore.edit { it[LOCATION_ACCESS] = enabled }
     }
 
     fun updateFallDetection(enabled: Boolean) = viewModelScope.launch {
@@ -166,6 +174,21 @@ class SettingsViewModel @Inject constructor(
     // --- FIREBASE AVATAR UPLOAD LOGIC ---
     private val _avatarUrl = MutableStateFlow(auth.currentUser?.photoUrl?.toString())
     val avatarUrl = _avatarUrl.asStateFlow()
+    
+    init {
+        // Reload user to sync latest avatar from Firebase in case it was updated on another device
+        viewModelScope.launch {
+            try {
+                val user = auth.currentUser
+                if (user != null) {
+                    user.reload().await()
+                    _avatarUrl.value = user.photoUrl?.toString()
+                }
+            } catch (e: Exception) {
+                // Ignore reload errors (e.g. offline)
+            }
+        }
+    }
 
     private val _isUploading = MutableStateFlow(false)
     val isUploading = _isUploading.asStateFlow()

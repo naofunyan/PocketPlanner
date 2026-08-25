@@ -18,8 +18,12 @@ class SyncWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
+            // First push local unsynced changes to the cloud
+            syncManager.pushUnsyncedLocalChangesToCloud()
+            
+            // Then pull latest from cloud to resolve conflicts
             syncManager.pullTripsFromCloud()
-            syncManager.pullTicketsFromCloud()  // ← ADD THIS
+            syncManager.pullTicketsFromCloud()
             Result.success()
         } catch (e: Exception) {
             e.printStackTrace()
