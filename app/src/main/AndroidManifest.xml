@@ -72,10 +72,7 @@
                 android:name=".ui.ml.FallDetectionService"
                 android:exported="false"
                 android:foregroundServiceType="health" />
-        <service
-                android:name=".core.location.LocationTrackingService"
-                android:foregroundServiceType="location"
-                android:exported="false" />
+
         <receiver
                 android:name=".core.location.GeofenceBroadcastReceiver"
                 android:enabled="true"

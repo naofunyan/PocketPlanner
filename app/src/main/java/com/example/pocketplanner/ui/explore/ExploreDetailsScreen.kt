@@ -1,5 +1,7 @@
 package com.example.pocketplanner.ui.explore
 
+import com.example.pocketplanner.data.repository.localized
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,6 +40,8 @@ import androidx.compose.runtime.LaunchedEffect
 import com.mapbox.geojson.Point
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,8 +55,8 @@ fun ExploreDetailsScreen(
 ) {
     val savedNames by viewModel.savedPlaces.collectAsState()
 
-    val destination = com.example.pocketplanner.data.repository.DestinationRepository.cities.find { it.id == destinationId }
-        ?: com.example.pocketplanner.data.repository.DestinationRepository.cities.first()
+    val destination = com.example.pocketplanner.data.repository.DestinationRepository.cities.find { it.id == destinationId }?.localized()
+        ?: com.example.pocketplanner.data.repository.DestinationRepository.cities.first().localized()
 
     // We intentionally shift the latitude SOUTH (subtract ~0.08 degrees) so the city center 
     // moves UP into the visible top half of the screen, safely above the Bottom Sheet.
@@ -144,7 +148,7 @@ fun ExploreDetailsScreen(
                         modifier = Modifier.size(44.dp).clickable { onNavigateBack() }
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(22.dp)) // DYNAMIC ICON
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.expense_back_cd), tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(22.dp)) // DYNAMIC ICON
                         }
                     }
 
@@ -161,7 +165,7 @@ fun ExploreDetailsScreen(
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = if (isSaved) Icons.Filled.Bookmark else Icons.Default.BookmarkBorder,
-                                contentDescription = "Bookmark",
+                                contentDescription = stringResource(R.string.explore_bookmark_cd),
                                 tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, // DYNAMIC ICON
                                 modifier = Modifier.size(22.dp)
                             )
@@ -207,7 +211,7 @@ fun DestinationPlacesSection(
     if (places.isEmpty()) return
 
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
-        Text(text = "Places", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
+        Text(text = stringResource(R.string.explore_places_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
         Spacer(modifier = Modifier.height(20.dp))
 
         places.forEach { place ->
@@ -221,7 +225,7 @@ fun DestinationPlacesSection(
             shape = CircleShape, border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), // DYNAMIC BORDER
             colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent)
         ) {
-            Text(text = "See all", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), modifier = Modifier.padding(horizontal = 16.dp)) // DYNAMIC TEXT
+            Text(text = stringResource(R.string.explore_see_all), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), modifier = Modifier.padding(horizontal = 16.dp)) // DYNAMIC TEXT
         }
     }
 }
@@ -243,13 +247,13 @@ fun PlaceListItem(
         ) {
             AsyncImage(
                 model = place.heroImageUrl,
-                contentDescription = place.name,
+                contentDescription = place.displayName,
                 contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = place.name, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 17.sp), color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
+            Text(text = place.displayName, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 17.sp), color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
             Spacer(modifier = Modifier.height(2.dp))
             Text(text = place.subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis) // DYNAMIC TEXT
         }
@@ -266,7 +270,7 @@ private fun DestinationHeroBanner(
 
     Box(modifier = Modifier.fillMaxWidth().height(340.dp + topPadding).clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))) {
         AsyncImage(
-            model = destination.heroImageUrl, contentDescription = destination.title,
+            model = destination.heroImageUrl, contentDescription = destination.displayTitle,
             contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
         )
         Box(modifier = Modifier.fillMaxSize().background(
@@ -292,7 +296,7 @@ private fun DestinationHeroBanner(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = destination.title, color = Color.White, textAlign = TextAlign.Center, // Kept white for visibility over the image
+                text = destination.displayTitle, color = Color.White, textAlign = TextAlign.Center, // Kept white for visibility over the image
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold, fontSize = 32.sp, shadow = Shadow(color = Color.Black.copy(alpha = 0.8f), offset = Offset(0f, 2f), blurRadius = 12f))
             )
             Spacer(modifier = Modifier.height(4.dp))
@@ -309,9 +313,9 @@ private fun DestinationHeroBanner(
                 modifier = Modifier.height(48.dp).shadow(elevation = 8.dp, shape = CircleShape)
             ) {
                 Row(modifier = Modifier.padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                    Icon(Icons.Filled.Add, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp)) // DYNAMIC ICON
+                    Icon(Icons.Filled.Add, null, modifier = Modifier.size(18.dp)) // DYNAMIC ICON
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Create a new trip", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)) // DYNAMIC TEXT
+                    Text(stringResource(R.string.explore_create_trip), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)) // DYNAMIC TEXT
                 }
             }
         }
@@ -325,8 +329,8 @@ fun AllPlacesScreen(
     onNavigateBack: () -> Unit,
     onPlaceClick: (String) -> Unit = {}
 ) {
-    val destination = com.example.pocketplanner.data.repository.DestinationRepository.cities.find { it.id == destinationId }
-        ?: com.example.pocketplanner.data.repository.DestinationRepository.cities.first()
+    val destination = com.example.pocketplanner.data.repository.DestinationRepository.cities.find { it.id == destinationId }?.localized()
+        ?: com.example.pocketplanner.data.repository.DestinationRepository.cities.first().localized()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background, // DYNAMIC BACKGROUND
@@ -334,13 +338,13 @@ fun AllPlacesScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text(text = "Places", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onBackground) // DYNAMIC TEXT
-                        Text(text = destination.title, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                        Text(text = stringResource(R.string.explore_places_title), style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onBackground) // DYNAMIC TEXT
+                        Text(text = destination.displayTitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Navigate Back", tint = MaterialTheme.colorScheme.onBackground) // DYNAMIC ICON
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.expense_back_cd), tint = MaterialTheme.colorScheme.onBackground) // DYNAMIC ICON
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

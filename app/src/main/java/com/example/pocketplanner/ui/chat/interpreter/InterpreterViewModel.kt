@@ -27,6 +27,7 @@ import org.json.JSONObject
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import com.example.pocketplanner.R
 
 @HiltViewModel
 class InterpreterViewModel @Inject constructor(
@@ -304,7 +305,7 @@ class InterpreterViewModel @Inject constructor(
             // ONLINE: Start streaming audio chunks
             if (!isGeminiSetupComplete) return
             currentSpeaker = speaker
-            currentOriginalText = "(Voice input)"
+            currentOriginalText = context.getString(R.string.interpreter_voice_input)
             currentGeminiText = ""
 
             viewModelScope.launch(Dispatchers.IO) {

@@ -98,7 +98,7 @@ fun SettingsScreen(
         if (isGranted) {
             viewModel.updateNotifications(true)
         } else {
-            Toast.makeText(context, "Notification permission is required for alerts.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.settings_permission_notification), Toast.LENGTH_LONG).show()
             viewModel.updateNotifications(false)
         }
     }
@@ -109,7 +109,7 @@ fun SettingsScreen(
         if (isGranted) {
             viewModel.updateLocationAccess(true)
         } else {
-            Toast.makeText(context, "Location permission is required for AI context.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.settings_permission_location), Toast.LENGTH_LONG).show()
             viewModel.updateLocationAccess(false)
         }
     }
@@ -153,7 +153,7 @@ fun SettingsScreen(
 
     // --- DYNAMIC SUBTITLES VARIABLES ---
     val currentLocale = AppCompatDelegate.getApplicationLocales().toLanguageTags()
-    val currentLanguageSubtitle = if (currentLocale == "vi") "Tiếng Việt" else "English"
+    val currentLanguageSubtitle = if (currentLocale == "vi") stringResource(id = R.string.settings_language_vietnamese) else stringResource(id = R.string.settings_language_english)
 
     val currentThemeMode = AppCompatDelegate.getDefaultNightMode()
     val currentThemeSubtitle = when (currentThemeMode) {
@@ -170,7 +170,7 @@ fun SettingsScreen(
                 title = { Text(stringResource(id = R.string.settings_title), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(id = R.string.settings_cd_back), tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -198,7 +198,7 @@ fun SettingsScreen(
                     Box(contentAlignment = Alignment.Center) {
                         AsyncImage(
                             model = displayUrl,
-                            contentDescription = "Profile Picture",
+                            contentDescription = stringResource(id = R.string.settings_cd_profile_picture),
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .size(72.dp)
@@ -256,7 +256,7 @@ fun SettingsScreen(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp, modifier = Modifier.padding(start = 56.dp))
                     SettingsActionRow(
                         icon = Icons.Default.LocalHospital,
-                        title = "Medical info",
+                        title = stringResource(id = R.string.settings_medical_info),
                         iconTint = MaterialTheme.colorScheme.error,
                         onClick = onNavigateToMedicalInfo
                     )
@@ -305,8 +305,8 @@ fun SettingsScreen(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp, modifier = Modifier.padding(start = 56.dp))
                     SettingsToggleRow(
                         icon = Icons.Default.LocationOn,
-                        title = "Location Context",
-                        subtitle = "Allows the AI to know your current location. Uses minimal battery.",
+                        title = stringResource(id = R.string.settings_location_context),
+                        subtitle = stringResource(id = R.string.settings_location_context_desc),
                         isChecked = locationAccessEnabled,
                         onCheckedChange = { isChecked ->
                             if (isChecked) {
@@ -631,7 +631,7 @@ fun SettingsAdvancedToggleRow(
             onCheckedChange = onCheckedChange
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "More options", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = stringResource(id = R.string.settings_cd_more_options), tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -665,13 +665,13 @@ fun LanguageSelectionSheet(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
             SheetSelectionRow(
-                label = "English",
+                label = stringResource(id = R.string.settings_language_english),
                 isSelected = !isVietnamese,
                 onClick = { onLanguageSelected("en") }
             )
 
             SheetSelectionRow(
-                label = "Tiếng Việt",
+                label = stringResource(id = R.string.settings_language_vietnamese),
                 isSelected = isVietnamese,
                 onClick = { onLanguageSelected("vi") }
             )
@@ -749,7 +749,7 @@ private fun SheetSelectionRow(
         if (isSelected) {
             Icon(
                 imageVector = Icons.Default.Check,
-                contentDescription = "Selected",
+                contentDescription = stringResource(id = R.string.settings_cd_selected),
                 tint = MaterialTheme.colorScheme.primary
             )
         }

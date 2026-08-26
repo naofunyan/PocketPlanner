@@ -24,6 +24,7 @@ import kotlinx.coroutines.tasks.await
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
+import com.example.pocketplanner.R
 
 class EmergencyActionManager(private val context: Context) {
 
@@ -61,17 +62,17 @@ class EmergencyActionManager(private val context: Context) {
                 )
 
                 val mediaLinks = uploadTasks.awaitAll().filterNotNull()
-                val mediaString = if (mediaLinks.isNotEmpty()) "\nMedia: ${mediaLinks.joinToString(" | ")}" else ""
+                val mediaString = if (mediaLinks.isNotEmpty()) context.getString(R.string.sos_sms_media, mediaLinks.joinToString(" | ")) else ""
 
                 // 3. Construct Final Message
                 val message = buildString {
-                    append("🚨 SOS! I need help. Calling $emergencyNumber.\n")
-                    append("Location: $locationUrl")
+                    append(context.getString(R.string.sos_sms_message, emergencyNumber))
+                    append(context.getString(R.string.sos_sms_location, locationUrl))
                     if (mediaString.isNotEmpty()) append(mediaString)
 
                     // NEW: Append medical data if the user toggled it ON
                     if (shareMedicalInfo && medicalSummary.isNotEmpty()) {
-                        append("\n\nMEDICAL INFO:\n$medicalSummary")
+                        append(context.getString(R.string.sos_sms_medical, medicalSummary))
                     }
                 }
 
@@ -89,12 +90,12 @@ class EmergencyActionManager(private val context: Context) {
 
     @SuppressLint("MissingPermission")
     private suspend fun fetchLocation(): String {
-        if (!hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) return "Location Unknown (No Permission)"
+        if (!hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) return context.getString(R.string.sos_loc_no_perm)
         return try {
             val location: Location? = fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null).await()
-            if (location != null) "https://maps.google.com/?q=${location.latitude},${location.longitude}" else "Location Unavailable"
+            if (location != null) "https://maps.google.com/?q=${location.latitude},${location.longitude}" else context.getString(R.string.sos_loc_unavail)
         } catch (e: Exception) {
-            "Location Error"
+            context.getString(R.string.sos_loc_error)
         }
     }
 

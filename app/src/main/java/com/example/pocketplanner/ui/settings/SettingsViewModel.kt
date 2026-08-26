@@ -17,10 +17,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
+import com.example.pocketplanner.R
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val auth: FirebaseAuth,
     private val storage: FirebaseStorage,
     private val dataStore: DataStore<Preferences>
@@ -214,7 +218,7 @@ class SettingsViewModel @Inject constructor(
                 _avatarUrl.value = downloadUrl.toString()
             } catch (e: Exception) {
                 e.printStackTrace()
-                _errorMessage.value = e.localizedMessage ?: "Failed to upload image. Please try again."
+                _errorMessage.value = e.localizedMessage ?: context.getString(R.string.settings_error_upload_failed)
             } finally {
                 _isUploading.value = false
             }
@@ -229,7 +233,7 @@ class SettingsViewModel @Inject constructor(
     fun deleteAccount(onSuccess: () -> Unit) {
         val user = auth.currentUser
         if (user == null) {
-            _errorMessage.value = "No user logged in."
+            _errorMessage.value = context.getString(R.string.settings_error_no_user)
             return
         }
 
@@ -255,7 +259,7 @@ class SettingsViewModel @Inject constructor(
             } catch (e: Exception) {
                 _isUploading.value = false
                 e.printStackTrace()
-                _errorMessage.value = "Security Error: You must log out and log back in before deleting your account."
+                _errorMessage.value = context.getString(R.string.settings_error_security_delete)
             }
         }
     }

@@ -55,6 +55,8 @@ import android.view.WindowManager
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.foundation.Image
 import java.util.*
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 // ============================================================
 //  1. TICKET TAB CONTENT
@@ -76,12 +78,12 @@ fun TicketTabContent(
         OutlinedTextField(
             value = searchQuery,
             onValueChange = onSearchQueryChanged,
-            placeholder = { Text("Search tickets...", color = MaterialTheme.colorScheme.onSurfaceVariant) }, // DYNAMIC
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant) }, // DYNAMIC
+            placeholder = { Text(stringResource(R.string.ticket_search_hint), color = MaterialTheme.colorScheme.onSurfaceVariant) }, // DYNAMIC
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.ticket_search_cd), tint = MaterialTheme.colorScheme.onSurfaceVariant) }, // DYNAMIC
             trailingIcon = {
                 if (searchQuery.isNotEmpty()) {
                     IconButton(onClick = { onSearchQueryChanged("") }) {
-                        Icon(Icons.Filled.Close, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                        Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.ticket_clear_cd), tint = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     }
                 }
             },
@@ -125,7 +127,7 @@ fun TicketTabContent(
                 items(tickets, key = { it.id }) { ticket ->
                     val tripName = ticket.tripId?.let { tripId ->
                         allTrips.find { it.id == tripId }
-                            ?.let { if (it.name.isNotBlank()) it.name else "Trip to ${it.destination}" }
+                            ?.let { if (it.name.isNotBlank()) it.name else stringResource(R.string.expense_trip_to, it.destination) }
                     }
                     TicketCard(
                         ticket = ticket,
@@ -156,7 +158,7 @@ private fun TicketFilterChips(
         allTrips.forEach { trip ->
             add(TicketFilter.Trip(
                 tripId = trip.id,
-                tripName = if (trip.name.isNotBlank()) trip.name else "Trip to ${trip.destination}"
+                tripName = if (trip.name.isNotBlank()) trip.name else stringResource(R.string.expense_trip_to, trip.destination)
             ))
         }
     }
@@ -176,8 +178,8 @@ private fun TicketFilterChips(
             }
 
             val label = when (filter) {
-                is TicketFilter.All -> "All"
-                is TicketFilter.General -> "General"
+                is TicketFilter.All -> stringResource(R.string.ticket_filter_all)
+                is TicketFilter.General -> stringResource(R.string.ticket_filter_general)
                 is TicketFilter.Trip -> filter.tripName
             }
 
@@ -260,7 +262,7 @@ private fun TicketCard(
                 val thumbPath = ticket.thumbnailUri ?: ticket.imageUri
                 AsyncImage(
                     model = File(thumbPath),
-                    contentDescription = "Ticket image",
+                    contentDescription = stringResource(R.string.ticket_image_cd),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -291,7 +293,7 @@ private fun TicketCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "${ticket.type} • ${dateFormatter.format(Date(ticket.dateTime))}",
+                    text = "${getTranslatedTicketType(ticket.type)} • ${dateFormatter.format(Date(ticket.dateTime))}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant // DYNAMIC
                 )
@@ -301,11 +303,11 @@ private fun TicketCard(
 
                 // Adaptive Semantic Colors for Badges
                 val (statusText, statusColor, statusBgColor) = when (status) {
-                    is TicketStatus.Today -> Triple("Today", Color.White, Color(0xFF2196F3))
-                    is TicketStatus.Tomorrow -> Triple("Tomorrow", Color.White, Color(0xFFFF9800))
-                    is TicketStatus.Upcoming -> Triple("In ${status.daysUntil} days", MaterialTheme.colorScheme.onSecondaryContainer, MaterialTheme.colorScheme.secondaryContainer) // DYNAMIC
+                    is TicketStatus.Today -> Triple(stringResource(R.string.ticket_status_today), Color.White, Color(0xFF2196F3))
+                    is TicketStatus.Tomorrow -> Triple(stringResource(R.string.ticket_status_tomorrow), Color.White, Color(0xFFFF9800))
+                    is TicketStatus.Upcoming -> Triple(stringResource(R.string.ticket_status_upcoming, status.daysUntil), MaterialTheme.colorScheme.onSecondaryContainer, MaterialTheme.colorScheme.secondaryContainer) // DYNAMIC
                     is TicketStatus.Later -> Triple(status.displayDate, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.surfaceVariant) // DYNAMIC
-                    is TicketStatus.Expired -> Triple("Expired", MaterialTheme.colorScheme.onErrorContainer, MaterialTheme.colorScheme.errorContainer) // DYNAMIC
+                    is TicketStatus.Expired -> Triple(stringResource(R.string.ticket_status_expired), MaterialTheme.colorScheme.onErrorContainer, MaterialTheme.colorScheme.errorContainer) // DYNAMIC
                 }
                 Surface(
                     shape = RoundedCornerShape(6.dp),
@@ -323,7 +325,7 @@ private fun TicketCard(
                 if (!ticket.confirmationCode.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Conf: ${ticket.confirmationCode}",
+                        text = stringResource(R.string.ticket_conf_prefix, ticket.confirmationCode),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.primary // DYNAMIC
@@ -333,7 +335,7 @@ private fun TicketCard(
                 if (!ticket.qrContent.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "QR: ${ticket.qrContent}",
+                        text = stringResource(R.string.ticket_qr_prefix, ticket.qrContent),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC
                         maxLines = 1,
@@ -364,19 +366,19 @@ private fun TicketCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Ticket", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
-            text = { Text("Are you sure you want to delete \"${ticket.title}\"?", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            title = { Text(stringResource(R.string.ticket_delete_title), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
+            text = { Text(stringResource(R.string.ticket_delete_message, ticket.title), color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
                 TextButton(onClick = {
                     onDelete()
                     showDeleteDialog = false
                 }) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error) // DYNAMIC
+                    Text(stringResource(R.string.expense_delete_confirm), color = MaterialTheme.colorScheme.error) // DYNAMIC
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.expense_delete_cancel))
                 }
             }
         )
@@ -402,9 +404,9 @@ private fun EmptyTicketState() {
             modifier = Modifier.size(64.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Add your first ticket!", color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+        Text(stringResource(R.string.ticket_empty_title), color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
         Text(
-            "Tap + to scan a boarding pass, event ticket, or hotel booking.",
+            stringResource(R.string.ticket_empty_subtitle),
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), // DYNAMIC
             style = MaterialTheme.typography.bodySmall,
             textAlign = TextAlign.Center,
@@ -525,8 +527,8 @@ fun AddTicketForm(
     var showTripDropdown by remember { mutableStateOf(false) }
     val selectedTripName = selectedTripId?.let { id ->
         allTrips.find { it.id == id }
-            ?.let { if (it.name.isNotBlank()) it.name else "Trip to ${it.destination}" }
-    } ?: "None"
+            ?.let { if (it.name.isNotBlank()) it.name else stringResource(R.string.expense_trip_to, it.destination) }
+    } ?: stringResource(R.string.ticket_trip_none)
 
     data class TicketType(val name: String, val icon: ImageVector, val color: Color)
 
@@ -554,10 +556,10 @@ fun AddTicketForm(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onDismiss) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground) // DYNAMIC
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.expense_back_cd), tint = MaterialTheme.colorScheme.onBackground) // DYNAMIC
             }
             Text(
-                "Add Ticket",
+                stringResource(R.string.ticket_add_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground, // DYNAMIC
@@ -584,7 +586,7 @@ fun AddTicketForm(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("TICKET IMAGE", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                    Text(stringResource(R.string.ticket_image_label), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     Spacer(modifier = Modifier.height(16.dp))
 
                     if (imageUri == null) {
@@ -609,18 +611,18 @@ fun AddTicketForm(
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(48.dp)) { // DYNAMIC
-                                    Icon(Icons.Filled.CameraAlt, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.padding(10.dp)) // DYNAMIC
+                                    Icon(Icons.Filled.CameraAlt, contentDescription = null, modifier = Modifier.padding(10.dp)) // DYNAMIC
                                 }
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Text("Tap to capture or import ticket", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
-                                Text("QR codes will be preserved in original quality", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) // DYNAMIC
+                                Text(stringResource(R.string.ticket_tap_capture), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                                Text(stringResource(R.string.ticket_qr_preserved), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) // DYNAMIC
                             }
                         }
                     } else {
                         Box(modifier = Modifier.fillMaxWidth().height(200.dp)) {
                             AsyncImage(
                                 model = imageUri,
-                                contentDescription = "Ticket",
+                                contentDescription = stringResource(R.string.ticket_image_cd),
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -641,7 +643,7 @@ fun AddTicketForm(
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.Close,
-                                    contentDescription = "Remove",
+                                    contentDescription = stringResource(R.string.ticket_remove_cd),
                                     tint = Color.White,
                                     modifier = Modifier.padding(4.dp).size(20.dp)
                                 )
@@ -690,15 +692,15 @@ fun AddTicketForm(
                                 if (isScanning) {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(20.dp),
-                                        color = MaterialTheme.colorScheme.onPrimary, // DYNAMIC
+                                        // DYNAMIC
                                         strokeWidth = 2.dp
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Scanning...", color = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
+                                    Text(stringResource(R.string.ticket_scanning)) // DYNAMIC
                                 } else {
-                                    Icon(Icons.Filled.DocumentScanner, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
+                                    Icon(Icons.Filled.DocumentScanner, contentDescription = null) // DYNAMIC
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Scan Ticket (OCR)", color = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
+                                    Text(stringResource(R.string.ticket_scan_ocr)) // DYNAMIC
                                 }
                             }
                         } else {
@@ -712,7 +714,7 @@ fun AddTicketForm(
                                 ) {
                                     Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.onTertiaryContainer, modifier = Modifier.size(16.dp)) // DYNAMIC
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Scanned! Fields auto-filled below.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onTertiaryContainer) // DYNAMIC
+                                    Text(stringResource(R.string.ticket_scanned_success), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onTertiaryContainer) // DYNAMIC
                                 }
                             }
                         }
@@ -732,12 +734,12 @@ fun AddTicketForm(
                 Column(modifier = Modifier.padding(24.dp)) {
 
                     // --- Title ---
-                    Text("Title", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                    Text(stringResource(R.string.ticket_title_label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = title,
                         onValueChange = { title = it },
-                        placeholder = { Text("e.g. Vietnam Airlines VN123", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) }, // DYNAMIC
+                        placeholder = { Text(stringResource(R.string.ticket_title_hint), color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) }, // DYNAMIC
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true
@@ -746,7 +748,7 @@ fun AddTicketForm(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     // --- Type selector ---
-                    Text("Type", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                    Text(stringResource(R.string.ticket_type_label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     Spacer(modifier = Modifier.height(8.dp))
 
                     @OptIn(ExperimentalLayoutApi::class)
@@ -775,13 +777,13 @@ fun AddTicketForm(
                                 ) {
                                     Icon(
                                         imageVector = type.icon,
-                                        contentDescription = type.name,
+                                        contentDescription = getTranslatedTicketType(type.name),
                                         tint = type.color,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = type.name,
+                                        text = getTranslatedTicketType(type.name),
                                         style = MaterialTheme.typography.labelMedium,
                                         color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface, // DYNAMIC
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
@@ -794,14 +796,15 @@ fun AddTicketForm(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     // --- Date picker ---
-                    Text("Date", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                    val dateLabel = stringResource(R.string.ticket_date_label)
+                    Text(dateLabel, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     Spacer(modifier = Modifier.height(8.dp))
                     Box(modifier = Modifier.fillMaxWidth()) {
                         OutlinedTextField(
                             value = displayDate,
                             onValueChange = {},
                             readOnly = true,
-                            leadingIcon = { Icon(Icons.Filled.DateRange, contentDescription = "Date", tint = MaterialTheme.colorScheme.onSurfaceVariant) }, // DYNAMIC
+                            leadingIcon = { Icon(Icons.Filled.DateRange, contentDescription = dateLabel, tint = MaterialTheme.colorScheme.onSurfaceVariant) }, // DYNAMIC
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -818,12 +821,12 @@ fun AddTicketForm(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     // --- Confirmation code ---
-                    Text("Confirmation Code (Optional)", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                    Text(stringResource(R.string.ticket_conf_label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = confirmationCode,
                         onValueChange = { confirmationCode = it },
-                        placeholder = { Text("e.g. ABC123", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) }, // DYNAMIC
+                        placeholder = { Text(stringResource(R.string.ticket_conf_hint), color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) }, // DYNAMIC
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true
@@ -832,7 +835,7 @@ fun AddTicketForm(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     // --- Link to trip ---
-                    Text("Link to Trip (Optional)", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                    Text(stringResource(R.string.ticket_link_trip_label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     Spacer(modifier = Modifier.height(8.dp))
 
                     ExposedDropdownMenuBox(
@@ -854,7 +857,7 @@ fun AddTicketForm(
                             onDismissRequest = { showTripDropdown = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("None") },
+                                text = { Text(stringResource(R.string.ticket_trip_none)) },
                                 onClick = {
                                     selectedTripId = null
                                     showTripDropdown = false
@@ -866,7 +869,7 @@ fun AddTicketForm(
                                 }
                             )
                             allTrips.forEach { trip ->
-                                val name = if (trip.name.isNotBlank()) trip.name else "Trip to ${trip.destination}"
+                                val name = if (trip.name.isNotBlank()) trip.name else stringResource(R.string.expense_trip_to, trip.destination)
                                 DropdownMenuItem(
                                     text = { Text(name) },
                                     onClick = {
@@ -886,12 +889,12 @@ fun AddTicketForm(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     // --- Notes ---
-                    Text("Notes (Optional)", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                    Text(stringResource(R.string.ticket_notes_label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = notes,
                         onValueChange = { notes = it },
-                        placeholder = { Text("Add any extra details...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) }, // DYNAMIC
+                        placeholder = { Text(stringResource(R.string.ticket_notes_hint), color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) }, // DYNAMIC
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(100.dp),
@@ -903,11 +906,12 @@ fun AddTicketForm(
             Spacer(modifier = Modifier.height(32.dp))
 
             // ========== SAVE BUTTON ==========
+            val untitledTicket = stringResource(R.string.ticket_untitled)
             Button(
                 onClick = {
                     imageUri?.let { uri ->
                         viewModel.addTicket(
-                            title = title.ifBlank { "Untitled Ticket" },
+                            title = title.ifBlank { untitledTicket },
                             type = selectedType,
                             dateTime = selectedMillis,
                             imageUri = uri,
@@ -925,14 +929,13 @@ fun AddTicketForm(
                     .height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary, // DYNAMIC
-                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f) // DYNAMIC
+                    containerColor = MaterialTheme.colorScheme.primary // DYNAMIC
                 ),
                 enabled = imageUri != null && title.isNotBlank()
             ) {
-                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
+                Icon(Icons.Filled.CheckCircle, contentDescription = null) // DYNAMIC
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Save Ticket", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
+                Text(stringResource(R.string.ticket_save_btn), fontSize = 16.sp, fontWeight = FontWeight.Bold) // DYNAMIC
             }
         }
     }
@@ -943,10 +946,10 @@ fun AddTicketForm(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("OK") }
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.expense_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.expense_cancel)) }
             }
         ) {
             DatePicker(state = datePickerState, showModeToggle = false)
@@ -956,7 +959,7 @@ fun AddTicketForm(
     if (showImageSourceDialog) {
         AlertDialog(
             onDismissRequest = { showImageSourceDialog = false },
-            title = { Text("Add Ticket Image", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) }, // DYNAMIC
+            title = { Text(stringResource(R.string.ticket_upload_title), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) }, // DYNAMIC
             text = {
                 Column {
                     TextButton(
@@ -977,7 +980,7 @@ fun AddTicketForm(
                         ) {
                             Icon(Icons.Filled.PhotoLibrary, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text("Choose from Gallery", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC
+                            Text(stringResource(R.string.expense_choose_gallery), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC
                         }
                     }
                     TextButton(
@@ -1001,13 +1004,13 @@ fun AddTicketForm(
                         ) {
                             Icon(Icons.Filled.PhotoCamera, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text("Take a Photo", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC
+                            Text(stringResource(R.string.expense_take_photo), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC
                         }
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showImageSourceDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showImageSourceDialog = false }) { Text(stringResource(R.string.expense_cancel)) }
             }
         )
     }
@@ -1054,7 +1057,7 @@ fun TicketImageViewer(
         ) {
             AsyncImage(
                 model = File(ticket.imageUri),
-                contentDescription = "Ticket full view",
+                contentDescription = stringResource(R.string.ticket_full_view_cd),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxSize()
@@ -1091,7 +1094,7 @@ fun TicketImageViewer(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "Close",
+                    contentDescription = stringResource(R.string.ticket_close_cd),
                     tint = Color.White,
                     modifier = Modifier.padding(12.dp)
                 )
@@ -1117,7 +1120,7 @@ fun TicketImageViewer(
                     )
                     if (!ticket.confirmationCode.isNullOrBlank()) {
                         Text(
-                            text = "Confirmation: ${ticket.confirmationCode}",
+                            text = stringResource(R.string.ticket_viewer_conf, ticket.confirmationCode),
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White.copy(alpha = 0.8f) // Intentionally kept White
                         )
@@ -1138,7 +1141,7 @@ fun TicketImageViewer(
                                 ) {
                                     Image(
                                         bitmap = qrBitmap.asImageBitmap(),
-                                        contentDescription = "Backup QR Code",
+                                        contentDescription = stringResource(R.string.ticket_backup_qr_cd),
                                         modifier = Modifier
                                             .size(200.dp)
                                             .padding(8.dp)
@@ -1147,7 +1150,7 @@ fun TicketImageViewer(
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             TextButton(onClick = { showBackupQr = false }) {
-                                Text("Hide QR", color = Color.White)
+                                Text(stringResource(R.string.ticket_hide_qr), color = Color.White)
                             }
                         } else {
                             OutlinedButton(
@@ -1160,12 +1163,25 @@ fun TicketImageViewer(
                             ) {
                                 Icon(Icons.Filled.QrCode, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Show Backup QR")
+                                Text(stringResource(R.string.ticket_show_qr))
                             }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun getTranslatedTicketType(type: String): String {
+    return when(type) {
+        "Flight" -> stringResource(R.string.ticket_type_flight)
+        "Hotel" -> stringResource(R.string.ticket_type_hotel)
+        "Event" -> stringResource(R.string.ticket_type_event)
+        "Train" -> stringResource(R.string.ticket_type_train)
+        "Bus" -> stringResource(R.string.ticket_type_bus)
+        "Other" -> stringResource(R.string.ticket_type_other)
+        else -> type
     }
 }

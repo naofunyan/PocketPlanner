@@ -93,7 +93,8 @@ class LiveVoiceViewModel : ViewModel() {
                 viewModelScope.launch {
                     kotlinx.coroutines.delay(60_000)
                     if (_state.value == LiveVoiceState.CONNECTING) {
-                        _errorMessage.value = "Connection timed out. Check your network and try again."
+                        _errorMessage.value = appContext?.getString(com.example.pocketplanner.R.string.live_voice_error_timeout) 
+                            ?: "Connection timed out. Check your network and try again."
                         _state.value = LiveVoiceState.ERROR
                         endCall()
                     }
@@ -181,7 +182,7 @@ class LiveVoiceViewModel : ViewModel() {
                     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                         val errorBody = try { response?.body?.string() } catch (e: Exception) { null }
                         Log.e("LiveVoice", "WebSocket Failure: ${t.message}. Body: $errorBody", t)
-                        _errorMessage.value = errorBody ?: t.localizedMessage ?: "Connection failed"
+                        _errorMessage.value = errorBody ?: t.localizedMessage ?: appContext?.getString(com.example.pocketplanner.R.string.live_voice_error_connection_failed) ?: "Connection failed"
                         
                         isSetupComplete = false
                         audioRecorder.stopRecording()
@@ -199,7 +200,7 @@ class LiveVoiceViewModel : ViewModel() {
 
                         if (_state.value == LiveVoiceState.CONNECTING || _state.value == LiveVoiceState.LISTENING || _state.value == LiveVoiceState.SPEAKING) {
                             // Unexpected close — show error
-                            _errorMessage.value = if (reason.isNotBlank()) reason else "Server closed connection (code: $code). Model may not be available."
+                            _errorMessage.value = if (reason.isNotBlank()) reason else appContext?.getString(com.example.pocketplanner.R.string.live_voice_error_server_closed, code) ?: "Server closed connection (code: $code). Model may not be available."
                             _state.value = LiveVoiceState.ERROR
                         } else if (reason.isNotBlank() && reason != "User ended call") {
                             _errorMessage.value = reason
@@ -211,7 +212,7 @@ class LiveVoiceViewModel : ViewModel() {
                 })
             } catch (e: Exception) {
                 Log.e("LiveVoice", "Failed to start call", e)
-                _errorMessage.value = e.localizedMessage ?: "Failed to authenticate"
+                _errorMessage.value = e.localizedMessage ?: appContext?.getString(com.example.pocketplanner.R.string.live_voice_error_auth_failed) ?: "Failed to authenticate"
                 _state.value = LiveVoiceState.ERROR
             }
         }

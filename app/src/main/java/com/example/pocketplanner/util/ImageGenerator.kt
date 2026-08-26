@@ -18,6 +18,7 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.example.pocketplanner.R
 
 object ImageGenerator {
     
@@ -70,14 +71,14 @@ object ImageGenerator {
         textPaint.textSize = 50f
         textPaint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
         val dateFormat = SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
-        val dateString = if (trip.isOpenEnded) "${dateFormat.format(Date(trip.startDate))} - Ongoing" else "${dateFormat.format(Date(trip.startDate))} - ${dateFormat.format(Date(trip.endDate))}"
+        val dateString = if (trip.isOpenEnded) "${dateFormat.format(Date(trip.startDate))} - ${context.getString(R.string.image_gen_ongoing)}" else "${dateFormat.format(Date(trip.startDate))} - ${dateFormat.format(Date(trip.endDate))}"
         canvas.drawText(dateString, 80f, destinationY + 80f, textPaint)
         
         // Draw App Branding
         textPaint.textSize = 40f
         textPaint.color = Color.LTGRAY
         textPaint.textAlign = Paint.Align.RIGHT
-        canvas.drawText("Planned with PocketPlanner", width - 80f, height - 80f, textPaint)
+        canvas.drawText(context.getString(R.string.image_gen_branding), width - 80f, height - 80f, textPaint)
         
         // Save to cache
         return saveBitmapToCache(context, bitmap, trip.id)

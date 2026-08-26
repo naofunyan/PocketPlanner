@@ -41,7 +41,8 @@ import com.example.pocketplanner.util.EmergencyActionManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
-
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 @Composable
 fun FallAlertScreen(
     onCancel: () -> Unit,
@@ -81,10 +82,10 @@ fun FallAlertScreen(
 
             // Format a clean summary of the critical info
             val medicalSummary = buildString {
-                if (bloodType.isNotBlank()) append("Blood: $bloodType | ")
-                if (allergies.isNotBlank()) append("Allergies: $allergies | ")
-                if (conditions.isNotBlank()) append("Conditions: $conditions | ")
-                if (notes.isNotBlank()) append("Notes: $notes")
+                if (bloodType.isNotBlank()) append("${context.getString(R.string.fall_alert_summary_blood)}: $bloodType | ")
+                if (allergies.isNotBlank()) append("${context.getString(R.string.fall_alert_summary_allergies)}: $allergies | ")
+                if (conditions.isNotBlank()) append("${context.getString(R.string.fall_alert_summary_conditions)}: $conditions | ")
+                if (notes.isNotBlank()) append("${context.getString(R.string.fall_alert_summary_notes)}: $notes")
             }.trimEnd(' ', '|')
 
             // 1. Fire the background manager with the medical payload
@@ -151,7 +152,7 @@ fun FallAlertScreen(
         ) {
             Icon(
                 imageVector = Icons.Default.WarningAmber,
-                contentDescription = "Warning",
+                contentDescription = stringResource(R.string.fall_alert_warning_icon_desc),
                 tint = MaterialTheme.colorScheme.onErrorContainer,
                 modifier = Modifier.size(80.dp)
             )
@@ -159,7 +160,7 @@ fun FallAlertScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Fall Detected!",
+                text = stringResource(R.string.fall_alert_detected_title),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onErrorContainer
@@ -168,7 +169,7 @@ fun FallAlertScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Do you need help?",
+                text = stringResource(R.string.fall_alert_need_help),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onErrorContainer
@@ -177,7 +178,7 @@ fun FallAlertScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Notifying emergency contacts in...",
+                text = stringResource(R.string.fall_alert_notifying),
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
@@ -210,7 +211,7 @@ fun FallAlertScreen(
 
             // Swipe to Cancel Button
             SwipeToActionButton(
-                text = "SWIPE TO CANCEL",
+                text = stringResource(R.string.fall_alert_swipe_cancel),
                 icon = Icons.Default.Close,
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.onSurface,
@@ -221,7 +222,7 @@ fun FallAlertScreen(
 
             // Swipe to SOS Button (Using an outline style so it looks distinct)
             SwipeToActionButton(
-                text = "SWIPE FOR SOS",
+                text = stringResource(R.string.fall_alert_swipe_sos),
                 icon = Icons.Default.PhoneInTalk,
                 containerColor = Color.Transparent,
                 contentColor = MaterialTheme.colorScheme.onErrorContainer,
@@ -248,7 +249,7 @@ fun FallAlertScreen(
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Text(
-                        text = "MEDICAL INFO",
+                        text = stringResource(R.string.fall_alert_medical_info_button),
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         modifier = Modifier.align(Alignment.Center)
@@ -275,34 +276,34 @@ fun FallAlertScreen(
             if (showMedicalDialog) {
                 AlertDialog(
                     onDismissRequest = { showMedicalDialog = false },
-                    title = { Text("Medical Information", fontWeight = FontWeight.Bold) },
+                    title = { Text(stringResource(R.string.fall_alert_medical_info_title), fontWeight = FontWeight.Bold) },
                     text = {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState())
                         ) {
-                            if (name.isNotBlank()) Text("Name: $name")
-                            if (dob.isNotBlank()) Text("DOB: $dob")
-                            if (weight.isNotBlank()) Text("Weight: $weight")
-                            if (height.isNotBlank()) Text("Height: $height")
-                            if (bloodType.isNotBlank()) Text("Blood Type: $bloodType")
-                            if (allergies.isNotBlank()) Text("Allergies: $allergies")
-                            if (conditions.isNotBlank()) Text("Conditions: $conditions")
-                            if (medications.isNotBlank()) Text("Medications: $medications")
-                            if (organDonor.isNotBlank()) Text("Organ Donor: $organDonor")
-                            if (address.isNotBlank()) Text("Address: $address")
-                            if (notes.isNotBlank()) Text("Notes: $notes")
+                            if (name.isNotBlank()) Text(stringResource(R.string.fall_alert_medical_name_prefix, name))
+                            if (dob.isNotBlank()) Text(stringResource(R.string.fall_alert_medical_dob_prefix, dob))
+                            if (weight.isNotBlank()) Text(stringResource(R.string.fall_alert_medical_weight_prefix, weight))
+                            if (height.isNotBlank()) Text(stringResource(R.string.fall_alert_medical_height_prefix, height))
+                            if (bloodType.isNotBlank()) Text(stringResource(R.string.fall_alert_medical_blood_type_prefix, bloodType))
+                            if (allergies.isNotBlank()) Text(stringResource(R.string.fall_alert_medical_allergies_prefix, allergies))
+                            if (conditions.isNotBlank()) Text(stringResource(R.string.fall_alert_medical_conditions_prefix, conditions))
+                            if (medications.isNotBlank()) Text(stringResource(R.string.fall_alert_medical_medications_prefix, medications))
+                            if (organDonor.isNotBlank()) Text(stringResource(R.string.fall_alert_medical_organ_donor_prefix, organDonor))
+                            if (address.isNotBlank()) Text(stringResource(R.string.fall_alert_medical_address_prefix, address))
+                            if (notes.isNotBlank()) Text(stringResource(R.string.fall_alert_medical_notes_prefix, notes))
                             
                             if (name.isBlank() && bloodType.isBlank() && allergies.isBlank() && conditions.isBlank() && 
                                 medications.isBlank() && dob.isBlank() && weight.isBlank() && height.isBlank() && 
                                 organDonor.isBlank() && address.isBlank() && notes.isBlank()) {
-                                Text("No medical information provided.")
+                                Text(stringResource(R.string.fall_alert_no_medical_info))
                             }
                         }
                     },
                     confirmButton = {
                         TextButton(onClick = { showMedicalDialog = false }) {
-                            Text("CLOSE")
+                            Text(stringResource(R.string.fall_alert_close))
                         }
                     }
                 )

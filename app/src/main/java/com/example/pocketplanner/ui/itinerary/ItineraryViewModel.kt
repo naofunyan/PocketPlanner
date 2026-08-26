@@ -22,6 +22,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 import com.example.pocketplanner.BuildConfig
+import com.example.pocketplanner.R
 import com.example.pocketplanner.data.local.entity.PlaceEntity
 
 import com.example.pocketplanner.core.location.GeofenceManager
@@ -1313,22 +1314,21 @@ class ItineraryViewModel @Inject constructor(
                 val temp = weatherData.getDouble("temperature")
                 val code = weatherData.getInt("weathercode")
                 
-                // Map WMO Weather codes to descriptions
-                val description = when (code) {
-                    0 -> "clear skies"
-                    1, 2, 3 -> "partly cloudy"
-                    45, 48 -> "foggy"
-                    51, 53, 55 -> "drizzling"
-                    61, 63, 65 -> "raining"
-                    71, 73, 75 -> "snowing"
-                    95, 96, 99 -> "thunderstorms"
-                    else -> "variable"
+                val descriptionRes = when (code) {
+                    0 -> R.string.weather_clear
+                    1, 2, 3 -> R.string.weather_cloudy
+                    45, 48 -> R.string.weather_foggy
+                    51, 53, 55 -> R.string.weather_drizzling
+                    61, 63, 65 -> R.string.weather_raining
+                    71, 73, 75 -> R.string.weather_snowing
+                    95, 96, 99 -> R.string.weather_thunderstorms
+                    else -> R.string.weather_variable
                 }
 
-                _weatherState.value = WeatherState.Success(city, temp, description)
+                _weatherState.value = WeatherState.Success(city, temp, descriptionRes)
             } catch (e: Exception) {
                 e.printStackTrace()
-                _weatherState.value = WeatherState.Error
+                _weatherState.value = WeatherState.Error(e.message ?: "Unknown Error")
             }
         }
     }
@@ -1390,6 +1390,6 @@ class ItineraryViewModel @Inject constructor(
 
 sealed class WeatherState {
     object Loading : WeatherState()
-    data class Success(val city: String, val temperature: Double, val description: String) : WeatherState()
-    object Error : WeatherState()
+    data class Success(val city: String, val temperature: Double, val descriptionRes: Int) : WeatherState()
+    data class Error(val message: String) : WeatherState()
 }

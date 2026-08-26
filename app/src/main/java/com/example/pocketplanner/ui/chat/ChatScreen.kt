@@ -35,6 +35,7 @@ import androidx.compose.ui.res.painterResource
 import com.example.pocketplanner.R
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -106,10 +107,10 @@ fun ChatScreen(
         containerColor = MaterialTheme.colorScheme.background, // DYNAMIC BACKGROUND
         topBar = {
             TopAppBar(
-                title = { Text("AI Assistant", color = MaterialTheme.colorScheme.onBackground) }, // DYNAMIC TEXT
+                title = { Text(stringResource(R.string.chat_title), color = MaterialTheme.colorScheme.onBackground) }, // DYNAMIC TEXT
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground) // DYNAMIC ICON
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.chat_back_cd), tint = MaterialTheme.colorScheme.onBackground) // DYNAMIC ICON
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background) // DYNAMIC BACKGROUND
@@ -152,7 +153,7 @@ fun ChatScreen(
                         ) {
                             Image(
                                 bitmap = selectedBitmap!!.asImageBitmap(),
-                                contentDescription = "Attached Image",
+                                contentDescription = stringResource(R.string.chat_attached_image_cd),
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .clip(RoundedCornerShape(12.dp)),
@@ -171,7 +172,7 @@ fun ChatScreen(
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Filled.Close, contentDescription = "Remove Image", tint = MaterialTheme.colorScheme.onError, modifier = Modifier.size(14.dp)) // DYNAMIC ICON
+                                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.chat_remove_image_cd), tint = MaterialTheme.colorScheme.onError, modifier = Modifier.size(14.dp)) // DYNAMIC ICON
                             }
                         }
                     }
@@ -186,7 +187,7 @@ fun ChatScreen(
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.addphoto),
-                            contentDescription = "Gallery",
+                            contentDescription = stringResource(R.string.chat_gallery_cd),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC ICON
                             modifier = Modifier
                                 .padding(start = 12.dp, bottom = 12.dp, end = 4.dp)
@@ -198,7 +199,7 @@ fun ChatScreen(
 
                         Icon(
                             painter = painterResource(id = R.drawable.camera),
-                            contentDescription = "Camera",
+                            contentDescription = stringResource(R.string.chat_camera_cd),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC ICON
                             modifier = Modifier
                                 .padding(start = 4.dp, bottom = 12.dp, end = 4.dp)
@@ -215,7 +216,7 @@ fun ChatScreen(
                             contentAlignment = Alignment.CenterStart
                         ) {
                             if (inputText.isEmpty()) {
-                                Text("Ask anything...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), fontSize = 16.sp) // DYNAMIC TEXT
+                                Text(stringResource(R.string.chat_ask_anything_placeholder), color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), fontSize = 16.sp) // DYNAMIC TEXT
                             }
                             BasicTextField(
                                 value = inputText,
@@ -258,21 +259,23 @@ fun ChatScreen(
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp)) // DYNAMIC ICON
+                                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = stringResource(R.string.chat_send_cd), modifier = Modifier.size(18.dp)) // DYNAMIC ICON
                                 }
                             } else {
+                                val speechNotAvailable = stringResource(R.string.chat_speech_not_available_toast)
+                                val speakNow = stringResource(R.string.chat_speak_now_prompt)
                                 IconButton(onClick = {
                                     val intent = android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                                         putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL, android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                                        putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, "Speak now...")
+                                        putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, speakNow)
                                     }
                                     try {
                                         speechRecognizerLauncher.launch(intent)
                                     } catch (e: Exception) {
-                                        android.widget.Toast.makeText(context, "Speech recognition not available", android.widget.Toast.LENGTH_SHORT).show()
+                                        android.widget.Toast.makeText(context, speechNotAvailable, android.widget.Toast.LENGTH_SHORT).show()
                                     }
                                 }) {
-                                    Icon(Icons.Filled.Mic, contentDescription = "Voice Input", tint = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC ICON
+                                    Icon(Icons.Filled.Mic, contentDescription = stringResource(R.string.chat_voice_input_cd), tint = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC ICON
                                 }
                             }
                         }
@@ -293,6 +296,7 @@ fun ChatBubble(message: ChatMessage) {
     val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
     val context = androidx.compose.ui.platform.LocalContext.current
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+    val copiedMessage = stringResource(R.string.chat_message_copied_toast)
 
     Box(
         modifier = Modifier.fillMaxWidth(),
@@ -310,7 +314,7 @@ fun ChatBubble(message: ChatMessage) {
                             onLongPress = {
                                 haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                 clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(message.text))
-                                android.widget.Toast.makeText(context, "Message copied", android.widget.Toast.LENGTH_SHORT).show()
+                                android.widget.Toast.makeText(context, copiedMessage, android.widget.Toast.LENGTH_SHORT).show()
                             }
                         )
                     }
@@ -320,7 +324,7 @@ fun ChatBubble(message: ChatMessage) {
                 if (message.imageBitmap != null) {
                     Image(
                         bitmap = message.imageBitmap.asImageBitmap(),
-                        contentDescription = "Message Image",
+                        contentDescription = stringResource(R.string.chat_message_image_cd),
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(max = 200.dp)

@@ -36,6 +36,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import kotlinx.coroutines.launch
 import java.util.*
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,7 +92,8 @@ fun GlobalWalletScreen(
                     shape = CircleShape,
                     modifier = Modifier.padding(bottom = 92.dp)
                 ) {
-                    Icon(Icons.Filled.Add, contentDescription = if (selectedTabIndex == 0) "Add Expense" else "Add Ticket")
+                    val fabCd = if (selectedTabIndex == 0) stringResource(R.string.expense_add_fab_cd) else stringResource(R.string.wallet_add_ticket_cd)
+                    Icon(Icons.Filled.Add, contentDescription = fabCd)
                 }
             }
         }
@@ -110,33 +113,37 @@ fun GlobalWalletScreen(
                             .clickable(enabled = allTrips.isNotEmpty()) { showTripSelector = true }
                             .padding(vertical = 8.dp)
                     ) {
+                        val tripTo = stringResource(R.string.expense_trip_to, trip?.destination ?: "")
+                        val noTrips = stringResource(R.string.wallet_no_trips)
+                        val selectTrip = stringResource(R.string.wallet_select_trip)
                         Text(
                             text = trip?.let {
-                                if (it.name.isNotBlank()) it.name else "Trip to ${it.destination}"
-                            } ?: if (allTrips.isEmpty()) "No Trips Available" else "Select a Trip",
+                                if (it.name.isNotBlank()) it.name else tripTo
+                            } ?: if (allTrips.isEmpty()) noTrips else selectTrip,
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground, // <-- DYNAMIC
                         )
                         if (allTrips.isNotEmpty()) {
                             Spacer(modifier = Modifier.width(4.dp))
-                            Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select Trip", tint = MaterialTheme.colorScheme.onSurfaceVariant) // <-- DYNAMIC
+                            Icon(Icons.Filled.ArrowDropDown, contentDescription = stringResource(R.string.wallet_select_trip_cd), tint = MaterialTheme.colorScheme.onSurfaceVariant) // <-- DYNAMIC
                         }
                     }
 
                     if (trip != null) {
                         val startStr = dateFormatter.format(Date(trip!!.startDate))
-                        val endStr = if (trip!!.isOpenEnded) "Ongoing" else dateFormatter.format(Date(trip!!.endDate))
+                        val ongoing = stringResource(R.string.expense_ongoing)
+                        val endStr = if (trip!!.isOpenEnded) ongoing else dateFormatter.format(Date(trip!!.endDate))
                         val days = if (trip!!.isOpenEnded) ((System.currentTimeMillis() - trip!!.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1 else ((trip!!.endDate - trip!!.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1
                         Text(
-                            text = "$startStr - $endStr • $days Days",
+                            text = stringResource(R.string.expense_duration_format, startStr, endStr, days),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant // <-- DYNAMIC
                         )
                     }
                 } else {
                     Text(
-                        text = "My Tickets",
+                        text = stringResource(R.string.wallet_my_tickets),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground, // <-- DYNAMIC
@@ -210,7 +217,7 @@ fun GlobalWalletScreen(
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
                 item {
-                    Text("Select a Trip", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(horizontal = 24.dp))
+                    Text(stringResource(R.string.wallet_select_trip), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(horizontal = 24.dp))
                     Spacer(modifier = Modifier.height(16.dp))
                 }
                 items(sortedTrips) { t ->
@@ -225,14 +232,14 @@ fun GlobalWalletScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = if (t.name.isNotBlank()) t.name else "Trip to ${t.destination}",
+                            text = if (t.name.isNotBlank()) t.name else stringResource(R.string.expense_trip_to, t.destination),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
 
                         if (t.id == selectedTripId) {
                             Spacer(modifier = Modifier.weight(1f))
-                            Icon(Icons.Filled.Check, contentDescription = "Selected", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.wallet_trip_selected_cd), tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }
@@ -302,8 +309,8 @@ fun WalletSegmentedControl(selectedIndex: Int, onIndexSelected: (Int) -> Unit) {
         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
     ) {
         Row(modifier = Modifier.padding(4.dp).fillMaxWidth()) {
-            WalletTabItem("Expense", selectedIndex == 0, { onIndexSelected(0) }, Modifier.weight(1f))
-            WalletTabItem("Ticket", selectedIndex == 1, { onIndexSelected(1) }, Modifier.weight(1f))
+            WalletTabItem(stringResource(R.string.expense_nav_expense), selectedIndex == 0, { onIndexSelected(0) }, Modifier.weight(1f))
+            WalletTabItem(stringResource(R.string.wallet_nav_ticket), selectedIndex == 1, { onIndexSelected(1) }, Modifier.weight(1f))
         }
     }
 }
@@ -366,7 +373,7 @@ fun EmptyWalletState(hasTrips: Boolean = false) {
         Icon(Icons.Filled.Wallet, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(64.dp))
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = if (hasTrips) "No active trips. Select a trip to view expenses." else "Create a trip to start tracking expenses.", 
+            text = if (hasTrips) stringResource(R.string.wallet_empty_state_has_trips) else stringResource(R.string.wallet_empty_state_no_trips), 
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }

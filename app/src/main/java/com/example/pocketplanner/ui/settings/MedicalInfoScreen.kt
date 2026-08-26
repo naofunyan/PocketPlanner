@@ -43,6 +43,10 @@ import androidx.compose.material3.rememberDatePickerState
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
+import androidx.compose.ui.platform.LocalContext
+import android.content.Context
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +76,7 @@ fun MedicalInfoScreen(
     var dialogValue by remember { mutableStateOf("") }
     var currentKey by remember { mutableStateOf<Preferences.Key<String>?>(null) }
     // Blood Type Dialog State
-    val bloodTypes = listOf("Not set", "O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-")
+    val bloodTypes = listOf(stringResource(id = R.string.medical_not_set), "O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-")
     var showBloodTypeDialog by remember { mutableStateOf(false) }
     var tempBloodType by remember { mutableStateOf(bloodType) }
     // Weight Dialog State
@@ -82,10 +86,21 @@ fun MedicalInfoScreen(
     // Date of Birth Dialog State
     var showDatePickerDialog by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
+    
+    val context = LocalContext.current
+    
+    // Normalize organ donor to prevent saving/loading localized strings
+    val normalizedOrganDonor = remember(organDonor) {
+        when (organDonor.lowercase()) {
+            "yes", context.getString(R.string.medical_yes).lowercase() -> "yes"
+            "no", context.getString(R.string.medical_no).lowercase() -> "no"
+            else -> ""
+        }
+    }
+    
     // Organ Donor Dialog State
-    val organDonorOptions = listOf("Not set", "Yes", "No")
     var showOrganDonorDialog by remember { mutableStateOf(false) }
-    var tempOrganDonor by remember { mutableStateOf(organDonor) }
+    var tempOrganDonor by remember(normalizedOrganDonor) { mutableStateOf(normalizedOrganDonor) }
 
     val openDialog = { title: String, value: String, key: Preferences.Key<String> ->
         dialogTitle = title
@@ -98,10 +113,10 @@ fun MedicalInfoScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Medical info", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(id = R.string.medical_info_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(id = R.string.settings_cd_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -135,7 +150,7 @@ fun MedicalInfoScreen(
 
             // 2. Explanatory Text
             Text(
-                text = "Record your allergies, current medication, and other medical information so it's available in an emergency.",
+                text = stringResource(id = R.string.medical_info_desc),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
                 lineHeight = 24.sp,
@@ -149,22 +164,21 @@ fun MedicalInfoScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
-
                     MedicalInfoItem(
-                        icon = Icons.Default.PersonOutline, label = "Name",
-                        text = name.ifEmpty { "Enter your name" }, isHint = name.isEmpty(),
+                        icon = Icons.Default.PersonOutline, label = stringResource(id = R.string.medical_name),
+                        text = name.ifEmpty { stringResource(id = R.string.medical_name_hint) }, isHint = name.isEmpty(),
                         onClick = { openDialog("Name", name, SettingsViewModel.MEDICAL_NAME) }
                     )
 
                     MedicalInfoItem(
-                        icon = Icons.Default.Assignment, label = "Medical conditions",
-                        text = conditions.ifEmpty { "List your medical conditions" }, isHint = conditions.isEmpty(),
+                        icon = Icons.Default.Assignment, label = stringResource(id = R.string.medical_conditions),
+                        text = conditions.ifEmpty { stringResource(id = R.string.medical_conditions_hint) }, isHint = conditions.isEmpty(),
                         onClick = { openDialog("Medical conditions", conditions, SettingsViewModel.MEDICAL_CONDITIONS) }
                     )
 
                     MedicalInfoItem(
-                        icon = Icons.Default.WaterDrop, label = "Blood type",
-                        text = bloodType.ifEmpty { "Tap to select blood type" },
+                        icon = Icons.Default.WaterDrop, label = stringResource(id = R.string.medical_blood_type),
+                        text = bloodType.ifEmpty { stringResource(id = R.string.medical_blood_type_hint) },
                         isHint = bloodType.isEmpty(),
                         onClick = {
                             tempBloodType = bloodType // Reset to current selection
@@ -173,54 +187,60 @@ fun MedicalInfoScreen(
                     )
 
                     MedicalInfoItem(
-                        icon = Icons.Default.Block, label = "Allergies",
-                        text = allergies.ifEmpty { "List your allergies" }, isHint = allergies.isEmpty(),
+                        icon = Icons.Default.Block, label = stringResource(id = R.string.medical_allergies),
+                        text = allergies.ifEmpty { stringResource(id = R.string.medical_allergies_hint) }, isHint = allergies.isEmpty(),
                         onClick = { openDialog("Allergies", allergies, SettingsViewModel.MEDICAL_ALLERGIES) }
                     )
 
                     MedicalInfoItem(
-                        icon = Icons.Default.Medication, label = "Current medications",
-                        text = medications.ifEmpty { "List any medication you take" }, isHint = medications.isEmpty(),
+                        icon = Icons.Default.Medication, label = stringResource(id = R.string.medical_medications),
+                        text = medications.ifEmpty { stringResource(id = R.string.medical_medications_hint) }, isHint = medications.isEmpty(),
                         onClick = { openDialog("Current medications", medications, SettingsViewModel.MEDICAL_MEDICATIONS) }
                     )
 
                     MedicalInfoItem(
-                        icon = Icons.Default.MonitorWeight, label = "Weight",
-                        text = weight.ifEmpty { "Tap to set weight" }, isHint = weight.isEmpty(),
+                        icon = Icons.Default.MonitorWeight, label = stringResource(id = R.string.medical_weight),
+                        text = weight.ifEmpty { stringResource(id = R.string.medical_weight_hint) }, isHint = weight.isEmpty(),
                         onClick = { showWeightDialog = true } // <-- UPDATED
                     )
 
                     MedicalInfoItem(
-                        icon = Icons.Default.Height, label = "Height",
-                        text = height.ifEmpty { "Tap to set height" }, isHint = height.isEmpty(),
+                        icon = Icons.Default.Height, label = stringResource(id = R.string.medical_height),
+                        text = height.ifEmpty { stringResource(id = R.string.medical_height_hint) }, isHint = height.isEmpty(),
                         onClick = { showHeightDialog = true } // <-- UPDATED
                     )
 
                     MedicalInfoItem(
-                        icon = Icons.Default.CalendarToday, label = "Date of birth",
-                        text = dob.ifEmpty { "Tap to set date" }, isHint = dob.isEmpty(),
+                        icon = Icons.Default.CalendarToday, label = stringResource(id = R.string.medical_dob),
+                        text = dob.ifEmpty { stringResource(id = R.string.medical_dob_hint) }, isHint = dob.isEmpty(),
                         onClick = { showDatePickerDialog = true } // <-- UPDATED
                     )
 
                     MedicalInfoItem(
-                        icon = Icons.Default.Home, label = "Address",
-                        text = address.ifEmpty { "Enter your address" }, isHint = address.isEmpty(),
+                        icon = Icons.Default.Home, label = stringResource(id = R.string.medical_address),
+                        text = address.ifEmpty { stringResource(id = R.string.medical_address_hint) }, isHint = address.isEmpty(),
                         onClick = { openDialog("Address", address, SettingsViewModel.MEDICAL_ADDRESS) }
                     )
 
+                    val displayOrganDonor = when (normalizedOrganDonor) {
+                        "yes" -> stringResource(id = R.string.medical_yes)
+                        "no" -> stringResource(id = R.string.medical_no)
+                        else -> ""
+                    }
+
                     MedicalInfoItem(
-                        icon = Icons.Default.FavoriteBorder, label = "Organ donor",
-                        text = organDonor.ifEmpty { "Tap to set status" },
-                        isHint = organDonor.isEmpty(),
+                        icon = Icons.Default.FavoriteBorder, label = stringResource(id = R.string.medical_organ_donor),
+                        text = displayOrganDonor.ifEmpty { stringResource(id = R.string.medical_organ_donor_hint) },
+                        isHint = displayOrganDonor.isEmpty(),
                         onClick = {
-                            tempOrganDonor = organDonor // Reset to current selection
+                            tempOrganDonor = normalizedOrganDonor // Reset to current selection
                             showOrganDonorDialog = true
                         }
                     )
 
                     MedicalInfoItem(
-                        icon = Icons.Default.Notes, label = "Medical notes",
-                        text = notes.ifEmpty { "Enter other important info" }, isHint = notes.isEmpty(), showDivider = false,
+                        icon = Icons.Default.Notes, label = stringResource(id = R.string.medical_notes),
+                        text = notes.ifEmpty { stringResource(id = R.string.medical_notes_hint) }, isHint = notes.isEmpty(), showDivider = false,
                         onClick = { openDialog("Medical notes", notes, SettingsViewModel.MEDICAL_NOTES) }
                     )
                 }
@@ -240,14 +260,14 @@ fun MedicalInfoScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Share with emergency contacts", // <-- UPDATED TITLE
+                            text = stringResource(id = R.string.medical_share), // <-- UPDATED TITLE
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Medium
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Append your critical medical info to the automated SOS texts sent to your designated emergency contacts.", // <-- UPDATED DESCRIPTION
+                            text = stringResource(id = R.string.medical_share_desc), // <-- UPDATED DESCRIPTION
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 20.sp
@@ -275,7 +295,7 @@ fun MedicalInfoScreen(
                 OutlinedTextField(
                     value = dialogValue,
                     onValueChange = { dialogValue = it },
-                    label = { Text("Enter details") },
+                    label = { Text(stringResource(id = R.string.medical_enter_details)) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = if (dialogTitle.contains("notes", true) || dialogTitle.contains("conditions", true)) 3 else 1
                 )
@@ -287,12 +307,12 @@ fun MedicalInfoScreen(
                         showEditDialog = false
                     }
                 ) {
-                    Text("Save", fontWeight = FontWeight.Bold)
+                    Text(stringResource(id = R.string.medical_dialog_save), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showEditDialog = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(id = R.string.medical_dialog_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         )
@@ -304,7 +324,7 @@ fun MedicalInfoScreen(
             onDismissRequest = { showBloodTypeDialog = false },
             containerColor = MaterialTheme.colorScheme.surface,
             title = {
-                Text(text = "Blood type", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text(text = stringResource(id = R.string.medical_blood_type), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             },
             text = {
                 Column(
@@ -312,7 +332,7 @@ fun MedicalInfoScreen(
                 ) {
                     bloodTypes.forEach { type ->
                         // Map "Not set" to an empty string to keep our hint logic working
-                        val actualValue = if (type == "Not set") "" else type
+                        val actualValue = if (type == stringResource(id = R.string.medical_not_set)) "" else type
                         val isSelected = tempBloodType == actualValue
 
                         Row(
@@ -343,12 +363,12 @@ fun MedicalInfoScreen(
                         showBloodTypeDialog = false
                     }
                 ) {
-                    Text("OK", fontWeight = FontWeight.Bold)
+                    Text(stringResource(id = R.string.medical_dialog_ok), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showBloodTypeDialog = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(id = R.string.medical_dialog_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         )
@@ -394,12 +414,12 @@ fun MedicalInfoScreen(
                         showDatePickerDialog = false
                     }
                 ) {
-                    Text("OK", fontWeight = FontWeight.Bold)
+                    Text(stringResource(id = R.string.medical_dialog_ok), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePickerDialog = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(id = R.string.medical_dialog_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             colors = DatePickerDefaults.colors(
@@ -419,29 +439,33 @@ fun MedicalInfoScreen(
             onDismissRequest = { showOrganDonorDialog = false },
             containerColor = MaterialTheme.colorScheme.surface,
             title = {
-                Text(text = "Organ donor", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Text(text = stringResource(id = R.string.medical_organ_donor), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             },
             text = {
                 Column {
-                    organDonorOptions.forEach { option ->
-                        // Map "Not set" to an empty string to keep our hint logic working
-                        val actualValue = if (option == "Not set") "" else option
-                        val isSelected = tempOrganDonor == actualValue
+                    val options = listOf(
+                        "" to stringResource(id = R.string.medical_not_set),
+                        "yes" to stringResource(id = R.string.medical_yes),
+                        "no" to stringResource(id = R.string.medical_no)
+                    )
+                    
+                    options.forEach { (key, displayValue) ->
+                        val isSelected = tempOrganDonor == key
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { tempOrganDonor = actualValue }
+                                .clickable { tempOrganDonor = key }
                                 .padding(vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             RadioButton(
                                 selected = isSelected,
-                                onClick = { tempOrganDonor = actualValue }
+                                onClick = { tempOrganDonor = key }
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Text(
-                                text = option,
+                                text = displayValue,
                                 fontSize = 16.sp,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -456,12 +480,12 @@ fun MedicalInfoScreen(
                         showOrganDonorDialog = false
                     }
                 ) {
-                    Text("OK", fontWeight = FontWeight.Bold)
+                    Text(stringResource(id = R.string.medical_dialog_ok), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showOrganDonorDialog = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(id = R.string.medical_dialog_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         )
@@ -582,7 +606,7 @@ fun WeightPickerDialog(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
         title = {
-            Text(text = "Set weight", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = stringResource(id = R.string.medical_set_weight), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         },
         text = {
             Row(
@@ -629,12 +653,12 @@ fun WeightPickerDialog(
                     onSave(finalString)
                 }
             ) {
-                Text("Done", fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.medical_dialog_done), fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(id = R.string.medical_dialog_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )
@@ -735,7 +759,7 @@ fun HeightPickerDialog(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
         title = {
-            Text(text = "Set height", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = stringResource(id = R.string.medical_set_height), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         },
         text = {
             Row(
@@ -783,12 +807,12 @@ fun HeightPickerDialog(
                     onSave(finalString)
                 }
             ) {
-                Text("Done", fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.medical_dialog_done), fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(id = R.string.medical_dialog_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     )

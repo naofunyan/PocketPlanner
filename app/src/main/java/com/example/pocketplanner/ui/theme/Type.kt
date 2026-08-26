@@ -13,7 +13,9 @@ val GoogleSansFlex = FontFamily(
     Font(R.font.google_sans_flex, FontWeight.Normal),
     Font(R.font.google_sans_flex, FontWeight.Medium),
     Font(R.font.google_sans_flex, FontWeight.SemiBold),
-    Font(R.font.google_sans_flex, FontWeight.Bold)
+    Font(R.font.google_sans_flex, FontWeight.Bold),
+    Font(R.font.google_sans_flex, FontWeight.ExtraBold),
+    Font(R.font.google_sans_flex, FontWeight.Black)
 )
 
 // We can use the code font for numbers or specific labels later

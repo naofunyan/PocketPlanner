@@ -26,6 +26,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pocketplanner.data.local.entity.PlaceEntity
 import java.text.NumberFormat
@@ -56,13 +58,18 @@ fun TripSummaryScreen(
     val totalSpent = expenses.sumOf { it.convertedAmountVND }
     val budget = trip?.budget ?: 0.0
 
+    val failedFormatStr = stringResource(R.string.summary_failed)
+    val shareTextFormatStr = stringResource(R.string.summary_share_text)
+    val shareLinkStr = stringResource(R.string.summary_share_link)
+
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Trip Summary") },
+                title = { Text(stringResource(R.string.summary_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.summary_back_cd))
                     }
                 },
                 actions = {
@@ -82,7 +89,7 @@ fun TripSummaryScreen(
                                 }
                             )
                         }) {
-                            Icon(Icons.Filled.Share, contentDescription = "Share Trip")
+                            Icon(Icons.Filled.Share, contentDescription = stringResource(R.string.summary_share_cd))
                         }
                     }
                 }
@@ -98,7 +105,7 @@ fun TripSummaryScreen(
         ) {
             // Header
             Text(
-                text = trip?.name.takeIf { !it.isNullOrBlank() } ?: "Trip to ${trip?.destination ?: ""}",
+                text = trip?.name.takeIf { !it.isNullOrBlank() } ?: String.format(stringResource(R.string.summary_trip_to), trip?.destination ?: ""),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -114,29 +121,29 @@ fun TripSummaryScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Filled.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("AI Travel Diary", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.summary_ai_diary), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if (trip?.aiDiary.isNullOrBlank()) {
-                        Text("Your memories are waiting to be written.", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.summary_memories_waiting), style = MaterialTheme.typography.bodyMedium)
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
                             onClick = { 
                                 viewModel.generateDiary(
                                     onError = { err ->
-                                        android.widget.Toast.makeText(context, "Failed: $err", android.widget.Toast.LENGTH_LONG).show()
+                                        android.widget.Toast.makeText(context, String.format(failedFormatStr, err), android.widget.Toast.LENGTH_LONG).show()
                                     }
                                 )
                             },
                             enabled = !isGeneratingDiary
                         ) {
                             if (isGeneratingDiary) {
-                                CircularProgressIndicator(modifier = Modifier.size(16.dp), color = MaterialTheme.colorScheme.onPrimary)
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Writing...")
+                                Text(stringResource(R.string.summary_writing))
                             } else {
-                                Text("Generate Diary")
+                                Text(stringResource(R.string.summary_generate_diary))
                             }
                         }
                     } else {
@@ -153,16 +160,16 @@ fun TripSummaryScreen(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Financial Summary", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.summary_financial), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(12.dp))
                     
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Budget:")
+                        Text(stringResource(R.string.summary_budget))
                         Text(currencyFormatter.format(budget), fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Total Spent:")
+                        Text(stringResource(R.string.summary_total_spent))
                         Text(
                             text = currencyFormatter.format(totalSpent),
                             fontWeight = FontWeight.Bold,
@@ -182,7 +189,7 @@ fun TripSummaryScreen(
                             context.startActivity(Intent.createChooser(intent, "Export Expenses"))
                         }
                     }, modifier = Modifier.fillMaxWidth()) {
-                        Text("Export Expenses (CSV)")
+                        Text(stringResource(R.string.summary_export_csv))
                     }
                 }
             }
@@ -191,7 +198,7 @@ fun TripSummaryScreen(
 
             // Place Ratings Section
             if (places.isNotEmpty()) {
-                Text("Rate Your Places", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.summary_rate_places), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(12.dp))
 
                 LazyRow(
@@ -208,10 +215,10 @@ fun TripSummaryScreen(
     if (showShareDialog != null) {
         AlertDialog(
             onDismissRequest = { showShareDialog = null },
-            title = { Text("Trip Published!") },
+            title = { Text(stringResource(R.string.summary_trip_published)) },
             text = {
                 Column {
-                    Text("Your trip has been published. Share this link with your friends:")
+                    Text(stringResource(R.string.summary_published_desc))
                     Spacer(modifier = Modifier.height(12.dp))
                     Surface(
                         color = MaterialTheme.colorScheme.surfaceVariant,
@@ -226,17 +233,17 @@ fun TripSummaryScreen(
                 Button(onClick = {
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, "Check out my trip itinerary on PocketPlanner! ${showShareDialog!!}")
+                        putExtra(Intent.EXTRA_TEXT, String.format(shareTextFormatStr, showShareDialog!!))
                     }
-                    context.startActivity(Intent.createChooser(intent, "Share Link"))
+                    context.startActivity(Intent.createChooser(intent, shareLinkStr))
                     showShareDialog = null
                 }) {
-                    Text("Share")
+                    Text(stringResource(R.string.summary_share_btn))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showShareDialog = null }) {
-                    Text("Close")
+                    Text(stringResource(R.string.summary_close_btn))
                 }
             }
         )
@@ -245,9 +252,9 @@ fun TripSummaryScreen(
     if (shareError != null) {
         AlertDialog(
             onDismissRequest = { shareError = null },
-            title = { Text("Error") },
+            title = { Text(stringResource(R.string.summary_error)) },
             text = { Text(shareError!!) },
-            confirmButton = { TextButton(onClick = { shareError = null }) { Text("OK") } }
+            confirmButton = { TextButton(onClick = { shareError = null }) { Text(stringResource(R.string.summary_ok)) } }
         )
     }
 }
@@ -267,7 +274,7 @@ fun PlaceRatingCard(place: PlaceEntity, onRate: (Int) -> Unit) {
                 for (i in 1..5) {
                     Icon(
                         imageVector = if (i <= currentRating) Icons.Filled.Star else Icons.Filled.StarBorder,
-                        contentDescription = "Rate $i",
+                        contentDescription = String.format(stringResource(R.string.summary_rate_cd), i),
                         tint = if (i <= currentRating) Color(0xFFFFC107) else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
                             .size(28.dp)

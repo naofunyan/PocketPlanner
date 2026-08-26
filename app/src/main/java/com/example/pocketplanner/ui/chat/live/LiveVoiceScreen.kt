@@ -51,6 +51,8 @@ import androidx.compose.material.icons.filled.Videocam
 
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.VideocamOff
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -188,7 +190,7 @@ fun LiveVoiceScreen(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Refresh, contentDescription = "Flip Camera", tint = Color.White)
+                Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.live_voice_flip_camera_cd), tint = Color.White)
             }
 
             Box(
@@ -200,7 +202,7 @@ fun LiveVoiceScreen(
             ) {
                 Icon(
                     imageVector = if (isCameraOff) Icons.Default.VideocamOff else Icons.Default.Videocam, 
-                    contentDescription = if (isCameraOff) "Turn Camera On" else "Turn Camera Off", 
+                    contentDescription = if (isCameraOff) stringResource(R.string.live_voice_turn_camera_on_cd) else stringResource(R.string.live_voice_turn_camera_off_cd), 
                     tint = Color.White
                 )
             }
@@ -219,7 +221,7 @@ fun LiveVoiceScreen(
             ) {
                 Icon(
                     imageVector = if (isMuted) Icons.Default.MicOff else Icons.Default.Mic, 
-                    contentDescription = if (isMuted) "Unmute" else "Mute", 
+                    contentDescription = if (isMuted) stringResource(R.string.live_voice_unmute_cd) else stringResource(R.string.live_voice_mute_cd), 
                     tint = Color.White
                 )
             }
@@ -334,7 +336,7 @@ fun VoiceVisualizerPill(state: LiveVoiceState, modifier: Modifier = Modifier) {
     ) {
         if (state == LiveVoiceState.CONNECTING) {
             Text(
-                text = "Connecting...", 
+                text = stringResource(R.string.live_voice_connecting), 
                 color = Color.White.copy(alpha = 0.9f), 
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium

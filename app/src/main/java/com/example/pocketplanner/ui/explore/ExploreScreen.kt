@@ -1,5 +1,10 @@
 package com.example.pocketplanner.ui.explore
 
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
+
+import com.example.pocketplanner.data.repository.localized
+
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -163,6 +168,16 @@ fun ExploreScreen(
                         }
                     }
 
+                                        val savedDestinations = savedNames.map { savedTitle ->
+                                com.example.pocketplanner.data.repository.DestinationRepository.allSubplaces.find { it.name == savedTitle }?.localized()
+                                    ?: com.example.pocketplanner.data.repository.Subplace(
+                                        name = savedTitle, subtitle = "Saved destination", description = "",
+                                        countryName = "Global", flagEmoji = "🌍",
+                                        heroImageUrl = "https://picsum.photos/seed/${savedTitle.replace(" ", "")}/800/1000",
+                                        mapImageUrl = "", highlights = emptyList(), openingTime = "", ticketPrice = "", theme = "Saved"
+                                    )
+                            }
+
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         state = listState,
@@ -195,15 +210,7 @@ fun ExploreScreen(
                                 item { Spacer(modifier = Modifier.height(32.dp)) }
                             }
                         } else {
-                            val savedDestinations = savedNames.map { savedTitle ->
-                                com.example.pocketplanner.data.repository.DestinationRepository.allSubplaces.find { it.name == savedTitle }
-                                    ?: com.example.pocketplanner.data.repository.Subplace(
-                                        name = savedTitle, subtitle = "Saved destination", description = "",
-                                        countryName = "Global", flagEmoji = "🌍",
-                                        heroImageUrl = "https://picsum.photos/seed/${savedTitle.replace(" ", "")}/800/1000",
-                                        mapImageUrl = "", highlights = emptyList(), openingTime = "", ticketPrice = "", theme = "Saved"
-                                    )
-                            }
+
 
                             if (savedDestinations.isEmpty()) {
                                 item {
@@ -230,7 +237,7 @@ fun ExploreScreen(
                                                 ) {
                                                     AsyncImage(
                                                         model = dest.heroImageUrl,
-                                                        contentDescription = dest.name,
+                                                        contentDescription = dest.displayName,
                                                         contentScale = ContentScale.Crop,
                                                         modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
                                                     )
@@ -290,8 +297,8 @@ fun TopSegmentedControl(selectedIndex: Int, onIndexSelected: (Int) -> Unit) {
         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        TabItem("Discover", selectedIndex == 0, { onIndexSelected(0) }, Modifier.weight(1f))
-        TabItem("Saved", selectedIndex == 1, { onIndexSelected(1) }, Modifier.weight(1f))
+        TabItem(stringResource(R.string.explore_tab_discover), selectedIndex == 0, { onIndexSelected(0) }, Modifier.weight(1f))
+        TabItem(stringResource(R.string.explore_tab_saved), selectedIndex == 1, { onIndexSelected(1) }, Modifier.weight(1f))
     }
 }
 
@@ -317,13 +324,13 @@ private fun TabItem(text: String, isSelected: Boolean, onClick: () -> Unit, modi
 @Composable
 fun CategoryRow(selectedCategory: String?, onCategoryClick: (String) -> Unit) {
     val categories = listOf(
-        Pair("🌲", "Nature"), Pair("🏛️", "Culture"), Pair("🍴", "Food"),
-        Pair("🏙️", "City"), Pair("🏖️", "Beach")
+        Pair("🌲", stringResource(R.string.explore_category_nature)), Pair("🏛️", stringResource(R.string.explore_category_culture)), Pair("🍴", stringResource(R.string.explore_category_food)),
+        Pair("🏙️", stringResource(R.string.explore_category_city)), Pair("🏖️", stringResource(R.string.explore_category_beach))
     )
 
     Column {
         Text(
-            text = "Browse by travel theme", style = MaterialTheme.typography.titleMedium,
+            text = stringResource(R.string.explore_browse_theme), style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, // DYNAMIC TEXT
             modifier = Modifier.padding(horizontal = 24.dp)
         )
@@ -379,7 +386,7 @@ fun ExploreSearchBar(
             Spacer(modifier = Modifier.width(8.dp))
             TextField(
                 value = query, onValueChange = onQueryChange,
-                placeholder = { Text("Search destinations...", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) }, // DYNAMIC TEXT
+                placeholder = { Text(stringResource(R.string.explore_search_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) }, // DYNAMIC TEXT
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
@@ -403,7 +410,7 @@ fun ExploreSearchBar(
                 }
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, "Go", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(20.dp)) // DYNAMIC ICON
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, "Go", modifier = Modifier.size(20.dp)) // DYNAMIC ICON
                 }
             }
         }
@@ -415,7 +422,7 @@ fun ForYouSection(
     selectedCategory: String?,
     onNavigateToDetails: (String) -> Unit = {}
 ) {
-    var cities = com.example.pocketplanner.data.repository.DestinationRepository.cities
+    var cities = com.example.pocketplanner.data.repository.DestinationRepository.cities.map { it.localized() }
 
     if (selectedCategory != null) {
         cities = cities.filter { it.theme == selectedCategory }
@@ -423,7 +430,7 @@ fun ForYouSection(
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "For you", style = MaterialTheme.typography.titleLarge,
+            text = stringResource(R.string.explore_for_you), style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, // DYNAMIC TEXT
             modifier = Modifier.padding(horizontal = 24.dp)
         )
@@ -458,7 +465,7 @@ fun ForYouCard(
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
-                model = city.heroImageUrl, contentDescription = city.title,
+                model = city.heroImageUrl, contentDescription = city.displayTitle,
                 contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
             )
             Box(
@@ -481,12 +488,12 @@ fun ForYouCard(
             ) {
                 Column {
                     Text(
-                        text = city.title, color = Color.White,
+                        text = city.displayTitle, color = Color.White,
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold, shadow = Shadow(Color.Black.copy(alpha = 0.6f), Offset(2f, 2f), 8f)
                         )
                     )
-                    Text(text = "${city.topPlaces.size} Places", color = Color(0xFFE0E0E0), style = MaterialTheme.typography.labelMedium)
+                    Text(text = stringResource(R.string.explore_places_count, city.topPlaces.size), color = Color(0xFFE0E0E0), style = MaterialTheme.typography.labelMedium)
                 }
             }
         }
@@ -498,7 +505,7 @@ fun UnderTheRadarSection(
     selectedCategory: String?,
     onPlaceClick: (String) -> Unit = {}
 ) {
-    var places = com.example.pocketplanner.data.repository.DestinationRepository.allSubplaces
+    var places = com.example.pocketplanner.data.repository.DestinationRepository.allSubplaces.map { it.localized() }
 
     if (selectedCategory != null) {
         places = places.filter { it.theme == selectedCategory }
@@ -506,7 +513,7 @@ fun UnderTheRadarSection(
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "Under the radar", style = MaterialTheme.typography.titleLarge,
+            text = stringResource(R.string.explore_under_radar), style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, // DYNAMIC TEXT
             modifier = Modifier.padding(horizontal = 24.dp)
         )
@@ -541,7 +548,7 @@ fun UnderTheRadarCard(
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
-                model = subplace.heroImageUrl, contentDescription = subplace.name,
+                model = subplace.heroImageUrl, contentDescription = subplace.displayName,
                 contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
             )
             Box(
@@ -560,7 +567,7 @@ fun UnderTheRadarCard(
                 }
             }
             Text(
-                text = subplace.name,
+                text = subplace.displayName,
                 color = Color.White,
                 style = MaterialTheme.typography.titleSmall.copy(
                     fontWeight = FontWeight.Bold,
@@ -582,10 +589,10 @@ fun SearchResultsSection(
     selectedCategory: String?,
     onPlaceClick: (String) -> Unit
 ) {
-    var places = com.example.pocketplanner.data.repository.DestinationRepository.allSubplaces
+    var places = com.example.pocketplanner.data.repository.DestinationRepository.allSubplaces.map { it.localized() }
 
     if (selectedCategory != null) places = places.filter { it.theme == selectedCategory }
-    places = places.filter { it.name.contains(query, ignoreCase = true) }
+    places = places.filter { it.name.contains(query, ignoreCase = true) || it.displayName.contains(query, ignoreCase = true) }
 
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
         Text(
@@ -604,12 +611,12 @@ fun SearchResultsSection(
                 ) {
                     Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         AsyncImage(
-                            model = dest.heroImageUrl, contentDescription = dest.name,
+                            model = dest.heroImageUrl, contentDescription = dest.displayName,
                             contentScale = ContentScale.Crop, modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(text = dest.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                            Text(text = dest.displayName, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                             Spacer(modifier = Modifier.height(4.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(text = dest.flagEmoji, fontSize = 14.sp)

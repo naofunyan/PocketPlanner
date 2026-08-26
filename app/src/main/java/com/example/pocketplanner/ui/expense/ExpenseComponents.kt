@@ -46,6 +46,8 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.PI
 import java.util.Date
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -69,7 +71,7 @@ fun BudgetProgressCard(
             ) {
                 Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
                     Text(
-                        "TOTAL SPENT",
+                        stringResource(R.string.expense_total_spent),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface, // DYNAMIC TEXT
                         fontWeight = FontWeight.Bold
@@ -125,7 +127,7 @@ fun BudgetProgressCard(
             Spacer(modifier = Modifier.height(8.dp))
             val percentStr = "${(progress * 100).toInt()}%"
             Text(
-                "$percentStr of budget used",
+                stringResource(R.string.expense_budget_used_format, percentStr),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary, // DYNAMIC COLOR
                 fontWeight = FontWeight.Bold,
@@ -143,7 +145,7 @@ fun CategorySummaryRow(
 ) {
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
         Text(
-            "Categories",
+            stringResource(R.string.expense_categories_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground // DYNAMIC TEXT (Fixes the hidden text issue)
@@ -281,7 +283,7 @@ fun CategorySummaryRow(
 
                             Column {
                                 Text(
-                                    text = cat,
+                                    text = getTranslatedCategory(cat),
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface // DYNAMIC TEXT
@@ -310,7 +312,7 @@ fun TransactionListWidget(
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
         Text(
-            "Transactions",
+            stringResource(R.string.expense_transactions_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground // DYNAMIC TEXT
@@ -322,7 +324,7 @@ fun TransactionListWidget(
                 modifier = Modifier.fillMaxWidth().padding(32.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No transactions logged yet.", color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                Text(stringResource(R.string.expense_no_transactions), color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
             }
         } else {
             Surface(
@@ -356,7 +358,7 @@ fun TransactionListWidget(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                "View more transactions",
+                                stringResource(R.string.expense_view_more),
                                 color = MaterialTheme.colorScheme.primary, // DYNAMIC TEXT
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.labelLarge
@@ -382,16 +384,16 @@ fun TransactionRowItem(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Expense", fontWeight = FontWeight.Bold) },
-            text = { Text("Are you sure you want to delete '${expense.description}'? This cannot be undone.") },
+            title = { Text(stringResource(R.string.expense_delete_title), fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.expense_delete_message, expense.description)) },
             confirmButton = {
                 TextButton(onClick = {
                     showDeleteDialog = false
                     onDelete(expense)
-                }) { Text("Delete", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) }
+                }) { Text(stringResource(R.string.expense_delete_confirm), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.expense_delete_cancel)) }
             }
         )
     }
@@ -434,5 +436,20 @@ fun TransactionRowItem(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface // DYNAMIC TEXT
         )
+    }
+}
+
+@Composable
+fun getTranslatedCategory(category: String): String {
+    return when (category.lowercase()) {
+        "food" -> stringResource(R.string.category_food)
+        "shopping" -> stringResource(R.string.category_shopping)
+        "groceries" -> stringResource(R.string.category_groceries)
+        "transport" -> stringResource(R.string.category_transport)
+        "lodging" -> stringResource(R.string.category_lodging)
+        "gaming" -> stringResource(R.string.category_gaming)
+        "books" -> stringResource(R.string.category_books)
+        "bills" -> stringResource(R.string.category_bills)
+        else -> category
     }
 }

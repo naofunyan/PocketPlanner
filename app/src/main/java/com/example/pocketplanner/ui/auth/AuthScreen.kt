@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -23,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -80,25 +82,25 @@ fun AuthScreen(
                 // Load the actual logo from drawable
                 Image(
                     painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp))
+                    contentDescription = stringResource(R.string.auth_logo_desc),
+                    modifier = Modifier.size(32.dp).clip(CircleShape)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "PocketPlanner",
+                    text = stringResource(R.string.app_name),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = Color.White
                 )
             }
             Spacer(modifier = Modifier.height(32.dp)) // Reduced spacing slightly to fit smaller screens better
             Text(
-                text = if (isLoginMode) "Sign in to your account" else "Sign up",
+                text = if (isLoginMode) stringResource(R.string.auth_sign_in_title) else stringResource(R.string.auth_sign_up_title),
                 style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold, fontSize = 36.sp),
                 color = Color.White
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = if (isLoginMode) "Enter your email and password to log in" else "Create an account to continue",
+                text = if (isLoginMode) stringResource(R.string.auth_sign_in_subtitle) else stringResource(R.string.auth_sign_up_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White.copy(alpha = 0.8f)
             )
@@ -128,14 +130,14 @@ fun AuthScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     TabButton(
-                        text = "Log In",
+                        text = stringResource(R.string.auth_tab_login),
                         isSelected = isLoginMode,
                         modifier = Modifier.weight(1f)
                     ) {
                         isLoginMode = true
                     }
                     TabButton(
-                        text = "Sign Up",
+                        text = stringResource(R.string.auth_tab_signup),
                         isSelected = !isLoginMode,
                         modifier = Modifier.weight(1f)
                     ) {
@@ -163,7 +165,7 @@ fun AuthScreen(
                 ) {
                     Column {
                         FormField(
-                            label = "Username",
+                            label = stringResource(R.string.auth_field_username),
                             value = username,
                             onValueChange = { username = it }
                         )
@@ -172,7 +174,7 @@ fun AuthScreen(
                 }
 
                 FormField(
-                    label = "Email",
+                    label = stringResource(R.string.auth_field_email),
                     value = email,
                     onValueChange = { email = it }
                 )
@@ -180,7 +182,7 @@ fun AuthScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 FormField(
-                    label = "Password",
+                    label = stringResource(R.string.auth_field_password),
                     value = password,
                     onValueChange = { password = it },
                     isPassword = true,
@@ -197,7 +199,7 @@ fun AuthScreen(
                         contentAlignment = Alignment.CenterEnd
                     ) {
                         Text(
-                            text = "Forgot Password ?",
+                            text = stringResource(R.string.auth_forgot_password),
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.clickable {
@@ -228,10 +230,10 @@ fun AuthScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     if (uiState is AuthState.Loading) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
                     } else {
                         Text(
-                            text = if (isLoginMode) "Log In" else "Sign Up",
+                            text = if (isLoginMode) stringResource(R.string.auth_tab_login) else stringResource(R.string.auth_tab_signup),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }
@@ -246,7 +248,7 @@ fun AuthScreen(
                 ) {
                     HorizontalDivider(modifier = Modifier.weight(1f), color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
                     Text(
-                        text = "Or",
+                        text = stringResource(R.string.auth_or_divider),
                         color = Color.Gray,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(horizontal = 16.dp)
@@ -277,7 +279,7 @@ fun AuthScreen(
                                 }
                             } catch (e: Exception) {
                                 android.util.Log.e("AuthScreen", "Google Sign-In Error", e)
-                                android.widget.Toast.makeText(context, "Google Sign-In failed or cancelled", android.widget.Toast.LENGTH_SHORT).show()
+                                android.widget.Toast.makeText(context, context.getString(R.string.auth_google_error), android.widget.Toast.LENGTH_SHORT).show()
                             }
                         }
                     },
@@ -288,13 +290,13 @@ fun AuthScreen(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_google),
-                        contentDescription = "Google Logo",
+                        contentDescription = stringResource(R.string.auth_google_logo_desc),
                         modifier = Modifier.size(24.dp),
                         tint = Color.Unspecified // To preserve the original Google colors
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        "Continue with Google",
+                        stringResource(R.string.auth_continue_google),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -308,7 +310,7 @@ fun AuthScreen(
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Text(
-                        text = "Continue as Guest",
+                        text = stringResource(R.string.auth_continue_guest),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Bold,
                             textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline
@@ -318,7 +320,7 @@ fun AuthScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = "Guest Login",
+                        contentDescription = stringResource(R.string.auth_guest_login_desc),
                         modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -380,7 +382,7 @@ fun FormField(
             trailingIcon = if (isPassword) {
                 {
                     val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                    val description = if (passwordVisible) "Hide password" else "Show password"
+                    val description = if (passwordVisible) stringResource(R.string.auth_hide_password) else stringResource(R.string.auth_show_password)
 
                     IconButton(onClick = { onPasswordVisibilityChange?.invoke(!passwordVisible) }) {
                         Icon(imageVector = image, contentDescription = description, tint = MaterialTheme.colorScheme.onSurfaceVariant)

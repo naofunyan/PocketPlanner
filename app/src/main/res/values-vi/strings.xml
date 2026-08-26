@@ -1,16 +1,630 @@
 <resources>
     <string name="app_name">PocketPlanner</string>
 
-    <!-- Màn hình Cài đặt -->
+    <!-- FallAlertScreen -->
+    <string name="fall_alert_warning_icon_desc">Cảnh báo</string>
+    <string name="fall_alert_detected_title">Phát hiện té ngã!</string>
+    <string name="fall_alert_need_help">Bạn có cần giúp đỡ không?</string>
+    <string name="fall_alert_notifying">Thông báo cho người liên hệ khẩn cấp trong...</string>
+    <string name="fall_alert_swipe_cancel">VUỐT ĐỂ HỦY</string>
+    <string name="fall_alert_swipe_sos">VUỐT ĐỂ GỌI SOS</string>
+    <string name="fall_alert_medical_info_button">THÔNG TIN Y TẾ</string>
+    <string name="fall_alert_medical_info_title">Thông tin Y tế</string>
+    <string name="fall_alert_no_medical_info">Chưa cung cấp thông tin y tế.</string>
+    <string name="fall_alert_close">ĐÓNG</string>
+    <string name="fall_alert_medical_name_prefix">Tên: %1$s</string>
+    <string name="fall_alert_medical_dob_prefix">Ngày sinh: %1$s</string>
+    <string name="fall_alert_medical_weight_prefix">Cân nặng: %1$s</string>
+    <string name="fall_alert_medical_height_prefix">Chiều cao: %1$s</string>
+    <string name="fall_alert_medical_blood_type_prefix">Nhóm máu: %1$s</string>
+    <string name="fall_alert_medical_allergies_prefix">Dị ứng: %1$s</string>
+    <string name="fall_alert_medical_conditions_prefix">Tình trạng bệnh: %1$s</string>
+    <string name="fall_alert_medical_medications_prefix">Đang dùng thuốc: %1$s</string>
+    <string name="fall_alert_medical_organ_donor_prefix">Hiến tạng: %1$s</string>
+    <string name="fall_alert_medical_address_prefix">Địa chỉ: %1$s</string>
+    <string name="fall_alert_medical_notes_prefix">Ghi chú: %1$s</string>
+    <string name="fall_alert_summary_blood">Nhóm máu</string>
+    <string name="fall_alert_summary_allergies">Dị ứng</string>
+    <string name="fall_alert_summary_conditions">Tình trạng bệnh</string>
+    <string name="fall_alert_summary_notes">Ghi chú</string>
+
+    <!-- AuthScreen -->
+    <string name="auth_logo_desc">Biểu trưng</string>
+    <string name="auth_sign_in_title">Đăng nhập vào tài khoản</string>
+    <string name="auth_sign_up_title">Đăng ký</string>
+    <string name="auth_sign_in_subtitle">Nhập email và mật khẩu của bạn để đăng nhập</string>
+    <string name="auth_sign_up_subtitle">Tạo tài khoản để tiếp tục</string>
+    <string name="auth_tab_login">Đăng nhập</string>
+    <string name="auth_tab_signup">Đăng ký</string>
+    <string name="auth_field_username">Tên người dùng</string>
+    <string name="auth_field_email">Email</string>
+    <string name="auth_field_password">Mật khẩu</string>
+    <string name="auth_forgot_password">Quên mật khẩu?</string>
+    <string name="auth_or_divider">Hoặc</string>
+    <string name="auth_google_error">Đăng nhập bằng Google thất bại hoặc bị hủy</string>
+    <string name="auth_google_logo_desc">Biểu trưng Google</string>
+    <string name="auth_continue_google">Tiếp tục với Google</string>
+    <string name="auth_continue_guest">Tiếp tục với tư cách khách</string>
+    <string name="auth_guest_login_desc">Đăng nhập khách</string>
+    <string name="auth_hide_password">Ẩn mật khẩu</string>
+    <string name="auth_show_password">Hiển thị mật khẩu</string>
+
+    <!-- AuthViewModel -->
+    <string name="auth_error_login_failed">Đăng nhập thất bại</string>
+    <string name="auth_error_google_failed">Đăng nhập bằng Google thất bại</string>
+    <string name="auth_error_username_invalid">Tên người dùng chỉ được chứa chữ cái và số.</string>
+    <string name="auth_error_password_invalid">Mật khẩu phải dài ít nhất 8 ký tự và chứa ít nhất một chữ số.</string>
+    <string name="auth_error_email_empty">Email không được để trống.</string>
+    <string name="auth_error_registration_failed">Đăng ký thất bại</string>
+    <string name="auth_error_reset_email_empty">Vui lòng nhập địa chỉ email của bạn trước.</string>
+    <string name="auth_success_reset_email_sent">Đã gửi email đặt lại mật khẩu! Hãy kiểm tra hộp thư đến của bạn.</string>
+    <string name="auth_error_reset_failed">Gửi email đặt lại mật khẩu thất bại.</string>
+
+    <!-- WelcomeScreen -->
+    <string name="ws_bg_desc">Ảnh nền màn hình chào mừng</string>
+    <string name="ws_logo_desc">Biểu trưng ứng dụng</string>
+    <string name="ws_title">Chào mừng đến với\nPocketPlanner</string>
+    <string name="ws_subtitle">Lên kế hoạch. Theo dõi. Khám phá. PocketPlanner là bộ công cụ tích hợp AI hoàn hảo cho chuyến phiêu lưu tiếp theo của bạn. Tiết kiệm thời gian chuẩn bị để thỏa sức trải nghiệm và hoàn toàn an tâm tận hưởng chuyến đi.</string>
+    <string name="ws_get_started">Bắt đầu</string>
+    <string name="ws_forward_arrow_desc">Mũi tên đi tiếp</string>
+    <string name="ws_photo_credit">Ảnh của Daniel Burka trên Unsplash</string>
+    <string name="ws_language_cd">Ngôn ngữ</string>
+    <string name="ws_lang_en">English (EN)</string>
+    <string name="ws_lang_vi">Tiếng Việt (VI)</string>
+
+    <!-- InterpreterScreen -->
+    <string name="interpreter_lang_vi">Tiếng Việt</string>
+    <string name="interpreter_lang_en">Tiếng Anh</string>
+    <string name="interpreter_lang_unknown">Không rõ</string>
+    <string name="interpreter_rotate_cd">Xoay màn hình</string>
+    <string name="interpreter_history_cd">Lịch sử</string>
+    <string name="interpreter_offline_mode">Chế độ ngoại tuyến</string>
+    <string name="interpreter_history_title">Lịch sử</string>
+    <string name="interpreter_history_empty">Chưa có lịch sử.</string>
+    <string name="interpreter_my_language">Ngôn ngữ của tôi</string>
+    <string name="interpreter_other_language">Ngôn ngữ của người kia</string>
+    <string name="interpreter_replay_cd">Phát lại</string>
+    <string name="interpreter_mute_cd">Bật/tắt âm thanh</string>
+    <string name="interpreter_select_lang_cd">Chọn ngôn ngữ</string>
+    <string name="interpreter_speak_cd">Nói</string>
+    <!-- InterpreterViewModel -->
+    <string name="interpreter_voice_input">(Nhập bằng giọng nói)</string>
+
+    <!-- LiveVoiceScreen -->
+    <string name="live_voice_flip_camera_cd">Xoay camera</string>
+    <string name="live_voice_turn_camera_on_cd">Bật camera</string>
+    <string name="live_voice_turn_camera_off_cd">Tắt camera</string>
+    <string name="live_voice_unmute_cd">Bật âm thanh</string>
+    <string name="live_voice_mute_cd">Tắt âm thanh</string>
+    <string name="live_voice_connecting">Đang kết nối...</string>
+    <!-- LiveVoiceViewModel -->
+    <string name="live_voice_error_timeout">Kết nối hết hạn. Vui lòng kiểm tra mạng và thử lại.</string>
+    <string name="live_voice_error_connection_failed">Kết nối thất bại</string>
+    <string name="live_voice_error_server_closed">Máy chủ đã đóng kết nối (mã: %1$d). Mô hình có thể không khả dụng.</string>
+    <string name="live_voice_error_auth_failed">Xác thực thất bại</string>
+
+    <!-- TranslateScreen -->
+    <string name="translate_captured_image_cd">Ảnh đã chụp</string>
+    <string name="translate_back_cd">Quay lại</string>
+    <string name="translate_auto">Tự động</string>
+    <string name="translate_unknown">Không rõ</string>
+    <string name="translate_gallery_cd">Thư viện</string>
+    <string name="translate_capture_cd">Chụp</string>
+    <string name="translate_toast_copied_all">Đã sao chép toàn bộ văn bản</string>
+    <string name="translate_btn_select_all">Chọn tất cả</string>
+    <string name="translate_btn_listen">Nghe</string>
+    <string name="translate_camera_permission_required">Cần có quyền truy cập máy ảnh.</string>
+    <string name="translate_btn_grant_permission">Cấp quyền</string>
+    <string name="translate_from_title">Dịch từ</string>
+    <string name="translate_to_title">Dịch sang</string>
+    <string name="translate_search_placeholder">Tìm kiếm ngôn ngữ...</string>
+    <string name="translate_search_cd">Tìm kiếm</string>
+
+    <!-- AiHubScreen -->
+    <string name="ai_hub_tab_chat">NHẮN TIN</string>
+    <string name="ai_hub_tab_live">TRỰC TIẾP</string>
+    <string name="ai_hub_tab_translate">DỊCH</string>
+    <string name="ai_hub_tab_interpreter">PHIÊN DỊCH</string>
+    <string name="ai_hub_swipe_hint">Vuốt để xem thêm công cụ AI ➔</string>
+
+    <!-- ChatScreen -->
+    <string name="chat_title">Trợ lý AI</string>
+    <string name="chat_back_cd">Quay lại</string>
+    <string name="chat_attached_image_cd">Ảnh đính kèm</string>
+    <string name="chat_remove_image_cd">Gỡ ảnh</string>
+    <string name="chat_gallery_cd">Thư viện</string>
+    <string name="chat_camera_cd">Máy ảnh</string>
+    <string name="chat_ask_anything_placeholder">Hỏi bất cứ điều gì...</string>
+    <string name="chat_send_cd">Gửi</string>
+    <string name="chat_speak_now_prompt">Nói ngay bây giờ...</string>
+    <string name="chat_speech_not_available_toast">Nhận dạng giọng nói không khả dụng</string>
+    <string name="chat_voice_input_cd">Nhập bằng giọng nói</string>
+    <string name="chat_message_copied_toast">Đã sao chép tin nhắn</string>
+    <string name="chat_message_image_cd">Ảnh tin nhắn</string>
+
+    <!-- OfflineBannerWrapper -->
+    <string name="offline_banner_cd">Ngoại tuyến</string>
+    <string name="offline_banner_message">Bạn đang ngoại tuyến. Các thay đổi sẽ được đồng bộ hóa sau.</string>
+
+    <!-- ExpenseComponents -->
+    <string name="expense_total_spent">TỔNG ĐÃ CHI</string>
+    <string name="expense_budget_used_format">%1$s ngân sách đã sử dụng</string>
+    <string name="expense_categories_title">Danh mục</string>
+    <string name="expense_transactions_title">Giao dịch</string>
+    <string name="expense_no_transactions">Chưa có giao dịch nào được ghi lại.</string>
+    <string name="expense_view_more">Xem thêm giao dịch</string>
+    <string name="expense_delete_title">Xóa chi tiêu</string>
+    <string name="expense_delete_message">Bạn có chắc chắn muốn xóa \'%1$s\' không? Không thể hoàn tác thao tác này.</string>
+    <string name="expense_delete_confirm">Xóa</string>
+    <string name="expense_delete_cancel">Hủy</string>
+    <string name="category_food">Đồ ăn</string>
+    <string name="category_shopping">Mua sắm</string>
+    <string name="category_groceries">Tạp hóa</string>
+    <string name="category_transport">Đi lại</string>
+    <string name="category_lodging">Chỗ ở</string>
+    <string name="category_gaming">Giải trí</string>
+    <string name="category_books">Sách</string>
+    <string name="category_bills">Hóa đơn</string>
+
+    <!-- ExpenseScreen -->
+    <string name="expense_add_fab_cd">Thêm chi tiêu</string>
+    <string name="expense_trip_to">Chuyến đi tới %1$s</string>
+    <string name="expense_loading">Đang tải...</string>
+    <string name="expense_ongoing">Đang diễn ra</string>
+    <string name="expense_duration_format">%1$s - %2$s • %3$d Ngày</string>
+    <string name="expense_back_cd">Quay lại</string>
+    <string name="expense_nav_plan">Kế hoạch</string>
+    <string name="expense_nav_expense">Chi tiêu</string>
+    <string name="expense_add_title">Thêm chi tiêu</string>
+    <string name="expense_amount_label">SỐ TIỀN</string>
+    <string name="expense_category_label">Danh mục</string>
+    <string name="expense_date_label">Ngày</string>
+    <string name="expense_receipt_label">Biên lai / Ảnh</string>
+    <string name="expense_tap_upload">Chạm để tải biên lai lên</string>
+    <string name="expense_upload_autofill_hint">Tải biên lai lên để tự động điền bằng AI</string>
+    <string name="expense_receipt_cd">Biên lai</string>
+    <string name="expense_remove_cd">Gỡ bỏ</string>
+    <string name="expense_scanning">Đang quét biên lai...</string>
+    <string name="expense_scanning_btn">Đang quét...</string>
+    <string name="expense_autofill_btn">Tự động điền bằng AI</string>
+    <string name="expense_notes_label">Ghi chú (Tùy chọn)</string>
+    <string name="expense_notes_placeholder">Thêm bất kỳ chi tiết bổ sung nào ở đây...</string>
+    <string name="expense_save_btn">Lưu chi phí</string>
+    <string name="expense_ok">OK</string>
+    <string name="expense_cancel">Hủy</string>
+    <string name="expense_upload_receipt_title">Tải lên biên lai</string>
+    <string name="expense_choose_gallery">Chọn từ thư viện</string>
+    <string name="expense_take_photo">Chụp ảnh</string>
+    <string name="expense_scan_failed">Phân tích biên lai thất bại. Vui lòng thử lại.</string>
+
+    <!-- GlobalWalletScreen -->
+    <string name="wallet_add_ticket_cd">Thêm vé</string>
+    <string name="wallet_no_trips">Không có chuyến đi nào</string>
+    <string name="wallet_select_trip">Chọn một chuyến đi</string>
+    <string name="wallet_select_trip_cd">Chọn chuyến đi</string>
+    <string name="wallet_my_tickets">Vé của tôi</string>
+    <string name="wallet_trip_selected_cd">Đã chọn</string>
+    <string name="wallet_nav_ticket">Vé</string>
+    <string name="wallet_empty_state_has_trips">Không có chuyến đi đang hoạt động. Chọn một chuyến đi để xem chi tiêu.</string>
+    <string name="wallet_empty_state_no_trips">Tạo một chuyến đi để bắt đầu theo dõi chi tiêu.</string>
+
+    <!-- TicketComponents -->
+    <string name="ticket_search_hint">Tìm kiếm vé...</string>
+    <string name="ticket_search_cd">Tìm kiếm</string>
+    <string name="ticket_clear_cd">Xóa</string>
+    <string name="ticket_filter_all">Tất cả</string>
+    <string name="ticket_filter_general">Chung</string>
+    <string name="ticket_image_cd">Hình ảnh vé</string>
+    <string name="ticket_status_today">Hôm nay</string>
+    <string name="ticket_status_tomorrow">Ngày mai</string>
+    <string name="ticket_status_upcoming">Còn %d ngày</string>
+    <string name="ticket_status_expired">Đã hết hạn</string>
+    <string name="ticket_conf_prefix">Mã xác nhận: %s</string>
+    <string name="ticket_qr_prefix">QR: %s</string>
+    <string name="ticket_delete_title">Xóa vé</string>
+    <string name="ticket_delete_message">Bạn có chắc chắn muốn xóa \"%s\" không?</string>
+    <string name="ticket_empty_title">Thêm vé đầu tiên của bạn!</string>
+    <string name="ticket_empty_subtitle">Chạm + để quét thẻ lên máy bay, vé sự kiện, hoặc đặt phòng khách sạn.</string>
+    <string name="ticket_add_title">Thêm vé</string>
+    <string name="ticket_image_label">HÌNH ẢNH VÉ</string>
+    <string name="ticket_tap_capture">Chạm để chụp hoặc nhập vé</string>
+    <string name="ticket_qr_preserved">Mã QR sẽ được giữ nguyên chất lượng gốc</string>
+    <string name="ticket_remove_cd">Xóa</string>
+    <string name="ticket_scanning">Đang quét...</string>
+    <string name="ticket_scan_ocr">Quét vé (OCR)</string>
+    <string name="ticket_scanned_success">Đã quét! Các trường được điền tự động bên dưới.</string>
+    <string name="ticket_title_label">Tiêu đề</string>
+    <string name="ticket_title_hint">VD: Vietnam Airlines VN123</string>
+    <string name="ticket_type_label">Loại</string>
+    <string name="ticket_date_label">Ngày</string>
+    <string name="ticket_conf_label">Mã xác nhận (Tùy chọn)</string>
+    <string name="ticket_conf_hint">VD: ABC123</string>
+    <string name="ticket_link_trip_label">Liên kết với chuyến đi (Tùy chọn)</string>
+    <string name="ticket_trip_none">Không có</string>
+    <string name="ticket_notes_label">Ghi chú (Tùy chọn)</string>
+    <string name="ticket_notes_hint">Thêm bất kỳ chi tiết bổ sung nào...</string>
+    <string name="ticket_save_btn">Lưu vé</string>
+    <string name="ticket_upload_title">Thêm hình ảnh vé</string>
+    <string name="ticket_full_view_cd">Xem toàn bộ vé</string>
+    <string name="ticket_close_cd">Đóng</string>
+    <string name="ticket_viewer_conf">Xác nhận: %s</string>
+    <string name="ticket_backup_qr_cd">Mã QR dự phòng</string>
+    <string name="ticket_hide_qr">Ẩn mã QR</string>
+    <string name="ticket_show_qr">Hiển thị mã QR dự phòng</string>
+    <string name="ticket_untitled">Vé chưa có tiêu đề</string>
+    <string name="ticket_type_flight">Chuyến bay</string>
+    <string name="ticket_type_hotel">Khách sạn</string>
+    <string name="ticket_type_event">Sự kiện</string>
+    <string name="ticket_type_train">Tàu hỏa</string>
+    <string name="ticket_type_bus">Xe buýt</string>
+    <string name="ticket_type_other">Khác</string>
+
+    <!-- TransactionHistoryScreen -->
+    <string name="expense_transaction_history_title">Lịch sử giao dịch</string>
+
+    <!-- ExploreDetailsScreen -->
+    <string name="explore_bookmark_cd">Đánh dấu</string>
+    <string name="explore_places_title">Địa điểm</string>
+    <string name="explore_see_all">Xem tất cả</string>
+    <string name="explore_create_trip">Tạo chuyến đi mới</string>
+
+    <!-- ExploreScreen -->
+    <string name="explore_saved_destination">Địa điểm đã lưu</string>
+    <string name="explore_global">Toàn cầu</string>
+    <string name="explore_no_saved">Chưa có địa điểm nào được lưu.</string>
+    <string name="explore_view_cd">Xem</string>
+    <string name="explore_tab_discover">Khám phá</string>
+    <string name="explore_tab_saved">Đã lưu</string>
+    <string name="explore_browse_theme">Duyệt theo chủ đề</string>
+    <string name="explore_search_cd">Tìm kiếm</string>
+    <string name="explore_search_hint">Tìm kiếm địa điểm...</string>
+    <string name="explore_go_cd">Đi</string>
+    <string name="explore_for_you">Dành cho bạn</string>
+    <string name="explore_no_destinations">Không tìm thấy địa điểm nào.</string>
+    <string name="explore_places_count">%d Địa điểm</string>
+    <string name="explore_under_radar">Góc khuất</string>
+    <string name="explore_no_hidden_gems">Không tìm thấy địa điểm tiềm ẩn nào.</string>
+    <string name="explore_search_results">Kết quả tìm kiếm</string>
+    <string name="explore_no_search_results">Không tìm thấy địa điểm nào cho \"%s\".</string>
+    <string name="explore_category_nature">Thiên nhiên</string>
+    <string name="explore_category_culture">Văn hóa</string>
+    <string name="explore_category_food">Ẩm thực</string>
+    <string name="explore_category_city">Thành phố</string>
+    <string name="explore_category_beach">Bãi biển</string>
+
+    <!-- ImmersiveExperienceScreen -->
+    <string name="explore_immersive_title">Tuyệt đối trải nghiệm</string>
+    <string name="explore_immersive_back">Quay lại</string>
+    <string name="explore_immersive_static_map">Bản đồ tĩnh</string>
+    <string name="explore_immersive_reload">Tải lại</string>
+    <string name="explore_immersive_fullscreen">Toàn màn hình</string>
+    <string name="explore_immersive_exit_fullscreen">Thoát toàn màn hình</string>
+    <string name="explore_immersive_audio_guide">Hướng dẫn qua âm thanh</string>
+    <string name="explore_immersive_no_audio">Không hỗ trợ Hướng dẫn qua âm thanh cho địa điểm này.</string>
+    <string name="explore_immersive_prev_track">Bài trước</string>
+    <string name="explore_immersive_rewind">Tua lại 10s</string>
+    <string name="explore_immersive_play_pause">Phát/Tạm dừng</string>
+    <string name="explore_immersive_forward">Tua tới 10s</string>
+    <string name="explore_immersive_next_track">Bài tiếp</string>
+    <string name="explore_immersive_playing">Đang phát</string>
+    <string name="explore_immersive_play">Phát</string>
+    <string name="explore_immersive_tab_360vr">VR 360</string>
+    <string name="explore_immersive_tab_map1">Bản đồ 1</string>
+    <string name="explore_immersive_tab_map2">Bản đồ 2</string>
+    <string name="wrm_1_title">1. Giới thiệu</string>
+    <string name="wrm_1_subtitle">Tổng quan về bảo tàng</string>
+    <string name="wrm_2_title">2. Chuồng cọp</string>
+    <string name="wrm_2_subtitle">Hệ thống nhà tù phục dựng</string>
+    <string name="wrm_3_title">3. Máy chém</string>
+    <string name="wrm_3_subtitle">Công cụ hành quyết thời Pháp thuộc</string>
+    <string name="wrm_4_title">4. Chất độc màu da cam</string>
+    <string name="wrm_4_subtitle">Hậu quả của chiến tranh hóa học</string>
+    <string name="wrm_5_title">5. Thảm sát Sơn Mỹ</string>
+    <string name="wrm_5_subtitle">Thảm kịch Mỹ Lai</string>
+    <string name="tip_1_title">1. Kiến trúc Dinh Độc Lập</string>
+    <string name="tip_1_subtitle">Giới thiệu về kiến trúc</string>
+    <string name="tip_2_title">2. Kiến trúc bên ngoài</string>
+    <string name="tip_2_subtitle">Thiết kế ngoại thất</string>
+    <string name="tip_3_title">3. Kiến trúc bên trong</string>
+    <string name="tip_3_subtitle">Thiết kế nội thất</string>
+    <string name="tip_4_title">4. Phòng Khánh tiết</string>
+    <string name="tip_4_subtitle">Phòng họp chính</string>
+    <string name="tip_5_title">5. Phòng nội các</string>
+    <string name="tip_5_subtitle">Các cuộc họp chính phủ</string>
+    <string name="tip_6_title">6. Phòng Đại yến</string>
+    <string name="tip_6_subtitle">Tiệc chính thức</string>
+    <string name="tip_7_title">7. Phòng trình quốc thư</string>
+    <string name="tip_7_subtitle">Tiếp khách ngoại giao</string>
+    <string name="tip_8_title">8. Phòng làm việc của Tổng thống</string>
+    <string name="tip_8_subtitle">Không gian làm việc</string>
+    <string name="tip_9_title">9. Phòng làm việc của Phó Tổng thống</string>
+    <string name="tip_9_subtitle">Không gian làm việc</string>
+    <string name="tip_10_title">10. Phòng tiếp khách của Tổng thống</string>
+    <string name="tip_10_subtitle">Tiếp đón khách</string>
+    <string name="tip_11_title">11. Cầu thang trung tâm</string>
+    <string name="tip_11_subtitle">Cầu thang chính</string>
+    <string name="tip_12_title">12. Sân thượng</string>
+    <string name="tip_12_subtitle">Bãi đáp trực thăng &amp; quang cảnh</string>
+    <string name="tip_13_title">13. Tầng hầm</string>
+    <string name="tip_13_subtitle">Trung tâm chỉ huy dưới lòng đất</string>
+
+    <!-- PLACE DETAILS STRINGS -->
+    <string name="place_details_fallback_subtitle">Khám phá %1$s</string>
+    <string name="place_details_fallback_desc">Chưa có mô tả.</string>
+    <string name="place_details_fallback_country">Toàn cầu</string>
+    <string name="place_details_fallback_time">Kiểm tra giờ địa phương</string>
+    <string name="place_details_fallback_price">Thay đổi</string>
+    <string name="place_details_fallback_theme">Đã lưu</string>
+    <string name="place_details_back_cd">Quay lại</string>
+    <string name="place_details_bookmark_cd">Đánh dấu</string>
+    <string name="place_details_immersive">Tuyệt đối trải nghiệm</string>
+    <string name="place_details_add_to_which_trip">Thêm vào chuyến đi nào?</string>
+    <string name="place_details_no_trips">Bạn chưa có chuyến đi nào sắp tới.</string>
+    <string name="place_details_select_day">Chọn ngày</string>
+    <string name="place_details_added_snackbar">Đã thêm vào %1$s, Ngày %2$d</string>
+    <string name="place_details_view_action">Xem</string>
+    <string name="place_details_day_format">Ngày %1$d - %2$s</string>
+    <string name="place_details_add_to_plan">Thêm vào kế hoạch</string>
+    <string name="place_details_time_cd">Thời gian</string>
+    <string name="place_details_opening_hours">Giờ mở cửa</string>
+    <string name="place_details_price_cd">Giá</string>
+    <string name="place_details_price">Giá</string>
+
+    <!-- CreateTripDetailsScreen -->
+    <string name="create_trip_set_datetime">Đặt ngày giờ</string>
+    <string name="create_trip_optional">Tùy chọn</string>
+    <string name="create_trip_edit_title">Sửa chuyến đi</string>
+    <string name="create_trip_new_title">Chuyến đi mới</string>
+    <string name="create_trip_back_cd">Quay lại</string>
+    <string name="create_trip_default_name">Chuyến đi đến %1$s</string>
+    <string name="create_trip_saving">Đang lưu cài đặt...</string>
+    <string name="create_trip_generating">Đang tạo chuyến đi...</string>
+    <string name="create_trip_save_settings">Lưu cài đặt</string>
+    <string name="create_trip_create_ai">Tạo chuyến đi bằng AI</string>
+    <string name="create_trip_cover_cd">Ảnh bìa</string>
+    <string name="create_trip_change_cover">Đổi ảnh bìa</string>
+    <string name="create_trip_name_placeholder">Tên chuyến đi</string>
+    <string name="create_trip_dates">Ngày đi</string>
+    <string name="create_trip_start_date">Ngày bắt đầu</string>
+    <string name="create_trip_to_cd">Đến</string>
+    <string name="create_trip_end_date">Ngày kết thúc</string>
+    <string name="create_trip_warning_cd">Cảnh báo</string>
+    <string name="create_trip_overlap_warning">Cảnh báo: Chuyến đi này trùng lặp với chuyến đi \"%1$s\" hiện có.</string>
+    <string name="create_trip_budget_placeholder">Ngân sách (Tùy chọn)</string>
+    <string name="create_trip_budget_cd">Ngân sách</string>
+    <string name="create_trip_select_curr_cd">Chọn tiền tệ</string>
+    <string name="create_trip_next">Tiếp theo</string>
+    <string name="create_trip_cancel">Hủy</string>
+    <string name="create_trip_ok">OK</string>
+    <string name="create_trip_select_start_date">Chọn ngày bắt đầu</string>
+    <string name="create_trip_select_start_time">Chọn giờ bắt đầu</string>
+    <string name="create_trip_select_end_date">Chọn ngày kết thúc</string>
+    <string name="create_trip_select_end_time">Chọn giờ kết thúc</string>
+
+    <!-- DayPlanScreen -->
+    <string name="day_plan_title">Ngày %1$d</string>
+    <string name="day_plan_back_cd">Quay lại</string>
+    <string name="day_plan_loading">Đang tải địa điểm từ AI...</string>
+
+    <!-- ImportTripScreen -->
+    <string name="import_trip_importing">Đang nhập chuyến đi...</string>
+    <string name="import_trip_wait_msg">Vui lòng đợi trong khi chúng tôi tải xuống thông tin lịch trình.</string>
+    <string name="import_trip_error_cd">Lỗi</string>
+    <string name="import_trip_failed_title">Không thể nhập chuyến đi</string>
+    <string name="import_trip_unknown_error">Lỗi không xác định</string>
+    <string name="import_trip_go_home">Về trang chủ</string>
+
+    <!-- ItineraryScreen -->
+    <string name="itinerary_calendar_cd">Lịch</string>
+    <string name="itinerary_optimize_route">Tối ưu lộ trình</string>
+    <string name="itinerary_no_places">Chưa có địa điểm nào cho ngày này.</string>
+    <string name="itinerary_visited_cd">Đã đến</string>
+    <string name="itinerary_drive_cd">Lái xe</string>
+    <string name="itinerary_walk_cd">Đi bộ</string>
+    <string name="itinerary_calculating">Đang tính...</string>
+    <string name="itinerary_transit_format">%1$d phút • %2$s km / %3$s mi</string>
+    <string name="itinerary_directions_arrow">Đường đi &gt;</string>
+    <string name="itinerary_back_cd">Quay lại</string>
+    <string name="itinerary_plan">Kế hoạch</string>
+    <string name="itinerary_expense">Chi tiêu</string>
+    <string name="itinerary_add_place_cd">Thêm địa điểm</string>
+    <string name="itinerary_add_place_title">Thêm địa điểm</string>
+    <string name="itinerary_enter_place_name">Nhập tên địa điểm...</string>
+    <string name="itinerary_suggest_random">Đề xuất một địa điểm ngẫu nhiên</string>
+    <string name="itinerary_gemini_locate">Không tìm thấy địa điểm? Hãy để Gemini tìm giúp bạn</string>
+    <string name="itinerary_rearrange">Sắp xếp lại</string>
+    <string name="itinerary_move_day">Chuyển sang ngày khác</string>
+    <string name="itinerary_remove_place">Xóa địa điểm</string>
+    <string name="itinerary_select_day">Chọn ngày</string>
+    <string name="itinerary_current_day_indicator">(Hiện tại)</string>
+    <string name="itinerary_done">Xong</string>
+    <string name="itinerary_days_tab">Ngày</string>
+    <string name="itinerary_places_tab">Địa điểm</string>
+    <string name="itinerary_up_cd">Lên</string>
+    <string name="itinerary_down_cd">Xuống</string>
+    <string name="itinerary_day_format">Ngày %1$d - %2$s</string>
+    <string name="itinerary_share_cd">Chia sẻ</string>
+    <string name="itinerary_hours_cd">Giờ mở cửa</string>
+    <string name="itinerary_hours">Giờ mở cửa</string>
+    <string name="itinerary_price_cd">Giá</string>
+    <string name="itinerary_price">Giá</string>
+    <string name="itinerary_about">Giới thiệu</string>
+    <string name="itinerary_tip_cd">Mẹo</string>
+    <string name="itinerary_local_tip">Mẹo địa phương</string>
+    <string name="itinerary_map_cd">Bản đồ</string>
+    <string name="itinerary_map_placeholder_cd">Bản đồ mô phỏng</string>
+    <string name="itinerary_directions">Đường đi</string>
+    <string name="itinerary_trip_dates">Ngày đi</string>
+    <string name="itinerary_prev_cd">Trang trước</string>
+    <string name="itinerary_next_cd">Trang sau</string>
+
+    <!-- ItineraryViewModel -->
+    <string name="weather_clear">trời quang mây tạnh</string>
+    <string name="weather_cloudy">có mây rải rác</string>
+    <string name="weather_foggy">có sương mù</string>
+    <string name="weather_drizzling">mưa phùn</string>
+    <string name="weather_raining">có mưa</string>
+    <string name="weather_snowing">có tuyết</string>
+    <string name="weather_thunderstorms">có dông bão</string>
+    <string name="weather_variable">thay đổi</string>
+
+    <!-- TripsScreen -->
+    <string name="trips_good_morning">Chào buổi sáng</string>
+    <string name="trips_good_afternoon">Chào buổi chiều</string>
+    <string name="trips_good_evening">Chào buổi tối</string>
+    <string name="trips_no_upcoming">Bạn chưa có chuyến đi sắp tới nào.</string>
+    <string name="trips_happening_now">Chuyến đi của bạn đến %1$s đang diễn ra!</string>
+    <string name="trips_begins_in">Chuyến đi đến %1$s sẽ bắt đầu sau %2$s.</string>
+    <string name="trips_days">%02d ngày</string>
+    <string name="trips_hours">%02d giờ</string>
+    <string name="trips_minutes">%02d phút</string>
+    <string name="trips_seconds">%02d giây</string>
+    <string name="trips_fetching_weather">Đang tải thời tiết địa phương...</string>
+    <string name="trips_weather_info">Thời tiết ở %1$s là %2$d°C / %3$d°F, và sẽ %4$s.</string>
+    <string name="trips_weather_error">Dữ liệu thời tiết không có sẵn.</string>
+    <string name="trips_add_trip">Thêm chuyến đi</string>
+    <string name="trips_travel_stats">Thống kê du lịch</string>
+    <string name="trips_kick_things_off">Bắt đầu bằng cách thêm một cuộc phiêu lưu trong tương lai</string>
+    <string name="trips_active">Đang diễn ra</string>
+    <string name="trips_upcoming">Sắp tới</string>
+    <string name="trips_past">Đã qua</string>
+    <string name="trips_ai_planning">AI đang lên kế hoạch cho chuyến đi của bạn...</string>
+    <string name="trips_ai_wait">Quá trình này thường mất vài giây.</string>
+    <string name="trips_settings">Cài đặt chuyến đi</string>
+    <string name="trips_share">Chia sẻ chuyến đi</string>
+    <string name="trips_share_message">✈️ Hãy xem chuyến đi của tôi đến %1$s!\n\nThêm trực tiếp vào PocketPlanner:\n%2$s</string>
+    <string name="trips_delete">Xóa chuyến đi</string>
+    <string name="trips_delete_confirm_title">Xóa chuyến đi?</string>
+    <string name="trips_delete_confirm_desc1">Bạn có chắc chắn muốn xóa chuyến đi này không?</string>
+    <string name="trips_delete_confirm_desc2">Tất cả các bước cho chuyến đi, bao gồm hình ảnh, địa điểm và cập nhật văn bản sẽ bị xóa vĩnh viễn.</string>
+    <string name="trips_delete_btn">Xóa</string>
+    <string name="trips_cancel_btn">Hủy</string>
+    <string name="trips_now_travelling">#đang_du_lịch</string>
+    <string name="trips_ongoing">Đang diễn ra</string>
+    <string name="trips_day_n">Ngày %1$d</string>
+    <string name="trips_days_label">NGÀY</string>
+    <string name="trips_explorer"> Nhà khám phá</string>
+
+    <!-- FallDetectionService -->
+    <string name="fall_detection_service_title">Tính năng an toàn đang hoạt động</string>
+    <string name="fall_detection_service_desc">Luôn theo dõi để bảo vệ bạn khi té ngã.</string>
+    <string name="fall_detection_channel_name">Phát hiện ngã</string>
+    <string name="fall_alarm_channel_name">Cảnh báo ngã khẩn cấp</string>
+    <string name="fall_alarm_channel_desc">Kích hoạt đếm ngược khẩn cấp toàn màn hình</string>
+
+    <!-- MainScreen -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_explore">Khám phá</string>
+    <string name="nav_wallet">Ví</string>
+    <string name="nav_settings">Cài đặt</string>
+    <string name="nav_ai_call_cd">AI</string>
+
+    <!-- SearchScreen -->
+    <string name="search_new_trip">Chuyến đi mới</string>
+    <string name="search_back_cd">Quay lại</string>
+    <string name="search_continue">Tiếp tục</string>
+    <string name="search_where_going">Bạn muốn đi đâu?</string>
+    <string name="search_search_cd">Tìm kiếm</string>
+    <string name="search_for_destinations">Tìm kiếm điểm đến</string>
+    <string name="search_add_dest_desc">Thêm những điểm đến bạn muốn ghé thăm.\nBạn luôn có thể thêm sau.</string>
+    <string name="search_remove_cd">Xóa bỏ</string>
+    <string name="search_clear_cd">Xóa</string>
+
+    <!-- EmergencySharingScreen -->
+    <string name="emergency_toast_no_phone">Không thể lấy số điện thoại</string>
+    <string name="emergency_toast_camera_permission">Cần cấp quyền truy cập máy ảnh cho tính năng này</string>
+    <string name="emergency_toast_mic_permission">Cần cấp quyền truy cập micrô cho tính năng này</string>
+    <string name="emergency_sharing_title">Chia sẻ khẩn cấp</string>
+    <string name="emergency_cd_more_options">Thêm tùy chọn</string>
+    <string name="emergency_sharing_desc1">Chia sẻ vị trí và thông tin khác với các liên hệ khẩn cấp để họ biết bạn cần giúp đỡ.</string>
+    <string name="emergency_sharing_desc2">※Tin nhắn sẽ không được gửi nếu bạn đã đạt đến giới hạn tin nhắn ở quốc gia hoặc khu vực của bạn.</string>
+    <string name="emergency_share_with_label">Chia sẻ với</string>
+    <string name="emergency_contacts_title">Liên hệ khẩn cấp</string>
+    <string name="emergency_add_button">Thêm</string>
+    <string name="emergency_no_contacts">Chưa có liên hệ nào.</string>
+    <string name="emergency_unknown_contact">Không xác định</string>
+    <string name="emergency_cd_remove_contact">Xóa liên hệ</string>
+    <string name="emergency_share_surroundings_label">Chia sẻ không gian xung quanh</string>
+    <string name="emergency_attach_pictures">Đính kèm ảnh</string>
+    <string name="emergency_attach_pictures_desc">Chụp ảnh bằng camera trước và sau và đính kèm vào tin nhắn.</string>
+    <string name="emergency_attach_audio">Đính kèm bản ghi âm</string>
+    <string name="emergency_attach_audio_desc">Ghi âm 5 giây và đính kèm vào tin nhắn của bạn.</string>
+
+    <!-- FallDetectionSettingsScreen -->
+    <string name="fall_detection_title">Phát hiện ngã mạnh</string>
+    <string name="fall_detection_on">Bật</string>
+    <string name="fall_detection_off">Tắt</string>
+    <string name="fall_detection_info_1">Sau khi ngã, điện thoại sẽ báo động trong 30 giây bằng cửa sổ bật lên toàn màn hình, âm thanh và rung mạnh. Bạn có thể hủy báo động hoặc vuốt để gửi tin nhắn SOS ngay lập tức.</string>
+    <string name="fall_detection_info_2">Nếu bạn không phản hồi trong 30 giây, tin nhắn SOS sẽ được gửi đến các liên hệ khẩn cấp mà bạn đã cài đặt. Tin nhắn sẽ bao gồm vị trí hiện tại của bạn.</string>
+    <string name="fall_detection_high_sensitivity">Độ nhạy cao</string>
+    <string name="fall_detection_high_sensitivity_desc">Phát hiện được nhiều cú ngã hơn, nhưng các cử động đột ngột hoặc làm rơi điện thoại cũng có thể gây ra báo động giả. Phù hợp nhất cho người có nguy cơ ngã cao.</string>
+    <string name="fall_detection_emergency_number">Số khẩn cấp để gọi</string>
+    <string name="fall_detection_send_sos">Gửi SOS tới liên hệ khẩn cấp</string>
+    <string name="fall_detection_send_sos_desc">Nhắn tin vị trí và thông điệp SOS tới liên hệ khẩn cấp của bạn.</string>
+    <string name="fall_detection_emergency_sharing_settings">Cài đặt chia sẻ khẩn cấp</string>
+    <string name="fall_detection_dialog_title">Số khẩn cấp</string>
+    <string name="fall_detection_dialog_label">Số để gọi</string>
+    <string name="fall_detection_dialog_revert">Trở về mặc định (113)</string>
+    <string name="fall_detection_dialog_save">Lưu</string>
+    <string name="fall_detection_dialog_cancel">Hủy</string>
+
+    <!-- MedicalInfoScreen -->
+    <string name="medical_info_title">Thông tin y tế</string>
+    <string name="medical_info_desc">Ghi lại các dị ứng, thuốc hiện tại và thông tin y tế khác của bạn để luôn có sẵn trong trường hợp khẩn cấp.</string>
+    <string name="medical_not_set">Chưa thiết lập</string>
+    <string name="medical_yes">Có</string>
+    <string name="medical_no">Không</string>
+    <string name="medical_name">Tên</string>
+    <string name="medical_name_hint">Nhập tên của bạn</string>
+    <string name="medical_conditions">Tình trạng y tế</string>
+    <string name="medical_conditions_hint">Liệt kê tình trạng y tế</string>
+    <string name="medical_blood_type">Nhóm máu</string>
+    <string name="medical_blood_type_hint">Chạm để chọn nhóm máu</string>
+    <string name="medical_allergies">Dị ứng</string>
+    <string name="medical_allergies_hint">Liệt kê dị ứng của bạn</string>
+    <string name="medical_medications">Thuốc đang dùng</string>
+    <string name="medical_medications_hint">Liệt kê thuốc đang dùng</string>
+    <string name="medical_weight">Cân nặng</string>
+    <string name="medical_weight_hint">Chạm để đặt cân nặng</string>
+    <string name="medical_height">Chiều cao</string>
+    <string name="medical_height_hint">Chạm để đặt chiều cao</string>
+    <string name="medical_dob">Ngày sinh</string>
+    <string name="medical_dob_hint">Chạm để chọn ngày</string>
+    <string name="medical_address">Địa chỉ</string>
+    <string name="medical_address_hint">Nhập địa chỉ của bạn</string>
+    <string name="medical_organ_donor">Hiến tạng</string>
+    <string name="medical_organ_donor_hint">Chạm để chọn trạng thái</string>
+    <string name="medical_notes">Ghi chú y tế</string>
+    <string name="medical_notes_hint">Nhập thông tin quan trọng khác</string>
+    <string name="medical_share">Chia sẻ với liên hệ khẩn cấp</string>
+    <string name="medical_share_desc">Đính kèm thông tin y tế vào tin nhắn SOS tự động gửi đến các liên hệ khẩn cấp của bạn.</string>
+    <string name="medical_enter_details">Nhập thông tin chi tiết</string>
+    <string name="medical_dialog_save">Lưu</string>
+    <string name="medical_dialog_cancel">Hủy</string>
+    <string name="medical_dialog_ok">OK</string>
+    <string name="medical_dialog_done">Xong</string>
+    <string name="medical_set_weight">Đặt cân nặng</string>
+    <string name="medical_set_height">Đặt chiều cao</string>
+
+    <!-- SettingsScreen -->
     <string name="settings_title">Cài đặt</string>
     <string name="settings_not_logged_in">Chưa đăng nhập</string>
-
+    <string name="settings_language_english">Tiếng Anh</string>
+    <string name="settings_language_vietnamese">Tiếng Việt</string>
+    <string name="settings_permission_notification">Cần cấp quyền thông báo để nhận cảnh báo.</string>
+    <string name="settings_permission_location">Cần cấp quyền vị trí để sử dụng AI.</string>
+    <string name="settings_cd_back">Quay lại</string>
+    <string name="settings_cd_profile_picture">Ảnh đại diện</string>
+    <string name="settings_medical_info">Thông tin y tế</string>
+    <string name="settings_location_context">Truy cập vị trí</string>
+    <string name="settings_location_context_desc">Cho phép AI biết vị trí hiện tại của bạn. Rất ít tốn pin.</string>
+    <string name="settings_cd_more_options">Thêm tùy chọn</string>
+    <string name="settings_cd_selected">Đã chọn</string>
     <string name="settings_safety_emergency">An toàn &amp; Khẩn cấp</string>
     <string name="settings_fall_detection">Phát hiện té ngã</string>
     <string name="settings_fall_detection_desc">Kích hoạt SOS khi ngã mạnh</string>
     <string name="settings_emergency_sos">SOS Khẩn cấp</string>
     <string name="settings_emergency_sos_desc">Quản lý liên hệ khẩn cấp</string>
-
     <string name="settings_preferences">Tuỳ chỉnh</string>
     <string name="settings_language">Ngôn ngữ</string>
     <string name="settings_language_current">Tiếng Việt</string>
@@ -20,11 +634,9 @@
     <string name="settings_theme_dark">Tối</string>
     <string name="settings_notifications">Thông báo</string>
     <string name="settings_notifications_desc">Nhắc nhở và cảnh báo chuyến đi</string>
-
     <string name="settings_support">Hỗ trợ</string>
     <string name="settings_help_center">Trung tâm trợ giúp</string>
     <string name="settings_privacy_policy">Chính sách bảo mật</string>
-
     <string name="settings_account">Tài khoản</string>
     <string name="settings_log_out">Đăng xuất</string>
     <string name="settings_logout_confirm_message">Bạn có chắc muốn đăng xuất chứ?</string>
@@ -32,4 +644,172 @@
     <string name="settings_delete_confirm_message">Mọi thứ sẽ bị xóa?</string>
     <string name="settings_delete_forever">Xóa vĩnh viễn</string>
     <string name="settings_version">Phiên bản 1.0.0</string>
+
+    <!-- SettingsViewModel -->
+    <string name="settings_error_upload_failed">Tải ảnh lên thất bại. Vui lòng thử lại.</string>
+    <string name="settings_error_no_user">Không có người dùng nào đăng nhập.</string>
+    <string name="settings_error_security_delete">Lỗi bảo mật: Bạn phải đăng xuất và đăng nhập lại trước khi xóa tài khoản.</string>
+
+    <!-- TravelStatsScreen -->
+    <string name="stats_title">Thống kê du lịch</string>
+    <string name="stats_back_cd">Quay lại</string>
+    <string name="stats_lifetime_journey">Hành trình trọn đời</string>
+    <string name="stats_lifetime_desc">Cái nhìn nhanh về tất cả các cuộc phiêu lưu bạn đã theo dõi với PocketPlanner.</string>
+    <string name="stats_total_trips">Tổng số chuyến đi</string>
+    <string name="stats_trips_subtitle">%1$d Đã qua • %2$d Đang/Sắp diễn ra</string>
+    <string name="stats_days_on_road">Số ngày trên đường</string>
+    <string name="stats_days_subtitle">Tổng số ngày dành cho việc đi lại</string>
+    <string name="stats_unique_destinations">Điểm đến độc đáo</string>
+    <string name="stats_unique_subtitle">Những nơi bạn đã khám phá</string>
+    <string name="stats_places_been">Những nơi bạn đã đến:</string>
+
+    <!-- TripSummaryScreen -->
+    <string name="summary_title">Tổng quan chuyến đi</string>
+    <string name="summary_back_cd">Quay lại</string>
+    <string name="summary_share_cd">Chia sẻ chuyến đi</string>
+    <string name="summary_trip_to">Chuyến đi đến %1$s</string>
+    <string name="summary_ai_diary">Nhật ký Du lịch AI</string>
+    <string name="summary_memories_waiting">Những kỷ niệm của bạn đang chờ được viết ra.</string>
+    <string name="summary_failed">Thất bại: %1$s</string>
+    <string name="summary_writing">Đang viết...</string>
+    <string name="summary_generate_diary">Tạo nhật ký</string>
+    <string name="summary_financial">Tổng quan tài chính</string>
+    <string name="summary_budget">Ngân sách:</string>
+    <string name="summary_total_spent">Tổng chi tiêu:</string>
+    <string name="summary_export_csv">Xuất chi phí (CSV)</string>
+    <string name="summary_rate_places">Đánh giá các địa điểm</string>
+    <string name="summary_trip_published">Đã xuất bản chuyến đi!</string>
+    <string name="summary_published_desc">Chuyến đi của bạn đã được xuất bản. Chia sẻ liên kết này với bạn bè của bạn:</string>
+    <string name="summary_share_text">Hãy xem hành trình chuyến đi của tôi trên PocketPlanner! %1$s</string>
+    <string name="summary_share_link">Chia sẻ liên kết</string>
+    <string name="summary_share_btn">Chia sẻ</string>
+    <string name="summary_close_btn">Đóng</string>
+    <string name="summary_error">Lỗi</string>
+    <string name="summary_ok">OK</string>
+    <string name="summary_rate_cd">Đánh giá %1$d</string>
+
+    <!-- EmergencyActionManager -->
+    <string name="sos_sms_message">🚨 SOS! Tôi cần giúp đỡ. Đang gọi %1$s.\n</string>
+    <string name="sos_sms_location">Vị trí: %1$s</string>
+    <string name="sos_sms_media">\nPhương tiện: %1$s</string>
+    <string name="sos_sms_medical">\n\nTHÔNG TIN Y TẾ:\n%1$s</string>
+    <string name="sos_loc_no_perm">Vị trí không xác định (Không có quyền)</string>
+    <string name="sos_loc_unavail">Vị trí không có sẵn</string>
+    <string name="sos_loc_error">Lỗi vị trí</string>
+
+    <!-- ImageGenerator -->
+    <string name="image_gen_ongoing">Đang diễn ra</string>
+    <string name="image_gen_branding">Được lên kế hoạch với PocketPlanner</string>
+
+    <!-- Destination Repository -->
+    <string name="city_hcmc_title">Thành phố Hồ Chí Minh</string>
+    <string name="city_hcmc_tagline">Hòn ngọc Viễn Đông, sầm uất &amp; nhộn nhịp</string>
+    <string name="city_hcmc_desc">Là trung tâm kinh tế và nhịp đập sôi động của Việt Nam, Thành phố Hồ Chí Minh là một siêu đô thị năng động, nơi lịch sử phong phú, ẩm thực đường phố đẳng cấp thế giới và năng lượng hiện đại hòa quyện vào nhau.</string>
+    <string name="subplace_tip_subtitle">Di tích lịch sử của sự thống nhất</string>
+    <string name="subplace_tip_desc">Từ nguồn gốc là Dinh Norodom thời Pháp thuộc năm 1868 đến việc đổi tên bước ngoặt năm 1954 và sự thăng trầm ngoạn mục của tổng thống Ngô Đình Diệm, di tích lịch sử này mang đến một hành trình thú vị kéo dài hàng thế kỷ qua những biến đổi chính trị của Việt Nam hiện đại.</string>
+    <string name="subplace_wrm_subtitle">Những hiện vật xúc động về Chiến tranh Việt Nam</string>
+    <string name="subplace_wrm_desc">Một bảo tàng nghiêm trang và mạnh mẽ ghi lại những hiện thực tàn khốc của Chiến tranh Việt Nam. Có nhiều triển lãm ảnh, thiết bị quân sự và hiện vật lịch sử.</string>
+    <string name="subplace_cuchi_subtitle">Pháo đài ngầm huyền thoại của sự mưu trí du kích Việt Nam</string>
+    <string name="subplace_cuchi_desc">Một mạng lưới ngầm lịch sử của chiến lược thời chiến, cuộc phiêu lưu thực tế và cuộc khám phá tận mắt đầy ly kỳ.</string>
+    <string name="subplace_zoo_subtitle">Sở thú lâu đời thứ tám trên thế giới, kết hợp di sản thực vật hàng thế kỷ với những ký ức thành phố</string>
+    <string name="subplace_zoo_desc">Từ việc thành lập nổi tiếng vào năm 1864 với tư cách là sở thú lâu đời thứ tám trên thế giới và khuôn viên thực vật tươi tốt đến giáo dục sinh thái thực tế và những kỷ niệm được trân trọng qua nhiều thế hệ, Thảo Cầm Viên Sài Gòn mang đến một hành trình lịch sử thanh bình, xanh tươi qua trung tâm Thành phố Hồ Chí Minh.</string>
+    <string name="subplace_banhmi_subtitle">Bánh mì huyền thoại nhất Sài Gòn, tràn ngập các lớp hương vị nổi tiếng thế giới</string>
+    <string name="subplace_banhmi_desc">Từ di sản ẩm thực đường phố 35 năm và sự hoan nghênh nồng nhiệt của quốc tế đến những phần thịt mặn hào phóng và patê đậm đà, mịn màng ghi lại tinh hoa của thiên đường ẩm thực, Bánh Mì Huỳnh Hoa mang đến một hành trình ẩm thực khó quên, đầy hương vị qua Sài Gòn.</string>
+    <string name="city_hanoi_title">Hà Nội</string>
+    <string name="city_hanoi_tagline">Linh hồn ngàn năm của Việt Nam, nơi những hồ nước yên tĩnh gặp gỡ vẻ quyến rũ vượt thời gian của những con hẻm cổ</string>
+    <string name="city_hanoi_desc">Từ những ngôi chùa cổ kính chìm trong khói hương và những ngôi đền ven sông yên tĩnh đến những quán cà phê ẩn mình ấm cúng và những bang hội thủ công sôi động, Hà Nội mang đến một lối thoát văn hóa đầy chất thơ qua trung tâm lịch sử của Việt Nam.</string>
+    <string name="subplace_hoalo_subtitle">Nhà tù thời chiến khét tiếng của Hà Nội, nay được bảo tồn như một bảo tàng xúc động về sự sinh tồn và kiên cường.</string>
+    <string name="subplace_hoalo_desc">Từ quá khứ lạnh lẽo với tư cách là \'Hà Nội Hilton\' khét tiếng và các dãy xà lim u ám thời thuộc địa đến cổng gác lịch sử được bảo tồn và các màn trưng bày gợi cảm xúc của bảo tàng, Nhà tù Hỏa Lò mang đến một hành trình nghiêm trang, vô cùng cảm động về sự kiên cường bền bỉ của tinh thần con người.</string>
+    <string name="subplace_mausoleum_subtitle">Di tích quốc gia thiêng liêng nhất của Việt Nam, tôn vinh di sản lâu dài của Chủ tịch Hồ Chí Minh</string>
+    <string name="subplace_mausoleum_desc">Từ những hàng cột bằng đá granite xám hùng vĩ và những dòng chữ ngọc đỏ thẫm đến sự đổi gác trang nghiêm và những khu vườn yên bình với hơn 250 loài thực vật mang tính biểu tượng, Lăng Chủ tịch Hồ Chí Minh mang đến một hành trình biểu tượng, vô cùng thành kính vào trung tâm di sản quốc gia của Việt Nam.</string>
+    <string name="subplace_stjoseph_subtitle">Nhà thờ lâu đời nhất của Hà Nội, đứng vững như một kiệt tác kiến trúc qua nhiều thế kỷ biến đổi</string>
+    <string name="subplace_stjoseph_desc">Từ nguồn gốc lịch sử là một trong những địa danh thời thuộc địa Pháp sớm nhất ở Đông Dương và sự sống sót kỳ diệu qua hai cuộc chiến tranh tàn khốc đến mặt tiền phong hóa nổi bật và quảng trường nhộn nhịp được người dân địa phương cũng như du khách yêu thích, Nhà thờ Lớn St. Joseph mang đến một hành trình vượt thời gian, đầy sức gợi qua di sản bền bỉ của Hà Nội.</string>
+    <string name="subplace_hoankiem_subtitle">Thiên đường đi bộ cuối tuần sôi động của Hà Nội, tràn ngập âm nhạc đường phố, đám đông vui vẻ và hương vị ngon miệng</string>
+    <string name="subplace_hoankiem_desc">Từ sự nhộn nhịp của những con đường đi bộ ven hồ không có ô tô và những buổi biểu diễn nhạc sống năng động đến vô số lựa chọn giải trí và ẩm thực đường phố địa phương hấp dẫn, Phố đi bộ Hồ Hoàn Kiếm mang đến một hành trình điện ảnh, vui vẻ qua năng lượng cuối tuần của Hà Nội.</string>
+    <string name="subplace_buncha_subtitle">Điểm ăn phở tổng thống mang tính biểu tượng của Hà Nội, huyền thoại với món thịt lợn nướng khói và \'Combo Obama\' nổi tiếng.</string>
+    <string name="subplace_buncha_desc">Từ chiếc \'bàn tổng thống\' bọc kính nổi tiếng và những bức tường kỷ vật của người nổi tiếng đến những chả lợn nướng khói xèo xèo, nem hải sản chiên giòn và Bia Hà Nội đá lạnh trong \'Combo Obama\' đặc trưng, quán ăn huyền thoại này mang đến một hành trình ẩm thực khó quên, đầy hương vị qua món ăn thoải mái được tôn vinh nhất của Hà Nội.</string>
+    <string name="city_danang_title">Đà Nẵng</string>
+    <string name="city_danang_tagline">Vẻ đẹp ven biển và những cây cầu hiện đại</string>
+    <string name="city_danang_desc">Được biết đến với những bãi biển cát trắng, Ngũ Hành Sơn hùng vĩ và Cầu Vàng mang tính biểu tượng được nâng đỡ bởi những bàn tay đá khổng lồ, Đà Nẵng là thành phố ven biển sôi động nhất miền Trung Việt Nam.</string>
+    <string name="subplace_bana_subtitle">Khu nghỉ dưỡng tuyệt vời trên đỉnh núi</string>
+    <string name="subplace_bana_desc">Có thể đến bằng một trong những tuyến cáp treo dài nhất thế giới, khu nghỉ dưỡng này có Cầu Vàng nổi tiếng, Làng Pháp và tầm nhìn toàn cảnh ra vùng ven biển.</string>
+    <string name="subplace_sontra_subtitle">Đường bờ biển hoang sơ của miền Trung Việt Nam</string>
+    <string name="subplace_sontra_desc">Nổi tiếng với bầu trời xanh, bãi cát trắng mịn và độ dốc thoai thoải. Đây là điểm lý tưởng để bơi lội, lướt sóng và thư giãn bên bờ biển.</string>
+    <string name="subplace_golden_subtitle">Cây cầu trên cao nổi tiếng thế giới của Việt Nam, được ôm trọn trên mây núi bởi đôi bàn tay khổng lồ</string>
+    <string name="subplace_golden_desc">Từ lối đi bộ cong màu vàng dài 150 mét lấp lánh và khung cảnh ngoạn mục của hai bàn tay khổng lồ phong hóa nhô ra khỏi vách đá đến khung cảnh rộng lớn trên đỉnh núi và những con đường uốn lượn qua những khu vườn tươi tốt, Cầu Vàng mang đến một hành trình trên không siêu thực, khó quên trên cao của Đà Nẵng.</string>
+    <string name="city_hue_title">Huế</string>
+    <string name="city_hue_tagline">Cố đô cổ kính</string>
+    <string name="city_hue_desc">Nằm bên bờ sông Hương, Huế là kinh đô của các vị vua triều Nguyễn. Nơi đây nổi tiếng với Hoàng thành uy nghi, các lăng tẩm hoàng gia và nền ẩm thực tinh tế.</string>
+    <string name="subplace_citadel_subtitle">Cung điện có tường bao quanh của triều Nguyễn</string>
+    <string name="subplace_citadel_desc">Một khu phức hợp rộng lớn thế kỷ 19 được mô phỏng theo Tử Cấm Thành của Bắc Kinh, với hào nước, cổng vòm hùng vĩ, cung điện và các gian hàng trang trí tinh xảo.</string>
+    <string name="subplace_thienmu_subtitle">Biểu tượng tâm linh mang tính biểu tượng nhất của Huế, với tháp bảy tầng trang nhã và khuôn viên thiền viện yên bình</string>
+    <string name="subplace_thienmu_desc">Từ đài kỷ niệm bảy tầng nổi bật đứng tự hào ở lối vào và những tiếng vang dội của tháp chuông lịch sử đến những sảnh làm việc yên bình và khu sinh hoạt tĩnh lặng cho các nhà sư cư trú, Chùa Thiên Mụ mang đến một hành trình vô cùng tâm linh, đầy chất thơ qua địa danh linh thiêng được trân trọng nhất của Huế.</string>
+    <string name="subplace_langco_subtitle">Một \'chốn thần tiên trên trần gian\' của hoàng gia, nơi mười km bãi cát trắng hoang sơ gặp vùng biển màu ngọc lam êm đềm</string>
+    <string name="subplace_langco_desc">Từ dải cát trắng mềm mại dài mười km và làn nước trong xanh yên bình đến bối cảnh hùng vĩ của dãy Bạch Mã và di sản nổi tiếng là thiên đường hoàng gia của Vua Khải Định, Biển Lăng Cô mang đến một lối thoát ven biển đầy mê hoặc, thanh bình dọc theo bờ biển ngoạn mục nhất miền Trung Việt Nam.</string>
+    <string name="subplace_bachma_subtitle">Khu bảo tồn thiên nhiên hoang sơ nép mình giữa núi và biển, nơi những khu rừng mây mù mát mẻ và động vật hoang dã quý hiếm sinh sống</string>
+    <string name="subplace_bachma_desc">Từ những đỉnh núi cao chót vót của dãy Trường Sơn và tầm nhìn bao quát bờ biển hướng ra Biển Đông đến những khu rừng mây mù sương mát mẻ và những loài động vật hoang dã quý hiếm khó bắt gặp, Vườn quốc gia Bạch Mã mang đến một lối thoát sinh thái tiếp thêm sinh lực vào một thiên đường núi non ẩn giấu, tràn đầy sức sống.</string>
+
+    <!-- Highlights -->
+    <string name="highlight_architecture">KIẾN TRÚC</string>
+    <string name="highlight_history">LỊCH SỬ</string>
+    <string name="highlight_military">THIẾT BỊ QUÂN SỰ</string>
+    <string name="highlight_animal">ĐỘNG VẬT</string>
+    <string name="highlight_food">ẨM THỰC</string>
+    <string name="highlight_nature">THIÊN NHIÊN</string>
+    <string name="highlight_scenery">PHONG CẢNH</string>
+    <string name="highlight_relax">THƯ GIÃN</string>
+    <string name="highlight_hiking">LEO NÚI</string>
+
+    <!-- Opening Times -->
+    <string name="opening_time_1">7:00 Sáng - 6:00 Chiều</string>
+    <string name="opening_time_2">7:30 Sáng - 5:30 Chiều</string>
+    <string name="opening_time_3">7:00 Sáng – 5:00 Chiều</string>
+    <string name="opening_time_4">7:00 Sáng – 6:30 Chiều</string>
+    <string name="opening_time_5">6:00 Sáng – 10:00 Tối</string>
+    <string name="opening_time_6">8:00 Sáng - 5:00 Chiều</string>
+    <string name="opening_time_7">7:30 Sáng - 10:30 Sáng (Từ 1/4 - 31/10) / 8:00 Sáng - 11:00 Sáng (Từ 1/11 - 31/3). Thứ Ba, Thứ Tư, Thứ Năm, Thứ Bảy và Chủ Nhật)</string>
+    <string name="opening_time_8">5:00 Sáng - 11:30 Sáng / 2:00 Chiều - 7:30 Tối</string>
+    <string name="opening_time_9">7:00 Tối Thứ Sáu - Nửa đêm Chủ Nhật.</string>
+    <string name="opening_time_10">8:30 Sáng - 2:30 Chiều / 5:00 Chiều - 8:30 Tối</string>
+    <string name="opening_time_11">8:00 Sáng - 10:00 Tối</string>
+    <string name="opening_time_12">Mở cửa 24/7</string>
+    <string name="opening_time_13">8:00 Sáng - 7:00 Tối</string>
+    <string name="opening_time_14">7:30 Sáng - 5:00 Chiều</string>
+
+    <!-- Ticket Prices -->
+    <string name="ticket_price_1">80.000 VNĐ</string>
+    <string name="ticket_price_2">40.000 VNĐ</string>
+    <string name="ticket_price_3">90.000 - 110.000 VNĐ</string>
+    <string name="ticket_price_4">60.000 VNĐ</string>
+    <string name="ticket_price_5">28.000 - 78.000 VNĐ</string>
+    <string name="ticket_price_6">50.000 VNĐ</string>
+    <string name="ticket_price_7">25.000 VNĐ</string>
+    <string name="ticket_price_free">Miễn phí</string>
+    <string name="ticket_price_8">130.000 VNĐ</string>
+    <string name="ticket_price_9">650.000 - 1.050.000 VNĐ (Bao gồm cáp treo)</string>
+    <string name="ticket_price_10">Vào cửa miễn phí</string>
+    <string name="ticket_price_11">Vé vào cửa đã bao gồm trong vé tham quan Sun World Bà Nà Hills</string>
+    <string name="ticket_price_12">150.000 VNĐ</string>
+    <string name="ticket_price_13">65.000 VNĐ</string>
+
+    <!-- Names -->
+    <string name="country_vietnam">Việt Nam</string>
+    <string name="subplace_tip_name">Dinh Độc Lập</string>
+    <string name="subplace_wrm_name">Bảo tàng Chứng tích Chiến tranh</string>
+    <string name="subplace_cuchi_name">Địa đạo Củ Chi</string>
+    <string name="subplace_zoo_name">Thảo Cầm Viên Sài Gòn</string>
+    <string name="subplace_banhmi_name">Bánh Mì Huỳnh Hoa</string>
+    <string name="subplace_hoalo_name">Nhà tù Hỏa Lò</string>
+    <string name="subplace_mausoleum_name">Lăng Chủ tịch Hồ Chí Minh</string>
+    <string name="subplace_stjoseph_name">Nhà thờ Lớn</string>
+    <string name="subplace_hoankiem_name">Phố đi bộ Hồ Gươm</string>
+    <string name="subplace_buncha_name">Bún Chả Hương Liên</string>
+    <string name="subplace_bana_name">Sun World Bà Nà Hills</string>
+    <string name="subplace_sontra_name">Bãi biển Sơn Trà</string>
+    <string name="subplace_golden_name">Cầu Vàng</string>
+    <string name="subplace_citadel_name">Đại Nội Huế</string>
+    <string name="subplace_thienmu_name">Chùa Thiên Mụ</string>
+    <string name="subplace_langco_name">Biển Lăng Cô</string>
+    <string name="subplace_bachma_name">Vườn quốc gia Bạch Mã</string>
 </resources>
+

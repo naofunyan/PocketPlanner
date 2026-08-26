@@ -19,6 +19,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,14 +69,14 @@ fun TransactionHistoryScreen(
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.expense_back_cd),
                             modifier = Modifier.padding(8.dp),
                             tint = MaterialTheme.colorScheme.onSurface // <-- DYNAMIC ICON
                         )
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        "Transaction History",
+                        stringResource(R.string.expense_transaction_history_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground // <-- DYNAMIC TEXT
@@ -88,7 +90,7 @@ fun TransactionHistoryScreen(
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No transactions logged yet.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.expense_no_transactions), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
             LazyColumn(

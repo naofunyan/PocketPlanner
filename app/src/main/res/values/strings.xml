@@ -3,35 +3,815 @@
     <string name="app_name">PocketPlanner</string>
     <string name="default_web_client_id" translatable="false">869852688410-qc61rb1oe9ai4ohhumvvctsrmoqt7f9l.apps.googleusercontent.com</string>
 
-    <!-- NEW SETTINGS SCREEN STRINGS -->
+    <!-- FallAlertScreen -->
+    <string name="fall_alert_warning_icon_desc">Warning</string>
+    <string name="fall_alert_detected_title">Fall detected!</string>
+    <string name="fall_alert_need_help">Do you need help?</string>
+    <string name="fall_alert_notifying">Notifying emergency contacts in...</string>
+    <string name="fall_alert_swipe_cancel">SWIPE TO CANCEL</string>
+    <string name="fall_alert_swipe_sos">SWIPE TO CALL SOS</string>
+    <string name="fall_alert_medical_info_button">MEDICAL INFO</string>
+    <string name="fall_alert_medical_info_title">Medical Info</string>
+    <string name="fall_alert_no_medical_info">No medical info provided.</string>
+    <string name="fall_alert_close">CLOSE</string>
+    <string name="fall_alert_medical_name_prefix">Name: %1$s</string>
+    <string name="fall_alert_medical_dob_prefix">Date of Birth: %1$s</string>
+    <string name="fall_alert_medical_weight_prefix">Weight: %1$s</string>
+    <string name="fall_alert_medical_height_prefix">Height: %1$s</string>
+    <string name="fall_alert_medical_blood_type_prefix">Blood Type: %1$s</string>
+    <string name="fall_alert_medical_allergies_prefix">Allergies: %1$s</string>
+    <string name="fall_alert_medical_conditions_prefix">Medical Conditions: %1$s</string>
+    <string name="fall_alert_medical_medications_prefix">Medications: %1$s</string>
+    <string name="fall_alert_medical_organ_donor_prefix">Organ Donor: %1$s</string>
+    <string name="fall_alert_medical_address_prefix">Address: %1$s</string>
+    <string name="fall_alert_medical_notes_prefix">Notes: %1$s</string>
+    <string name="fall_alert_summary_blood">Blood Type</string>
+    <string name="fall_alert_summary_allergies">Allergies</string>
+    <string name="fall_alert_summary_conditions">Medical Conditions</string>
+    <string name="fall_alert_summary_notes">Notes</string>
+
+    <!-- AuthScreen -->
+    <string name="auth_logo_desc">Logo Desc</string>
+    <string name="auth_sign_in_title">Sign in to your account</string>
+    <string name="auth_sign_up_title">Sign up</string>
+    <string name="auth_sign_in_subtitle">Enter your email and password to sign in</string>
+    <string name="auth_sign_up_subtitle">Create an account to continue</string>
+    <string name="auth_tab_login">Log in</string>
+    <string name="auth_tab_signup">Sign up</string>
+    <string name="auth_field_username">Username</string>
+    <string name="auth_field_email">Email</string>
+    <string name="auth_field_password">Password</string>
+    <string name="auth_forgot_password">Forgot password?</string>
+    <string name="auth_or_divider">Or</string>
+    <string name="auth_google_error">Google sign-in failed or was canceled</string>
+    <string name="auth_google_logo_desc">Google logo</string>
+    <string name="auth_continue_google">Continue with Google</string>
+    <string name="auth_continue_guest">Continue as guest</string>
+    <string name="auth_guest_login_desc">Guest login</string>
+    <string name="auth_hide_password">Hide password</string>
+    <string name="auth_show_password">Show password</string>
+
+    <!-- AuthViewModel -->
+    <string name="auth_error_login_failed">Login failed</string>
+    <string name="auth_error_google_failed">Google sign-in failed</string>
+    <string name="auth_error_username_invalid">Username can only contain letters and numbers.</string>
+    <string name="auth_error_password_invalid">Password must be at least 8 characters long and contain at least one number.</string>
+    <string name="auth_error_email_empty">Email cannot be empty.</string>
+    <string name="auth_error_registration_failed">Sign-up failed</string>
+    <string name="auth_error_reset_email_empty">Please enter your email address first.</string>
+    <string name="auth_success_reset_email_sent">Password reset email sent! Please check your inbox.</string>
+    <string name="auth_error_reset_failed">Failed to send password reset email.</string>
+
+    <!-- WelcomeScreen -->
+    <string name="ws_bg_desc">Welcome screen background</string>
+    <string name="ws_logo_desc">App logo</string>
+    <string name="ws_title">Welcome to\nPocketPlanner</string>
+    <string name="ws_subtitle">Plan. Track. Explore. PocketPlanner is the ultimate AI-powered toolkit for your next adventure. Spend less time organizing and more time experiencing, and travel with peace of mind.</string>
+    <string name="ws_get_started">Get started</string>
+    <string name="ws_forward_arrow_desc">Forward arrow</string>
+    <string name="ws_photo_credit">Photo by Daniel Burka on Unsplash</string>
+    <string name="ws_language_cd">Language</string>
+    <string name="ws_lang_en">English (EN)</string>
+    <string name="ws_lang_vi">Vietnamese (VI)</string>
+
+    <!-- InterpreterScreen -->
+    <string name="interpreter_lang_vi">Vietnamese</string>
+    <string name="interpreter_lang_en">English</string>
+    <string name="interpreter_lang_unknown">Unknown</string>
+    <string name="interpreter_rotate_cd">Rotate screen</string>
+    <string name="interpreter_history_cd">History</string>
+    <string name="interpreter_offline_mode">Offline mode</string>
+    <string name="interpreter_history_title">Translation history</string>
+    <string name="interpreter_history_empty">No history yet.</string>
+    <string name="interpreter_my_language">My language</string>
+    <string name="interpreter_other_language">Other person\'s language</string>
+    <string name="interpreter_replay_cd">Replay</string>
+    <string name="interpreter_mute_cd">Mute/unmute</string>
+    <string name="interpreter_select_lang_cd">Select language</string>
+    <string name="interpreter_speak_cd">Speak</string>
+    <!-- InterpreterViewModel -->
+    <string name="interpreter_voice_input">(Voice input)</string>
+
+    <!-- LiveVoiceScreen -->
+    <string name="live_voice_flip_camera_cd">Flip camera</string>
+    <string name="live_voice_turn_camera_on_cd">Turn camera on</string>
+    <string name="live_voice_turn_camera_off_cd">Turn camera off</string>
+    <string name="live_voice_unmute_cd">Unmute</string>
+    <string name="live_voice_mute_cd">Mute</string>
+    <string name="live_voice_connecting">Connecting...</string>
+    <!-- LiveVoiceViewModel -->
+    <string name="live_voice_error_timeout">Connection timed out. Please check your network and try again.</string>
+    <string name="live_voice_error_connection_failed">Connection failed</string>
+    <string name="live_voice_error_server_closed">Server closed the connection (code: %1$d). The model may be unavailable.</string>
+    <string name="live_voice_error_auth_failed">Authentication failed</string>
+
+    <!-- TranslateScreen -->
+    <string name="translate_captured_image_cd">Captured image</string>
+    <string name="translate_back_cd">Back</string>
+    <string name="translate_auto">Auto</string>
+    <string name="translate_unknown">Unknown</string>
+    <string name="translate_gallery_cd">Gallery</string>
+    <string name="translate_capture_cd">Capture</string>
+    <string name="translate_toast_copied_all">All text copied</string>
+    <string name="translate_btn_select_all">Select all</string>
+    <string name="translate_btn_listen">Listen</string>
+    <string name="translate_camera_permission_required">Camera permission is required.</string>
+    <string name="translate_btn_grant_permission">Grant permission</string>
+    <string name="translate_from_title">Translate from</string>
+    <string name="translate_to_title">Translate to</string>
+    <string name="translate_search_placeholder">Search languages...</string>
+    <string name="translate_search_cd">Search</string>
+
+    <!-- AiHubScreen -->
+    <string name="ai_hub_tab_chat">Chat</string>
+    <string name="ai_hub_tab_live">Live</string>
+    <string name="ai_hub_tab_translate">Translate</string>
+    <string name="ai_hub_tab_interpreter">Interpreter</string>
+    <string name="ai_hub_swipe_hint">Swipe to see more AI tools ➔</string>
+
+    <!-- ChatScreen -->
+    <string name="chat_title">AI Assistant</string>
+    <string name="chat_back_cd">Back</string>
+    <string name="chat_attached_image_cd">Attached image</string>
+    <string name="chat_remove_image_cd">Remove image</string>
+    <string name="chat_gallery_cd">Gallery</string>
+    <string name="chat_camera_cd">Camera</string>
+    <string name="chat_ask_anything_placeholder">Ask anything...</string>
+    <string name="chat_send_cd">Send</string>
+    <string name="chat_speak_now_prompt">Speak now...</string>
+    <string name="chat_speech_not_available_toast">Speech recognition not available</string>
+    <string name="chat_voice_input_cd">Voice input</string>
+    <string name="chat_message_copied_toast">Message copied</string>
+    <string name="chat_message_image_cd">Message image</string>
+
+    <!-- OfflineBannerWrapper -->
+    <string name="offline_banner_cd">Offline</string>
+    <string name="offline_banner_message">You are currently offline. Changes will sync later.</string>
+
+    <!-- ExpenseComponents -->
+    <string name="expense_total_spent">TOTAL SPENT</string>
+    <string name="expense_budget_used_format">%1$s budget used</string>
+    <string name="expense_categories_title">Categories</string>
+    <string name="expense_transactions_title">Transactions</string>
+    <string name="expense_no_transactions">No transactions logged yet.</string>
+    <string name="expense_view_more">View More Transactions</string>
+    <string name="expense_delete_title">Delete Expense</string>
+    <string name="expense_delete_message">Are you sure you want to delete \'%1$s\'? This action cannot be undone.</string>
+    <string name="expense_delete_confirm">Delete</string>
+    <string name="expense_delete_cancel">Cancel</string>
+    <string name="category_food">Food</string>
+    <string name="category_shopping">Shopping</string>
+    <string name="category_groceries">Groceries</string>
+    <string name="category_transport">Transport</string>
+    <string name="category_lodging">Lodging</string>
+    <string name="category_gaming">Gaming</string>
+    <string name="category_books">Books</string>
+    <string name="category_bills">Bills</string>
+
+    <!-- ExpenseScreen -->
+    <string name="expense_add_fab_cd">Add Expense</string>
+    <string name="expense_trip_to">Trip to %1$s</string>
+    <string name="expense_loading">Loading...</string>
+    <string name="expense_ongoing">Ongoing</string>
+    <string name="expense_duration_format">%1$s - %2$s • %3$d Days</string>
+    <string name="expense_back_cd">Back</string>
+    <string name="expense_nav_plan">Plan</string>
+    <string name="expense_nav_expense">Expense</string>
+    <string name="expense_add_title">Add Expense</string>
+    <string name="expense_amount_label">AMOUNT</string>
+    <string name="expense_category_label">Category</string>
+    <string name="expense_date_label">Date</string>
+    <string name="expense_receipt_label">Receipt / Photo</string>
+    <string name="expense_tap_upload">Tap to upload receipt</string>
+    <string name="expense_upload_autofill_hint">Upload receipt to autofill with AI</string>
+    <string name="expense_receipt_cd">Receipt</string>
+    <string name="expense_remove_cd">Remove</string>
+    <string name="expense_scanning">Scanning receipt...</string>
+    <string name="expense_scanning_btn">Scanning...</string>
+    <string name="expense_autofill_btn">Autofill with AI</string>
+    <string name="expense_notes_label">Notes (Optional)</string>
+    <string name="expense_notes_placeholder">Add any extra details here...</string>
+    <string name="expense_save_btn">Save Expense</string>
+    <string name="expense_ok">OK</string>
+    <string name="expense_cancel">Cancel</string>
+    <string name="expense_upload_receipt_title">Upload Receipt</string>
+    <string name="expense_choose_gallery">Choose from Gallery</string>
+    <string name="expense_take_photo">Take a Photo</string>
+    <string name="expense_scan_failed">Receipt analysis failed. Please try again.</string>
+
+    <!-- GlobalWalletScreen -->
+    <string name="wallet_add_ticket_cd">Add Ticket</string>
+    <string name="wallet_no_trips">No Trips</string>
+    <string name="wallet_select_trip">Select a Trip</string>
+    <string name="wallet_select_trip_cd">Select Trip</string>
+    <string name="wallet_my_tickets">My Tickets</string>
+    <string name="wallet_trip_selected_cd">Selected</string>
+    <string name="wallet_nav_ticket">Ticket</string>
+    <string name="wallet_empty_state_has_trips">No active trips. Select a trip to view expenses.</string>
+    <string name="wallet_empty_state_no_trips">Create a trip to start tracking expenses.</string>
+
+    <!-- TicketComponents -->
+    <string name="ticket_search_hint">Search tickets...</string>
+    <string name="ticket_search_cd">Search</string>
+    <string name="ticket_clear_cd">Clear</string>
+    <string name="ticket_filter_all">All</string>
+    <string name="ticket_filter_general">General</string>
+    <string name="ticket_image_cd">Ticket image</string>
+    <string name="ticket_status_today">Today</string>
+    <string name="ticket_status_tomorrow">Tomorrow</string>
+    <string name="ticket_status_upcoming">In %d days</string>
+    <string name="ticket_status_expired">Expired</string>
+    <string name="ticket_conf_prefix">Conf: %s</string>
+    <string name="ticket_qr_prefix">QR: %s</string>
+    <string name="ticket_delete_title">Delete Ticket</string>
+    <string name="ticket_delete_message">Are you sure you want to delete \"%s\"?</string>
+    <string name="ticket_empty_title">Add your first ticket!</string>
+    <string name="ticket_empty_subtitle">Tap + to scan a boarding pass, event ticket, or hotel booking.</string>
+    <string name="ticket_add_title">Add Ticket</string>
+    <string name="ticket_image_label">TICKET IMAGE</string>
+    <string name="ticket_tap_capture">Tap to capture or import ticket</string>
+    <string name="ticket_qr_preserved">QR codes will be preserved in original quality</string>
+    <string name="ticket_remove_cd">Remove</string>
+    <string name="ticket_scanning">Scanning...</string>
+    <string name="ticket_scan_ocr">Scan Ticket (OCR)</string>
+    <string name="ticket_scanned_success">Scanned! Fields auto-filled below.</string>
+    <string name="ticket_title_label">Title</string>
+    <string name="ticket_title_hint">e.g. Vietnam Airlines VN123</string>
+    <string name="ticket_type_label">Type</string>
+    <string name="ticket_date_label">Date</string>
+    <string name="ticket_conf_label">Confirmation Code (Optional)</string>
+    <string name="ticket_conf_hint">e.g. ABC123</string>
+    <string name="ticket_link_trip_label">Link to Trip (Optional)</string>
+    <string name="ticket_trip_none">None</string>
+    <string name="ticket_notes_label">Notes (Optional)</string>
+    <string name="ticket_notes_hint">Add any extra details...</string>
+    <string name="ticket_save_btn">Save Ticket</string>
+    <string name="ticket_upload_title">Add Ticket Image</string>
+    <string name="ticket_full_view_cd">Ticket full view</string>
+    <string name="ticket_close_cd">Close</string>
+    <string name="ticket_viewer_conf">Confirmation: %s</string>
+    <string name="ticket_backup_qr_cd">Backup QR Code</string>
+    <string name="ticket_hide_qr">Hide QR</string>
+    <string name="ticket_show_qr">Show Backup QR</string>
+    <string name="ticket_untitled">Untitled Ticket</string>
+    <string name="ticket_type_flight">Flight</string>
+    <string name="ticket_type_hotel">Hotel</string>
+    <string name="ticket_type_event">Event</string>
+    <string name="ticket_type_train">Train</string>
+    <string name="ticket_type_bus">Bus</string>
+    <string name="ticket_type_other">Other</string>
+
+    <!-- TransactionHistoryScreen -->
+    <string name="expense_transaction_history_title">Transaction History</string>
+
+    <!-- ExploreDetailsScreen -->
+    <string name="explore_bookmark_cd">Bookmark</string>
+    <string name="explore_places_title">Places</string>
+    <string name="explore_see_all">See all</string>
+    <string name="explore_create_trip">Create a new trip</string>
+
+    <!-- ExploreScreen -->
+    <string name="explore_saved_destination">Saved destination</string>
+    <string name="explore_global">Global</string>
+    <string name="explore_no_saved">No saved destinations yet.</string>
+    <string name="explore_view_cd">View</string>
+    <string name="explore_tab_discover">Discover</string>
+    <string name="explore_tab_saved">Saved</string>
+    <string name="explore_browse_theme">Browse by travel theme</string>
+    <string name="explore_search_cd">Search</string>
+    <string name="explore_search_hint">Search destinations...</string>
+    <string name="explore_go_cd">Go</string>
+    <string name="explore_for_you">For you</string>
+    <string name="explore_no_destinations">No destinations found.</string>
+    <string name="explore_places_count">%d Places</string>
+    <string name="explore_under_radar">Under the radar</string>
+    <string name="explore_no_hidden_gems">No hidden gems found.</string>
+    <string name="explore_search_results">Search Results</string>
+    <string name="explore_no_search_results">No destinations found for \"%s\".</string>
+    <string name="explore_category_nature">Nature</string>
+    <string name="explore_category_culture">Culture</string>
+    <string name="explore_category_food">Food</string>
+    <string name="explore_category_city">City</string>
+    <string name="explore_category_beach">Beach</string>
+
+    <!-- ImmersiveExperienceScreen -->
+    <string name="explore_immersive_title">Absolute Experience</string>
+    <string name="explore_immersive_back">Back</string>
+    <string name="explore_immersive_static_map">Static Map</string>
+    <string name="explore_immersive_reload">Reload</string>
+    <string name="explore_immersive_fullscreen">Fullscreen</string>
+    <string name="explore_immersive_exit_fullscreen">Exit Fullscreen</string>
+    <string name="explore_immersive_audio_guide">Audio guide</string>
+    <string name="explore_immersive_no_audio">Audio Guide is not supported for this location.</string>
+    <string name="explore_immersive_prev_track">Previous Track</string>
+    <string name="explore_immersive_rewind">Rewind 10s</string>
+    <string name="explore_immersive_play_pause">Play/Pause</string>
+    <string name="explore_immersive_forward">Forward 10s</string>
+    <string name="explore_immersive_next_track">Next Track</string>
+    <string name="explore_immersive_playing">Playing</string>
+    <string name="explore_immersive_play">Play</string>
+    <string name="explore_immersive_tab_360vr">360 VR</string>
+    <string name="explore_immersive_tab_map1">Map 1</string>
+    <string name="explore_immersive_tab_map2">Map 2</string>
+    <string name="wrm_1_title">1. Introduction</string>
+    <string name="wrm_1_subtitle">Overview of the museum</string>
+    <string name="wrm_2_title">2. Tiger Cage System</string>
+    <string name="wrm_2_subtitle">Reconstructed prison cells</string>
+    <string name="wrm_3_title">3. Guillotine</string>
+    <string name="wrm_3_subtitle">French colonial execution tool</string>
+    <string name="wrm_4_title">4. Agent Orange</string>
+    <string name="wrm_4_subtitle">Impact of chemical warfare</string>
+    <string name="wrm_5_title">5. Son My Massacre</string>
+    <string name="wrm_5_subtitle">The My Lai tragedy</string>
+    <string name="tip_1_title">1. Architecture of the Independence Palace</string>
+    <string name="tip_1_subtitle">Introduction to Architecture</string>
+    <string name="tip_2_title">2. Outside Architecture</string>
+    <string name="tip_2_subtitle">Exterior design</string>
+    <string name="tip_3_title">3. Inside Architecture</string>
+    <string name="tip_3_subtitle">Interior design</string>
+    <string name="tip_4_title">4. Conference Hall</string>
+    <string name="tip_4_subtitle">Main meeting hall</string>
+    <string name="tip_5_title">5. Cabinet Room</string>
+    <string name="tip_5_subtitle">Government meetings</string>
+    <string name="tip_6_title">6. State Banqueting Hall</string>
+    <string name="tip_6_subtitle">Official dinners</string>
+    <string name="tip_7_title">7. Ambassador\'s Chamber</string>
+    <string name="tip_7_subtitle">Diplomatic reception</string>
+    <string name="tip_8_title">8. Presidential Office</string>
+    <string name="tip_8_subtitle">Working space</string>
+    <string name="tip_9_title">9. Vice President\'s Office</string>
+    <string name="tip_9_subtitle">Working space</string>
+    <string name="tip_10_title">10. Presidential Reception Rooms</string>
+    <string name="tip_10_subtitle">Receiving guests</string>
+    <string name="tip_11_title">11. Central Staircase</string>
+    <string name="tip_11_subtitle">Main staircase</string>
+    <string name="tip_12_title">12. Rooftop</string>
+    <string name="tip_12_subtitle">Heliport &amp; views</string>
+    <string name="tip_13_title">13. Bunker</string>
+    <string name="tip_13_subtitle">Underground command center</string>
+
+    <!-- PlaceDetailsScreen -->
+    <string name="place_details_fallback_subtitle">Discover %1$s</string>
+    <string name="place_details_fallback_desc">No description available yet.</string>
+    <string name="place_details_fallback_country">Global</string>
+    <string name="place_details_fallback_time">Check local times</string>
+    <string name="place_details_fallback_price">Varies</string>
+    <string name="place_details_fallback_theme">Saved</string>
+    <string name="place_details_back_cd">Back</string>
+    <string name="place_details_bookmark_cd">Bookmark</string>
+    <string name="place_details_immersive">Absolute Experience</string>
+    <string name="place_details_add_to_which_trip">Add to which trip?</string>
+    <string name="place_details_no_trips">You don\'t have any upcoming trips yet.</string>
+    <string name="place_details_select_day">Select Day</string>
+    <string name="place_details_added_snackbar">Added to %1$s, Day %2$d</string>
+    <string name="place_details_view_action">View</string>
+    <string name="place_details_day_format">Day %1$d - %2$s</string>
+    <string name="place_details_add_to_plan">Add to plan</string>
+    <string name="place_details_time_cd">Time</string>
+    <string name="place_details_opening_hours">Opening Hours</string>
+    <string name="place_details_price_cd">Price</string>
+    <string name="place_details_price">Price</string>
+
+    <!-- CreateTripDetailsScreen -->
+    <string name="create_trip_set_datetime">Set date &amp; time</string>
+    <string name="create_trip_optional">Optional</string>
+    <string name="create_trip_edit_title">Edit trip</string>
+    <string name="create_trip_new_title">New trip</string>
+    <string name="create_trip_back_cd">Back</string>
+    <string name="create_trip_default_name">Trip to %1$s</string>
+    <string name="create_trip_saving">Saving Settings...</string>
+    <string name="create_trip_generating">Generating Trip...</string>
+    <string name="create_trip_save_settings">Save Settings</string>
+    <string name="create_trip_create_ai">Create Trip with AI</string>
+    <string name="create_trip_cover_cd">Cover Image</string>
+    <string name="create_trip_change_cover">Change Cover</string>
+    <string name="create_trip_name_placeholder">Name your trip</string>
+    <string name="create_trip_dates">Trip dates</string>
+    <string name="create_trip_start_date">Start date</string>
+    <string name="create_trip_to_cd">To</string>
+    <string name="create_trip_end_date">End date</string>
+    <string name="create_trip_warning_cd">Warning</string>
+    <string name="create_trip_overlap_warning">Warning: This trip overlaps with your existing trip \"%1$s\".</string>
+    <string name="create_trip_budget_placeholder">Budget (Optional)</string>
+    <string name="create_trip_budget_cd">Budget</string>
+    <string name="create_trip_select_curr_cd">Select Currency</string>
+    <string name="create_trip_next">Next</string>
+    <string name="create_trip_cancel">Cancel</string>
+    <string name="create_trip_ok">OK</string>
+    <string name="create_trip_select_start_date">Select Start Date</string>
+    <string name="create_trip_select_start_time">Select Start Time</string>
+    <string name="create_trip_select_end_date">Select End Date</string>
+    <string name="create_trip_select_end_time">Select End Time</string>
+
+    <!-- DayPlanScreen -->
+    <string name="day_plan_title">Day %1$d</string>
+    <string name="day_plan_back_cd">Back</string>
+    <string name="day_plan_loading">Loading places from AI...</string>
+
+    <!-- ImportTripScreen -->
+    <string name="import_trip_importing">Importing Trip...</string>
+    <string name="import_trip_wait_msg">Please wait while we download the itinerary details.</string>
+    <string name="import_trip_error_cd">Error</string>
+    <string name="import_trip_failed_title">Failed to Import Trip</string>
+    <string name="import_trip_unknown_error">Unknown error</string>
+    <string name="import_trip_go_home">Go Home</string>
+
+    <!-- ItineraryScreen -->
+    <string name="itinerary_calendar_cd">Calendar</string>
+    <string name="itinerary_optimize_route">Optimize Route</string>
+    <string name="itinerary_no_places">No places added for this day yet.</string>
+    <string name="itinerary_visited_cd">Visited</string>
+    <string name="itinerary_drive_cd">Drive</string>
+    <string name="itinerary_walk_cd">Walk</string>
+    <string name="itinerary_calculating">Calculating...</string>
+    <string name="itinerary_transit_format">%1$d mins • %2$s km / %3$s mi</string>
+    <string name="itinerary_directions_arrow">Directions &gt;</string>
+    <string name="itinerary_back_cd">Back</string>
+    <string name="itinerary_plan">Plan</string>
+    <string name="itinerary_expense">Expense</string>
+    <string name="itinerary_add_place_cd">Add Place</string>
+    <string name="itinerary_add_place_title">Add a Place</string>
+    <string name="itinerary_enter_place_name">Enter a place name...</string>
+    <string name="itinerary_suggest_random">Suggest a Random Place</string>
+    <string name="itinerary_gemini_locate">Can\'t find it? Let Gemini locate it</string>
+    <string name="itinerary_rearrange">Rearrange</string>
+    <string name="itinerary_move_day">Move to another day</string>
+    <string name="itinerary_remove_place">Remove Place</string>
+    <string name="itinerary_select_day">Select Day</string>
+    <string name="itinerary_current_day_indicator">(Current)</string>
+    <string name="itinerary_done">Done</string>
+    <string name="itinerary_days_tab">Days</string>
+    <string name="itinerary_places_tab">Places</string>
+    <string name="itinerary_up_cd">Up</string>
+    <string name="itinerary_down_cd">Down</string>
+    <string name="itinerary_day_format">Day %1$d - %2$s</string>
+    <string name="itinerary_share_cd">Share</string>
+    <string name="itinerary_hours_cd">Hours</string>
+    <string name="itinerary_hours">Hours</string>
+    <string name="itinerary_price_cd">Price</string>
+    <string name="itinerary_price">Price</string>
+    <string name="itinerary_about">About</string>
+    <string name="itinerary_tip_cd">Tip</string>
+    <string name="itinerary_local_tip">Local Tip</string>
+    <string name="itinerary_map_cd">Map</string>
+    <string name="itinerary_map_placeholder_cd">Map Placeholder</string>
+    <string name="itinerary_directions">Directions</string>
+    <string name="itinerary_trip_dates">Trip dates</string>
+    <string name="itinerary_prev_cd">Previous</string>
+    <string name="itinerary_next_cd">Next</string>
+
+    <!-- ItineraryViewModel -->
+    <string name="weather_clear">clear skies</string>
+    <string name="weather_cloudy">partly cloudy</string>
+    <string name="weather_foggy">foggy</string>
+    <string name="weather_drizzling">drizzling</string>
+    <string name="weather_raining">raining</string>
+    <string name="weather_snowing">snowing</string>
+    <string name="weather_thunderstorms">thunderstorms</string>
+    <string name="weather_variable">variable</string>
+
+    <!-- TripsScreen -->
+    <string name="trips_good_morning">Good morning</string>
+    <string name="trips_good_afternoon">Good afternoon</string>
+    <string name="trips_good_evening">Good evening</string>
+    <string name="trips_no_upcoming">You have no upcoming trips planned yet.</string>
+    <string name="trips_happening_now">Your trip to %1$s is happening right now!</string>
+    <string name="trips_begins_in">Your trip to %1$s will begin in %2$s.</string>
+    <string name="trips_days">%02d days</string>
+    <string name="trips_hours">%02d hours</string>
+    <string name="trips_minutes">%02d minutes</string>
+    <string name="trips_seconds">%02d seconds</string>
+    <string name="trips_fetching_weather">Fetching local weather...</string>
+    <string name="trips_weather_info">The weather in %1$s is %2$d°C / %3$d°F, and will be %4$s.</string>
+    <string name="trips_weather_error">Weather data unavailable.</string>
+    <string name="trips_add_trip">Add a trip</string>
+    <string name="trips_travel_stats">Travel stats</string>
+    <string name="trips_kick_things_off">Kick things off by adding a future adventure</string>
+    <string name="trips_active">Active Trips</string>
+    <string name="trips_upcoming">Upcoming Trips</string>
+    <string name="trips_past">Past Trips</string>
+    <string name="trips_ai_planning">AI is planning your trip...</string>
+    <string name="trips_ai_wait">This usually takes a few seconds.</string>
+    <string name="trips_settings">Trip Settings</string>
+    <string name="trips_share">Share Trip</string>
+    <string name="trips_share_message">✈️ Check out my trip to %1$s!\n\nImport it directly into PocketPlanner:\n%2$s</string>
+    <string name="trips_delete">Delete Trip</string>
+    <string name="trips_delete_confirm_title">Delete Trip?</string>
+    <string name="trips_delete_confirm_desc1">Are you sure you want to delete this trip?</string>
+    <string name="trips_delete_confirm_desc2">All the steps for the trip, including pictures, locations, and text updates will be permanently deleted.</string>
+    <string name="trips_delete_btn">Delete</string>
+    <string name="trips_cancel_btn">Cancel</string>
+    <string name="trips_now_travelling">#now_travelling</string>
+    <string name="trips_ongoing">Ongoing</string>
+    <string name="trips_day_n">Day %1$d</string>
+    <string name="trips_days_label">DAYS</string>
+    <string name="trips_explorer">Explorer</string>
+
+    <!-- FallDetectionService -->
+    <string name="fall_detection_service_title">Safety Guard Active</string>
+    <string name="fall_detection_service_desc">Monitoring for falls in the background.</string>
+    <string name="fall_detection_channel_name">Fall Detection Service</string>
+    <string name="fall_alarm_channel_name">Emergency Fall Alerts</string>
+    <string name="fall_alarm_channel_desc">Triggers the full-screen emergency countdown</string>
+
+    <!-- MainScreen -->
+    <string name="nav_home">Home</string>
+    <string name="nav_explore">Explore</string>
+    <string name="nav_wallet">Wallet</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_ai_call_cd">AI</string>
+
+    <!-- SearchScreen -->
+    <string name="search_new_trip">New trip</string>
+    <string name="search_back_cd">Back</string>
+    <string name="search_continue">Continue</string>
+    <string name="search_where_going">Where are you going?</string>
+    <string name="search_search_cd">Search</string>
+    <string name="search_for_destinations">Search for destinations</string>
+    <string name="search_add_dest_desc">Add the destinations you want to visit.\nYou can always add more later.</string>
+    <string name="search_remove_cd">Remove</string>
+    <string name="search_clear_cd">Clear</string>
+
+    <!-- EmergencySharingScreen -->
+    <string name="emergency_toast_no_phone">Unable to get phone number</string>
+    <string name="emergency_toast_camera_permission">Camera permission is required for this feature</string>
+    <string name="emergency_toast_mic_permission">Microphone permission is required for this feature</string>
+    <string name="emergency_sharing_title">Emergency Sharing</string>
+    <string name="emergency_cd_more_options">More options</string>
+    <string name="emergency_sharing_desc1">Share your location and other info with your emergency contacts so they know you need help.</string>
+    <string name="emergency_sharing_desc2">※ Messages won\'t be sent if you have reached the messaging limit in your country or region.</string>
+    <string name="emergency_share_with_label">Share with</string>
+    <string name="emergency_contacts_title">Emergency contacts</string>
+    <string name="emergency_add_button">Add</string>
+    <string name="emergency_no_contacts">No contacts yet.</string>
+    <string name="emergency_unknown_contact">Unknown</string>
+    <string name="emergency_cd_remove_contact">Remove contact</string>
+    <string name="emergency_share_surroundings_label">Share surroundings</string>
+    <string name="emergency_attach_pictures">Attach photos</string>
+    <string name="emergency_attach_pictures_desc">Take photos using the front and rear cameras to attach to your message.</string>
+    <string name="emergency_attach_audio">Attach audio recording</string>
+    <string name="emergency_attach_audio_desc">Record a 5-second audio clip and attach it to your message.</string>
+
+    <!-- FallDetectionSettingsScreen -->
+    <string name="fall_detection_title">Hard fall detection</string>
+    <string name="fall_detection_on">On</string>
+    <string name="fall_detection_off">Off</string>
+    <string name="fall_detection_info_1">After a fall, your phone will sound an alarm for 30 seconds with a full-screen alert and strong vibration. You can cancel the alarm or swipe to send an SOS message immediately.</string>
+    <string name="fall_detection_info_2">If you don\'t respond within 30 seconds, an SOS message containing your current location will be sent to your emergency contacts.</string>
+    <string name="fall_detection_high_sensitivity">High sensitivity</string>
+    <string name="fall_detection_high_sensitivity_desc">Detects more falls, but sudden movements or dropping your phone may trigger false alarms. Best suited for people with a high risk of falling.</string>
+    <string name="fall_detection_emergency_number">Emergency number to call</string>
+    <string name="fall_detection_send_sos">Send SOS to emergency contacts</string>
+    <string name="fall_detection_send_sos_desc">Send your location and an SOS message to your emergency contacts.</string>
+    <string name="fall_detection_emergency_sharing_settings">Emergency sharing settings</string>
+    <string name="fall_detection_dialog_title">Emergency number</string>
+    <string name="fall_detection_dialog_label">Number to call</string>
+    <string name="fall_detection_dialog_revert">Reset to default (113)</string>
+    <string name="fall_detection_dialog_save">Save</string>
+    <string name="fall_detection_dialog_cancel">Cancel</string>
+
+    <!-- MedicalInfoScreen -->
+    <string name="medical_info_title">Medical info</string>
+    <string name="medical_info_desc">Record your allergies, current medications, and other medical info so it\'s always available in an emergency.</string>
+    <string name="medical_not_set">Not set</string>
+    <string name="medical_yes">Yes</string>
+    <string name="medical_no">No</string>
+    <string name="medical_name">Name</string>
+    <string name="medical_name_hint">Enter your name</string>
+    <string name="medical_conditions">Medical conditions</string>
+    <string name="medical_conditions_hint">List medical conditions</string>
+    <string name="medical_blood_type">Blood type</string>
+    <string name="medical_blood_type_hint">Tap to select blood type</string>
+    <string name="medical_allergies">Allergies</string>
+    <string name="medical_allergies_hint">List your allergies</string>
+    <string name="medical_medications">Medications</string>
+    <string name="medical_medications_hint">List current medications</string>
+    <string name="medical_weight">Weight</string>
+    <string name="medical_weight_hint">Tap to set weight</string>
+    <string name="medical_height">Height</string>
+    <string name="medical_height_hint">Tap to set height</string>
+    <string name="medical_dob">Date of birth</string>
+    <string name="medical_dob_hint">Tap to select date</string>
+    <string name="medical_address">Address</string>
+    <string name="medical_address_hint">Enter your address</string>
+    <string name="medical_organ_donor">Organ donor</string>
+    <string name="medical_organ_donor_hint">Tap to select status</string>
+    <string name="medical_notes">Medical notes</string>
+    <string name="medical_notes_hint">Enter other important info</string>
+    <string name="medical_share">Share with emergency contacts</string>
+    <string name="medical_share_desc">Attach medical info to automated SOS messages sent to your emergency contacts.</string>
+    <string name="medical_enter_details">Enter details</string>
+    <string name="medical_dialog_save">Save</string>
+    <string name="medical_dialog_cancel">Cancel</string>
+    <string name="medical_dialog_ok">OK</string>
+    <string name="medical_dialog_done">Done</string>
+    <string name="medical_set_weight">Set weight</string>
+    <string name="medical_set_height">Set height</string>
+
+    <!-- SettingsScreen -->
     <string name="settings_title">Settings</string>
     <string name="settings_not_logged_in">Not logged in</string>
-
-    <string name="settings_safety_emergency">Safety &amp; Emergency</string>
-    <string name="settings_fall_detection">Fall Detection</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_vietnamese">Vietnamese</string>
+    <string name="settings_permission_notification">Notification permission is required to receive alerts.</string>
+    <string name="settings_permission_location">Location permission is required to use AI features.</string>
+    <string name="settings_cd_back">Back</string>
+    <string name="settings_cd_profile_picture">Profile picture</string>
+    <string name="settings_medical_info">Medical info</string>
+    <string name="settings_location_context">Location</string>
+    <string name="settings_location_context_desc">Allow AI to know your current location. Minimal battery usage.</string>
+    <string name="settings_cd_more_options">More options</string>
+    <string name="settings_cd_selected">Selected</string>
+    <string name="settings_safety_emergency">Safety &amp; emergency</string>
+    <string name="settings_fall_detection">Fall detection</string>
     <string name="settings_fall_detection_desc">Trigger SOS on hard falls</string>
     <string name="settings_emergency_sos">Emergency SOS</string>
     <string name="settings_emergency_sos_desc">Manage emergency contacts</string>
-
     <string name="settings_preferences">Preferences</string>
     <string name="settings_language">Language</string>
-    <string name="settings_language_current">English</string>
-    <string name="settings_app_theme">App Theme</string>
-    <string name="settings_theme_system_default">System Default</string>
+    <string name="settings_language_current">Vietnamese</string>
+    <string name="settings_app_theme">Theme</string>
+    <string name="settings_theme_system_default">System default</string>
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
     <string name="settings_notifications">Notifications</string>
     <string name="settings_notifications_desc">Trip reminders and alerts</string>
-
     <string name="settings_support">Support</string>
-    <string name="settings_help_center">Help Center</string>
-    <string name="settings_privacy_policy">Privacy Policy</string>
-
+    <string name="settings_help_center">Help center</string>
+    <string name="settings_privacy_policy">Privacy policy</string>
     <string name="settings_account">Account</string>
-    <string name="settings_log_out">Log Out</string>
-    <string name="settings_logout_confirm_message">Are you sure you want to log out of your account?</string>
-    <string name="settings_delete_account">Delete Account</string>
-    <string name="settings_delete_confirm_message">This action cannot be undone. All of your trips, expenses, and personal data will be permanently removed.</string>
-    <string name="settings_delete_forever">Delete Forever</string>
+    <string name="settings_log_out">Log out</string>
+    <string name="settings_logout_confirm_message">Are you sure you want to log out?</string>
+    <string name="settings_delete_account">Delete account</string>
+    <string name="settings_delete_confirm_message">Everything will be deleted. Are you sure?</string>
+    <string name="settings_delete_forever">Delete forever</string>
     <string name="settings_version">Version 1.0.0</string>
+
+    <!-- SettingsViewModel -->
+    <string name="settings_error_upload_failed">Image upload failed. Please try again.</string>
+    <string name="settings_error_no_user">No user logged in.</string>
+    <string name="settings_error_security_delete">Security error: You must log out and log back in before deleting your account.</string>
+
+    <!-- TravelStatsScreen -->
+    <string name="stats_title">Travel Stats</string>
+    <string name="stats_back_cd">Back</string>
+    <string name="stats_lifetime_journey">Your Lifetime Journey</string>
+    <string name="stats_lifetime_desc">A quick look at all the adventures you\'ve tracked with PocketPlanner.</string>
+    <string name="stats_total_trips">Total Trips</string>
+    <string name="stats_trips_subtitle">%1$d Past • %2$d Active/Upcoming</string>
+    <string name="stats_days_on_road">Days on the Road</string>
+    <string name="stats_days_subtitle">Total days spent traveling</string>
+    <string name="stats_unique_destinations">Unique Destinations</string>
+    <string name="stats_unique_subtitle">Places you\'ve explored</string>
+    <string name="stats_places_been">Places you\'ve been:</string>
+
+    <!-- TripSummaryScreen -->
+    <string name="summary_title">Trip Summary</string>
+    <string name="summary_back_cd">Back</string>
+    <string name="summary_share_cd">Share Trip</string>
+    <string name="summary_trip_to">Trip to %1$s</string>
+    <string name="summary_ai_diary">AI Travel Diary</string>
+    <string name="summary_memories_waiting">Your memories are waiting to be written.</string>
+    <string name="summary_failed">Failed: %1$s</string>
+    <string name="summary_writing">Writing...</string>
+    <string name="summary_generate_diary">Generate Diary</string>
+    <string name="summary_financial">Financial Summary</string>
+    <string name="summary_budget">Budget:</string>
+    <string name="summary_total_spent">Total Spent:</string>
+    <string name="summary_export_csv">Export Expenses (CSV)</string>
+    <string name="summary_rate_places">Rate Your Places</string>
+    <string name="summary_trip_published">Trip Published!</string>
+    <string name="summary_published_desc">Your trip has been published. Share this link with your friends:</string>
+    <string name="summary_share_text">Check out my trip itinerary on PocketPlanner! %1$s</string>
+    <string name="summary_share_link">Share Link</string>
+    <string name="summary_share_btn">Share</string>
+    <string name="summary_close_btn">Close</string>
+    <string name="summary_error">Error</string>
+    <string name="summary_ok">OK</string>
+    <string name="summary_rate_cd">Rate %1$d</string>
+
+    <!-- EmergencyActionManager -->
+    <string name="sos_sms_message">🚨 SOS! I need help. Calling %1$s.\n</string>
+    <string name="sos_sms_location">Location: %1$s</string>
+    <string name="sos_sms_media">\nMedia: %1$s</string>
+    <string name="sos_sms_medical">\n\nMEDICAL INFO:\n%1$s</string>
+    <string name="sos_loc_no_perm">Location Unknown (No Permission)</string>
+    <string name="sos_loc_unavail">Location Unavailable</string>
+    <string name="sos_loc_error">Location Error</string>
+
+    <!-- ImageGenerator -->
+    <string name="image_gen_ongoing">Ongoing</string>
+    <string name="image_gen_branding">Planned with PocketPlanner</string>
+
+    <!-- Destination Repository -->
+    <string name="city_hcmc_title">Ho Chi Minh City</string>
+    <string name="city_hcmc_tagline">The Pearl of the Far East, bustling &amp; vibrant</string>
+    <string name="city_hcmc_desc">As the vibrant heartbeat and economic engine of Vietnam, Ho Chi Minh City is a dynamic metropolis where rich history, world-class street food, and modern energy seamlessly collide.</string>
+    <string name="subplace_tip_subtitle">Historic landmark of reunification</string>
+    <string name="subplace_tip_desc">From its origins as the French colonial seat of Norodom Palace in 1868 to its pivotal 1954 renaming and the dramatic rise and fall of the Ngô Đình Diệm presidency, this historic landmark offers a captivating, century-long journey through the defining political shifts of modern Vietnam.</string>
+    <string name="subplace_wrm_subtitle">Poignant exhibits on the Vietnam War</string>
+    <string name="subplace_wrm_desc">A sobering and powerful museum documenting the brutal realities of the Vietnam War. Features extensive photo exhibits, military equipment, and historical artifacts.</string>
+    <string name="subplace_cuchi_subtitle">Vietnam\'s legendary subterranean fortress of guerrilla ingenuity</string>
+    <string name="subplace_cuchi_desc">A historic underground network of wartime strategy, hands-on adventure, and thrilling firsthand exploration.</string>
+    <string name="subplace_zoo_subtitle">The world\'s eighth-oldest zoo, blending centuries of botanical heritage with timeless city memories</string>
+    <string name="subplace_zoo_desc">From its storied founding in 1864 as the world\'s eighth-oldest zoo and lush botanical grounds to hands-on ecological education and cherished memories spanning generations, Saigon Zoo &amp; Botanical Gardens offers a serene, verdant historical journey through the heart of Ho Chi Minh City.</string>
+    <string name="subplace_banhmi_subtitle">Saigon\'s most legendary bánh mì, packed with world-renowned layers of savory indulgence</string>
+    <string name="subplace_banhmi_desc">From its storied 35-year street-food legacy and glowing international acclaim to generous mounds of savory meats and rich, velvety pâté that capture the essence of a culinary paradise, Bánh Mì Huỳnh Hoa offers an unforgettable, flavor-packed gastronomic journey through Saigon.</string>
+    <string name="city_hanoi_title">Hanoi</string>
+    <string name="city_hanoi_tagline">The thousand-year-old soul of Vietnam, where tranquil lakes meet the timeless charm of ancient alleys</string>
+    <string name="city_hanoi_desc">From ancient pagodas shrouded in incense and tranquil waterside temples to cozy hidden coffee shops and vibrant artisan guilds, Hanoi offers a poetic cultural escape through the historic heart of Vietnam.</string>
+    <string name="subplace_hoalo_subtitle">Hanoi\'s infamous wartime prison, now preserved as a poignant museum of survival and resilience.</string>
+    <string name="subplace_hoalo_desc">From its chilling past as the notorious \'Hanoi Hilton\' and sombre colonial-era cellblocks to its preserved historic gatehouse and evocative museum displays, Hỏa Lò Prison offers a sobering, deeply moving journey into the enduring resilience of the human spirit.</string>
+    <string name="subplace_mausoleum_subtitle">Vietnam\'s most sacred national monument, honoring the enduring legacy of President Ho Chi Minh</string>
+    <string name="subplace_mausoleum_desc">From its imposing gray granite colonnades and crimson jade inscriptions to the solemn changing of the guard and peaceful gardens featuring over 250 symbolic plant species, the Ho Chi Minh Mausoleum offers a deeply reverent, iconic journey into the heart of Vietnam\'s national heritage.</string>
+    <string name="subplace_stjoseph_subtitle">Hanoi\'s oldest cathedral, standing as a resilient architectural masterpiece through centuries of change</string>
+    <string name="subplace_stjoseph_desc">From its historic origins as one of the earliest French colonial landmarks in Indochina and its miraculous survival through two fierce wars to its striking weathered facade and bustling plaza beloved by locals and travelers alike, St. Joseph\'s Cathedral offers a timeless, evocative journey through Hanoi\'s enduring heritage.</string>
+    <string name="subplace_hoankiem_subtitle">Hanoi\'s vibrant weekend pedestrian haven, alive with street music, joyful crowds, and delicious flavors</string>
+    <string name="subplace_hoankiem_desc">From the lively buzz of car-free lakeside promenades and dynamic live music performances to endless entertainment options and mouthwatering local street food, Hoan Kiem Lake Walking Street offers an electrifying, joyful journey through Hanoi\'s weekend energy.</string>
+    <string name="subplace_buncha_subtitle">Hanoi\'s iconic presidential noodle spot, legendary for its smoky grilled pork and famous \'Obama Combo\'.</string>
+    <string name="subplace_buncha_desc">From the famous glass-encased \'president table\' and walls of celebrity memorabilia to sizzling smoky pork patties, crispy fried seafood rolls, and ice-cold Bia Hà Nội in the signature \'Obama Combo,\' this legendary eatery offers an unforgettable, flavor-packed culinary journey through Hanoi\'s most celebrated comfort food.</string>
+    <string name="city_danang_title">Da Nang</string>
+    <string name="city_danang_tagline">Coastal beauty and modern bridges</string>
+    <string name="city_danang_desc">Known for its sandy beaches, the stunning Marble Mountains, and the iconic Golden Bridge held by giant stone hands, Da Nang is Central Vietnam\'s most vibrant coastal city.</string>
+    <string name="subplace_bana_subtitle">A fantastical mountaintop resort</string>
+    <string name="subplace_bana_desc">Accessible via one of the world\'s longest cable cars, this resort features the famous Golden Bridge, a French Village, and panoramic views of the coastal region.</string>
+    <string name="subplace_sontra_subtitle">Central Vietnam\'s pristine coastline</string>
+    <string name="subplace_sontra_desc">Famous for its blue sky, smooth white sand, and gentle slope. It\'s an ideal spot for swimming, surfing, and relaxing by the ocean.</string>
+    <string name="subplace_golden_subtitle">Vietnam\'s world-famous skybridge, cradled high in the mountain clouds by colossal giant hands</string>
+    <string name="subplace_golden_desc">From its gleaming 150-meter curved golden walkway and the awe-inspiring spectacle of two colossal weathered hands rising from the cliffside to sweeping mountaintop vistas and seamless paths through lush gardens, the Golden Bridge offers a surreal, unforgettable aerial journey high above Da Nang.</string>
+    <string name="city_hue_title">Hue</string>
+    <string name="city_hue_tagline">The ancient imperial capital</string>
+    <string name="city_hue_desc">Sitting on the banks of the Perfume River, Hue was the seat of Nguyen Dynasty emperors. It is celebrated for its majestic Imperial City, royal tombs, and refined cuisine.</string>
+    <string name="subplace_citadel_subtitle">The walled palace of the Nguyen Dynasty</string>
+    <string name="subplace_citadel_desc">A vast 19th-century complex modeled after Beijing\'s Forbidden City, featuring moats, imposing gates, palaces, and intricately decorated pavilions.</string>
+    <string name="subplace_thienmu_subtitle">Hue\'s most iconic spiritual symbol, crowned by an elegant seven-tiered tower and peaceful monastic grounds</string>
+    <string name="subplace_thienmu_desc">From its striking seven-tiered monument standing proudly at the entrance and the resonant echoes of its historic bell tower to peaceful working halls and tranquil living quarters for resident monks, Thiên Mụ Pagoda offers a deeply spiritual, poetic journey through Hue\'s most cherished sacred landmark.</string>
+    <string name="subplace_langco_subtitle">A royal \'fairyland on earth\', where ten kilometers of pristine white sands meet calm turquoise seas</string>
+    <string name="subplace_langco_desc">From its sweeping ten-kilometer stretch of soft white sands and tranquil azure waters to the dramatic backdrop of the Bạch Mã peaks and its storied legacy as Emperor Khải Định\'s royal paradise, Lăng Cô Beach offers an enchanting, serene coastal escape along Central Vietnam\'s most breathtaking shoreline.</string>
+    <string name="subplace_bachma_subtitle">A pristine natural sanctuary nestled between mountains and sea, where cool cloud forests and rare wildlife thrive</string>
+    <string name="subplace_bachma_desc">From the towering peaks of the Annamite Mountains and sweeping coastal views toward the East Sea to cool, misty cloud forests and elusive rare wildlife, Bạch Mã National Park offers an invigorating ecological escape into a hidden, deeply alive mountain paradise.</string>
+
+    <!-- Highlights -->
+    <string name="highlight_architecture">ARCHITECTURE</string>
+    <string name="highlight_history">HISTORY</string>
+    <string name="highlight_military">MILITARY EQUIPMENT</string>
+    <string name="highlight_animal">ANIMAL</string>
+    <string name="highlight_food">FOOD</string>
+    <string name="highlight_nature">NATURE</string>
+    <string name="highlight_scenery">SCENERY</string>
+    <string name="highlight_relax">RELAX</string>
+    <string name="highlight_hiking">HIKING</string>
+
+    <!-- Opening Times -->
+    <string name="opening_time_1">7:00 AM - 6:00 PM</string>
+    <string name="opening_time_2">7:30 AM - 5:30 PM</string>
+    <string name="opening_time_3">7:00 AM – 5:00 PM</string>
+    <string name="opening_time_4">7:00 AM – 6:30 PM</string>
+    <string name="opening_time_5">6:00 AM – 10:00 PM</string>
+    <string name="opening_time_6">8:00 AM - 5:00 PM</string>
+    <string name="opening_time_7">7:30 AM - 10:30 AM (From April 1 - October 31) / 8:00 AM - 11:00 AM (From November 1 - March 31). Every Tuesday, Wednesday, Thursday, Saturday, and Sunday)</string>
+    <string name="opening_time_8">5:00 AM - 11:30 AM / 2:00 PM - 7:30 PM</string>
+    <string name="opening_time_9">7:00 PM on Friday - Sunday midnight.</string>
+    <string name="opening_time_10">8:30 AM - 2:30 PM / 5:00 PM - 8:30 PM</string>
+    <string name="opening_time_11">8:00 AM - 10:00 PM</string>
+    <string name="opening_time_12">Open 24/7</string>
+    <string name="opening_time_13">8:00 AM - 7:00 PM</string>
+    <string name="opening_time_14">7:30 AM - 5:00 PM</string>
+
+    <!-- Ticket Prices -->
+    <string name="ticket_price_1">80,000 VND</string>
+    <string name="ticket_price_2">40,000 VND</string>
+    <string name="ticket_price_3">90,000 - 110,000 VND</string>
+    <string name="ticket_price_4">60,000 VND</string>
+    <string name="ticket_price_5">28,000 - 78,000 VND</string>
+    <string name="ticket_price_6">50,000 VND</string>
+    <string name="ticket_price_7">25,000 VND</string>
+    <string name="ticket_price_free">Free</string>
+    <string name="ticket_price_8">130,000 VND</string>
+    <string name="ticket_price_9">650,000 - 1,050,000 VND (Includes cable car)</string>
+    <string name="ticket_price_10">Free Entry</string>
+    <string name="ticket_price_11">Access is included with your general admission ticket to Sun World Ba Na Hills</string>
+    <string name="ticket_price_12">150,000 VND</string>
+    <string name="ticket_price_13">65,000 VND</string>
+
+    <!-- Names -->
+    <string name="country_vietnam">Vietnam</string>
+    <string name="subplace_tip_name">The Independence Palace</string>
+    <string name="subplace_wrm_name">War Remnants Museum</string>
+    <string name="subplace_cuchi_name">Cu Chi Tunnels</string>
+    <string name="subplace_zoo_name">Saigon Zoo &amp; Botanical Gardens</string>
+    <string name="subplace_banhmi_name">Banh Mi Huynh Hoa</string>
+    <string name="subplace_hoalo_name">Hoa Lo Prison</string>
+    <string name="subplace_mausoleum_name">Ho Chi Minh Mausoleum</string>
+    <string name="subplace_stjoseph_name">St. Joseph\'s Cathedral</string>
+    <string name="subplace_hoankiem_name">Hoan Kiem Walking Street</string>
+    <string name="subplace_buncha_name">Bun Cha Huong Lien</string>
+    <string name="subplace_bana_name">Ba Na Hills SunWorld</string>
+    <string name="subplace_sontra_name">Son Tra Beach</string>
+    <string name="subplace_golden_name">Golden Bridge</string>
+    <string name="subplace_citadel_name">Hue Imperial City (The Citadel)</string>
+    <string name="subplace_thienmu_name">Thien Mu Pagoda</string>
+    <string name="subplace_langco_name">Lang Co Beach</string>
+    <string name="subplace_bachma_name">Bach Ma National Park</string>
 </resources>
+

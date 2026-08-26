@@ -11,9 +11,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
+import com.example.pocketplanner.R
+
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AuthState>(AuthState.Idle)
@@ -26,7 +31,7 @@ class AuthViewModel @Inject constructor(
             if (result.isSuccess) {
                 _uiState.value = AuthState.Success
             } else {
-                _uiState.value = AuthState.Error(result.exceptionOrNull()?.message ?: "Login Failed")
+                _uiState.value = AuthState.Error(result.exceptionOrNull()?.message ?: context.getString(R.string.auth_error_login_failed))
             }
         }
     }
@@ -38,22 +43,22 @@ class AuthViewModel @Inject constructor(
             if (result.isSuccess) {
                 _uiState.value = AuthState.Success
             } else {
-                _uiState.value = AuthState.Error(result.exceptionOrNull()?.message ?: "Google Sign-In Failed")
+                _uiState.value = AuthState.Error(result.exceptionOrNull()?.message ?: context.getString(R.string.auth_error_google_failed))
             }
         }
     }
 
     fun register(username: String, email: String, pass: String) {
         if (!username.matches(Regex("^[a-zA-Z0-9]+$"))) {
-            _uiState.value = AuthState.Error("Username must be alphanumeric.")
+            _uiState.value = AuthState.Error(context.getString(R.string.auth_error_username_invalid))
             return
         }
         if (pass.length < 8 || !pass.matches(Regex(".*\\d.*"))) {
-            _uiState.value = AuthState.Error("Password must be at least 8 characters and contain a number.")
+            _uiState.value = AuthState.Error(context.getString(R.string.auth_error_password_invalid))
             return
         }
         if (email.isBlank()) {
-            _uiState.value = AuthState.Error("Email cannot be empty.")
+            _uiState.value = AuthState.Error(context.getString(R.string.auth_error_email_empty))
             return
         }
 
@@ -72,23 +77,23 @@ class AuthViewModel @Inject constructor(
                 }
                 _uiState.value = AuthState.Success
             } else {
-                _uiState.value = AuthState.Error(result.exceptionOrNull()?.message ?: "Registration Failed")
+                _uiState.value = AuthState.Error(result.exceptionOrNull()?.message ?: context.getString(R.string.auth_error_registration_failed))
             }
         }
     }
 
     fun resetPassword(email: String, onResult: (Boolean, String) -> Unit) {
         if (email.isBlank()) {
-            onResult(false, "Please enter your email address first.")
+            onResult(false, context.getString(R.string.auth_error_reset_email_empty))
             return
         }
 
         com.google.firebase.auth.FirebaseAuth.getInstance().sendPasswordResetEmail(email)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    onResult(true, "Password reset email sent! Check your inbox.")
+                    onResult(true, context.getString(R.string.auth_success_reset_email_sent))
                 } else {
-                    onResult(false, task.exception?.message ?: "Failed to send reset email.")
+                    onResult(false, task.exception?.message ?: context.getString(R.string.auth_error_reset_failed))
                 }
             }
     }

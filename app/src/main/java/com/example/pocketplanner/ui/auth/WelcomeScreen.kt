@@ -16,10 +16,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.pocketplanner.R
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 
 @Composable
 fun WelcomeScreen(
@@ -29,7 +32,7 @@ fun WelcomeScreen(
         // Background Image
         Image(
             painter = painterResource(id = R.drawable.wsbg),
-            contentDescription = "Welcome Background",
+            contentDescription = stringResource(R.string.ws_bg_desc),
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
@@ -60,17 +63,17 @@ fun WelcomeScreen(
             // App Logo
             Image(
                 painter = painterResource(id = R.drawable.logo),
-                contentDescription = "App Logo",
+                contentDescription = stringResource(R.string.ws_logo_desc),
                 modifier = Modifier
                     .size(80.dp)
-                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(20.dp))
+                    .clip(androidx.compose.foundation.shape.CircleShape)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // Title
             Text(
-                text = "Welcome to\nPocketPlanner",
+                text = stringResource(R.string.ws_title),
                 style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold),
                 color = Color.White,
                 textAlign = TextAlign.Center
@@ -80,7 +83,7 @@ fun WelcomeScreen(
 
             // Subtitle
             Text(
-                text = "Your all-in-one travel companion for planning, tracking, and exploring the wonders of Vietnam.",
+                text = stringResource(R.string.ws_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White.copy(alpha = 0.9f),
                 textAlign = TextAlign.Center
@@ -98,12 +101,12 @@ fun WelcomeScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text(
-                    "Get Started", 
+                    stringResource(R.string.ws_get_started), 
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onPrimary
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Forward Arrow", tint = MaterialTheme.colorScheme.onPrimary)
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.ws_forward_arrow_desc))
             }
             
             Spacer(modifier = Modifier.height(32.dp))
@@ -111,7 +114,7 @@ fun WelcomeScreen(
 
         // Photo Credit
         Text(
-            text = "Photo by Daniel Burka on Unsplash",
+            text = stringResource(R.string.ws_photo_credit),
             style = MaterialTheme.typography.labelSmall,
             color = Color.White.copy(alpha = 0.6f),
             modifier = Modifier
@@ -127,7 +130,8 @@ fun WelcomeScreen(
                 .padding(top = 16.dp, end = 16.dp)
         ) {
             var expanded by remember { mutableStateOf(false) }
-            var selectedLanguage by remember { mutableStateOf("EN") }
+            val currentLocale = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+            val selectedLanguage = if (currentLocale == "vi") "VI" else "EN"
 
             Button(
                 onClick = { expanded = true },
@@ -140,7 +144,7 @@ fun WelcomeScreen(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Public, 
-                    contentDescription = "Language", 
+                    contentDescription = stringResource(R.string.ws_language_cd), 
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
@@ -152,31 +156,17 @@ fun WelcomeScreen(
                 onDismissRequest = { expanded = false }
             ) {
                 DropdownMenuItem(
-                    text = { Text("English (EN)") },
-                    onClick = { 
-                        selectedLanguage = "EN"
-                        expanded = false 
+                    text = { Text(stringResource(R.string.ws_lang_en)) },
+                    onClick = {
+                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))
+                        expanded = false
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text("Tiếng Việt (VI)") },
-                    onClick = { 
-                        selectedLanguage = "VI"
-                        expanded = false 
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Español (ES)") },
-                    onClick = { 
-                        selectedLanguage = "ES"
-                        expanded = false 
-                    }
-                )
-                DropdownMenuItem(
-                    text = { Text("Français (FR)") },
-                    onClick = { 
-                        selectedLanguage = "FR"
-                        expanded = false 
+                    text = { Text(stringResource(R.string.ws_lang_vi)) },
+                    onClick = {
+                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("vi"))
+                        expanded = false
                     }
                 )
             }

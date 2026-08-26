@@ -3,7 +3,7 @@ package com.example.pocketplanner.data.di
 import android.content.Context
 import androidx.room.Room
 import com.example.pocketplanner.data.local.AppDatabase
-import com.example.pocketplanner.data.local.dao.AlertDao
+
 import com.example.pocketplanner.data.local.dao.ExpenseDao
 import com.example.pocketplanner.data.local.dao.PlaceDao
 import com.example.pocketplanner.data.local.dao.TripDao
@@ -26,6 +26,13 @@ object DatabaseModule {
         }
     }
 
+    val MIGRATION_20_21 = object : androidx.room.migration.Migration(20, 21) {
+        override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+            database.execSQL("DROP TABLE IF EXISTS `alerts`")
+            database.execSQL("DROP TABLE IF EXISTS `tracking_points`")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
@@ -34,7 +41,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "pocketplanner.db"
         )
-        .addMigrations(MIGRATION_19_20)
+        .addMigrations(MIGRATION_19_20, MIGRATION_20_21)
         .fallbackToDestructiveMigration()
         .build()
     }
@@ -56,15 +63,9 @@ object DatabaseModule {
         return database.expenseDao()
     }
 
-    @Provides
-    fun provideTrackingPointDao(database: AppDatabase): com.example.pocketplanner.data.local.dao.TrackingPointDao {
-        return database.trackingPointDao()
-    }
 
-    @Provides
-    fun provideAlertDao(appDatabase: AppDatabase): AlertDao {
-        return appDatabase.alertDao()
-    }
+
+
 
     @Provides
     fun providePlaceDetailsDao(appDatabase: AppDatabase): com.example.pocketplanner.data.local.dao.PlaceDetailsDao {

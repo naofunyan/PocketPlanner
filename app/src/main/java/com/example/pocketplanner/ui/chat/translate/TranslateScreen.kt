@@ -42,6 +42,8 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import java.util.concurrent.Executors
 import kotlin.math.max
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -141,7 +143,7 @@ fun TranslateScreen(
                 // FROZEN OR GALLERY IMAGE
                 androidx.compose.foundation.Image(
                     bitmap = uiState.capturedImage!!.asImageBitmap(),
-                    contentDescription = "Captured Image",
+                    contentDescription = stringResource(R.string.translate_captured_image_cd),
                     modifier = Modifier.fillMaxSize(),
                     contentScale = androidx.compose.ui.layout.ContentScale.Fit
                 )
@@ -243,7 +245,7 @@ fun TranslateScreen(
                     if (uiState.mode != TranslateMode.LIVE) viewModel.switchMode(TranslateMode.LIVE)
                     else onNavigateBack()
                 }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                    Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.translate_back_cd), tint = Color.White)
                 }
 
                 // Language Selector Pill
@@ -272,8 +274,8 @@ fun TranslateScreen(
                                 Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color(0xFF1E1E1E))
                                 Spacer(modifier = Modifier.width(6.dp))
                             }
-                            val sourceName = if (uiState.sourceLanguage == "auto") "Auto" 
-                            else ALL_GLOBAL_LANGUAGES.find { it.first == uiState.sourceLanguage }?.second ?: "Unknown"
+                            val sourceName = if (uiState.sourceLanguage == "auto") stringResource(R.string.translate_auto) 
+                            else ALL_GLOBAL_LANGUAGES.find { it.first == uiState.sourceLanguage }?.second ?: stringResource(R.string.translate_unknown)
                             Text(sourceName, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1E1E1E), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                         }
 
@@ -292,14 +294,14 @@ fun TranslateScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            val targetName = ALL_GLOBAL_LANGUAGES.find { it.first == uiState.targetLanguage }?.second ?: "Unknown"
+                            val targetName = ALL_GLOBAL_LANGUAGES.find { it.first == uiState.targetLanguage }?.second ?: stringResource(R.string.translate_unknown)
                             Text(targetName, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1E1E1E), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                         }
                     }
                 }
 
                 IconButton(onClick = { galleryLauncher.launch("image/*") }) {
-                    Icon(Icons.Default.PhotoLibrary, contentDescription = "Gallery", tint = Color.White)
+                    Icon(Icons.Default.PhotoLibrary, contentDescription = stringResource(R.string.translate_gallery_cd), tint = Color.White)
                 }
             }
 
@@ -336,7 +338,7 @@ fun TranslateScreen(
                             .size(72.dp)
                             .background(Color.White, CircleShape)
                     ) {
-                        Icon(Icons.Default.CameraAlt, contentDescription = "Capture", tint = Color.Black)
+                        Icon(Icons.Default.CameraAlt, contentDescription = stringResource(R.string.translate_capture_cd), tint = Color.Black)
                     }
                 }
             }
@@ -349,12 +351,13 @@ fun TranslateScreen(
                         modifier = Modifier.fillMaxWidth(0.9f)
                     ) {
                         val clipboardManager = androidx.compose.ui.platform.LocalClipboardManager.current
+                        val copiedMessage = stringResource(R.string.translate_toast_copied_all)
                         
                         androidx.compose.material3.Button(
                             onClick = { 
                                 val allText = viewModel.getFullTranslatedText()
                                 clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(allText))
-                                android.widget.Toast.makeText(context, "Copied all text", android.widget.Toast.LENGTH_SHORT).show()
+                                android.widget.Toast.makeText(context, copiedMessage, android.widget.Toast.LENGTH_SHORT).show()
                             },
                             colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                                 containerColor = Color.White.copy(alpha = 0.95f),
@@ -364,7 +367,7 @@ fun TranslateScreen(
                         ) {
                             Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Select All")
+                            Text(stringResource(R.string.translate_btn_select_all))
                         }
                         
                         androidx.compose.material3.Button(
@@ -379,7 +382,7 @@ fun TranslateScreen(
                         ) {
                             Icon(Icons.Default.VolumeUp, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Listen")
+                            Text(stringResource(R.string.translate_btn_listen))
                         }
                     }
                 }
@@ -395,10 +398,10 @@ fun TranslateScreen(
         } else {
             // PERMISSION DENIED UI
             Column(modifier = Modifier.fillMaxSize().align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                Text("Camera permission is required.", color = Color.Black)
+                Text(stringResource(R.string.translate_camera_permission_required), color = Color.Black)
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = { cameraPermissionState.launchPermissionRequest() }) {
-                    Text("Grant Permission")
+                    Text(stringResource(R.string.translate_btn_grant_permission))
                 }
             }
         }
@@ -466,7 +469,7 @@ fun TranslateLanguagePickerBottomSheet(
     var searchQuery by remember { mutableStateOf("") }
     
     val baseLanguages = if (isSource) {
-        listOf("auto" to "Auto") + ALL_GLOBAL_LANGUAGES
+        listOf("auto" to stringResource(R.string.translate_auto)) + ALL_GLOBAL_LANGUAGES
     } else {
         ALL_GLOBAL_LANGUAGES
     }
@@ -475,7 +478,7 @@ fun TranslateLanguagePickerBottomSheet(
         it.second.contains(searchQuery, ignoreCase = true) 
     }
 
-    val title = if (isSource) "Translate from" else "Translate to"
+    val title = if (isSource) stringResource(R.string.translate_from_title) else stringResource(R.string.translate_to_title)
 
     androidx.compose.material3.ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -495,8 +498,8 @@ fun TranslateLanguagePickerBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 8.dp),
-                placeholder = { Text("Search languages...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                placeholder = { Text(stringResource(R.string.translate_search_placeholder)) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = stringResource(R.string.translate_search_cd)) },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp)
             )

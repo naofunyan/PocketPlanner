@@ -48,8 +48,7 @@ object ChatRoute
 @Serializable
 data class ExploreDetailsRoute(val destinationId: String)
 
-@Serializable
-object AlertsRoute
+
 
 @Serializable
 data class AllPlacesRoute(val destinationId: String)
@@ -77,3 +76,6 @@ data class ImmersiveExperienceRoute(val placeName: String)
 
 @Serializable
 data class TripSummaryRoute(val tripId: String)
+
+@Serializable
+object TravelStatsRoute

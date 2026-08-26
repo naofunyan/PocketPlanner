@@ -78,6 +78,8 @@ import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.annotation.generated.createPolylineAnnotationManager
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -294,7 +296,7 @@ fun ItineraryScreen(
                                     ) {
                                         androidx.compose.foundation.Image(
                                             painter = painterResource(id = com.example.pocketplanner.R.drawable.ntcalendar),
-                                            contentDescription = "Calendar",
+                                            contentDescription = stringResource(R.string.itinerary_calendar_cd),
                                             modifier = Modifier.padding(10.dp)
                                         )
                                     }
@@ -360,11 +362,11 @@ fun ItineraryScreen(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.SwapVert,
-                                            contentDescription = "Optimize Route",
+                                            contentDescription = stringResource(R.string.itinerary_optimize_route),
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Optimize Route", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        Text(stringResource(R.string.itinerary_optimize_route), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -378,7 +380,7 @@ fun ItineraryScreen(
                                 if (places.isEmpty()) {
                                     item {
                                         Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                                            Text("No places added for this day yet.", color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                                            Text(stringResource(R.string.itinerary_no_places), color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                                         }
                                     }
                                 } else {
@@ -457,7 +459,7 @@ fun ItineraryScreen(
                                                                         Spacer(modifier = Modifier.width(8.dp))
                                                                         Icon(
                                                                             imageVector = androidx.compose.material.icons.Icons.Filled.CheckCircle,
-                                                                            contentDescription = "Visited",
+                                                                            contentDescription = stringResource(R.string.itinerary_visited_cd),
                                                                             tint = MaterialTheme.colorScheme.primary, // DYNAMIC ICON
                                                                             modifier = Modifier.size(16.dp)
                                                                         )
@@ -517,9 +519,9 @@ fun ItineraryScreen(
                                                             modifier = Modifier.padding(vertical = 16.dp)
                                                         ) {
                                                             if (isDriving) {
-                                                                Icon(Icons.Filled.DirectionsCar, contentDescription = "Drive", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp)) // DYNAMIC ICON
+                                                                Icon(Icons.Filled.DirectionsCar, contentDescription = stringResource(R.string.itinerary_drive_cd), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp)) // DYNAMIC ICON
                                                             } else {
-                                                                Icon(Icons.AutoMirrored.Filled.DirectionsWalk, contentDescription = "Walk", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp)) // DYNAMIC ICON
+                                                                Icon(Icons.AutoMirrored.Filled.DirectionsWalk, contentDescription = stringResource(R.string.itinerary_walk_cd), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp)) // DYNAMIC ICON
                                                             }
 
                                                             val text = if (leg != null) {
@@ -529,9 +531,9 @@ fun ItineraryScreen(
                                                                 val mins = (durationToUse / 60).toInt()
                                                                 val km = String.format(java.util.Locale.US, "%.1f", distanceToUse / 1000.0)
                                                                 val miles = String.format(java.util.Locale.US, "%.1f", distanceToUse * 0.000621371)
-                                                                "$mins mins • $km km / $miles mi"
+                                                                String.format(stringResource(R.string.itinerary_transit_format), mins, km, miles)
                                                             } else {
-                                                                "Calculating..."
+                                                                stringResource(R.string.itinerary_calculating)
                                                             }
                                                             Text("$text ", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 8.dp)) // DYNAMIC TEXT
 
@@ -648,7 +650,7 @@ fun ItineraryScreen(
                                     shadowElevation = 2.dp,
                                     modifier = Modifier.size(40.dp).clickable(onClick = onNavigateBack)
                                 ) {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", modifier = Modifier.padding(8.dp), tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC ICON
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.itinerary_back_cd), modifier = Modifier.padding(8.dp), tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC ICON
                                 }
                             }
                         }
@@ -673,8 +675,8 @@ fun ItineraryScreen(
                             horizontalArrangement = Arrangement.SpaceEvenly,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            BottomNavPill("Plan", true, Modifier.weight(1f)) { }
-                            BottomNavPill("Expense", false, Modifier.weight(1f)) { onExpenseClick() }
+                            BottomNavPill(stringResource(R.string.itinerary_plan), true, Modifier.weight(1f)) { }
+                            BottomNavPill(stringResource(R.string.itinerary_expense), false, Modifier.weight(1f)) { onExpenseClick() }
                         }
                     }
                 }
@@ -697,7 +699,7 @@ fun ItineraryScreen(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Place")
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.itinerary_add_place_cd))
                 }
 
                 // Search Places Modal Bottom Sheet
@@ -717,7 +719,7 @@ fun ItineraryScreen(
                                 .fillMaxHeight(0.8f) // Take up 80% of screen height
                                 .padding(horizontal = 16.dp)
                         ) {
-                            Text("Add a Place", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+                            Text(stringResource(R.string.itinerary_add_place_title), fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
                             Spacer(modifier = Modifier.height(16.dp))
 
                             val geminiSuggestion by viewModel.geminiSuggestion.collectAsState()
@@ -734,7 +736,7 @@ fun ItineraryScreen(
                                     searchQuery = q
                                     viewModel.searchPlaces(q, cachedLat, cachedLng, trip?.destination ?: "")
                                 },
-                                label = { Text("Enter a place name...") },
+                                label = { Text(stringResource(R.string.itinerary_enter_place_name)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
                                 shape = RoundedCornerShape(16.dp)
@@ -765,7 +767,7 @@ fun ItineraryScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = if (searchQuery.isBlank()) "Suggest a Random Place" else "Can't find it? Let Gemini locate it",
+                                    text = if (searchQuery.isBlank()) stringResource(R.string.itinerary_suggest_random) else stringResource(R.string.itinerary_gemini_locate),
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -875,7 +877,7 @@ fun ItineraryScreen(
                                 ) {
                                     Icon(Icons.Filled.SwapVert, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp)) // DYNAMIC ICON
                                     Spacer(modifier = Modifier.width(16.dp))
-                                    Text("Rearrange", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
+                                    Text(stringResource(R.string.itinerary_rearrange), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                                 }
 
                                 // Move to another day
@@ -890,7 +892,7 @@ fun ItineraryScreen(
                                 ) {
                                     Icon(Icons.Filled.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp)) // DYNAMIC ICON
                                     Spacer(modifier = Modifier.width(16.dp))
-                                    Text("Move to another day", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
+                                    Text(stringResource(R.string.itinerary_move_day), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                                 }
 
                                 // Remove
@@ -906,13 +908,13 @@ fun ItineraryScreen(
                                 ) {
                                     Icon(Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(24.dp)) // DYNAMIC ICON
                                     Spacer(modifier = Modifier.width(16.dp))
-                                    Text("Remove Place", fontSize = 16.sp, color = MaterialTheme.colorScheme.error) // DYNAMIC TEXT
+                                    Text(stringResource(R.string.itinerary_remove_place), fontSize = 16.sp, color = MaterialTheme.colorScheme.error) // DYNAMIC TEXT
                                 }
                             } else {
                                 // Day Picker View
                                 Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, tint = MaterialTheme.colorScheme.onSurface, contentDescription = "Back", modifier = Modifier.align(Alignment.CenterStart).clickable { showDayPicker = false }.padding(8.dp)) // DYNAMIC ICON
-                                    Text("Select Day", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.align(Alignment.Center)) // DYNAMIC TEXT
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, tint = MaterialTheme.colorScheme.onSurface, contentDescription = stringResource(R.string.itinerary_back_cd), modifier = Modifier.align(Alignment.CenterStart).clickable { showDayPicker = false }.padding(8.dp)) // DYNAMIC ICON
+                                    Text(stringResource(R.string.itinerary_select_day), color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.align(Alignment.Center)) // DYNAMIC TEXT
                                 }
 
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(vertical = 8.dp)) // DYNAMIC DIVIDER
@@ -949,7 +951,7 @@ fun ItineraryScreen(
                                             )
                                             if (isCurrentDay) {
                                                 Spacer(modifier = Modifier.weight(1f))
-                                                Text("(Current)", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) // DYNAMIC TEXT
+                                                Text(stringResource(R.string.itinerary_current_day_indicator), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) // DYNAMIC TEXT
                                             }
                                         }
                                     }
@@ -961,7 +963,8 @@ fun ItineraryScreen(
 
                 // Rearrange Bottom Sheet
                 if (showRearrangeSheet) {
-                    var rearrangeTab by remember { mutableStateOf("Places") }
+                    val placesTabStr = stringResource(R.string.itinerary_places_tab)
+                            var rearrangeTab by remember { mutableStateOf(placesTabStr) }
                     val durationDays = if (trip != null) (if (trip!!.isOpenEnded) ((System.currentTimeMillis() - trip!!.startDate) / 86400000).toInt().coerceAtLeast(0) + 1 else ((trip!!.endDate - trip!!.startDate) / 86400000).toInt() + 1) else 1
 
                     ModalBottomSheet(
@@ -975,46 +978,52 @@ fun ItineraryScreen(
                                 .fillMaxWidth()
                                 .fillMaxHeight(0.9f)
                         ) {
-                            // Header
-                            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
-                                Text("Rearrange", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.align(Alignment.Center)) // DYNAMIC TEXT
-                                Text("Done", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.align(Alignment.CenterEnd).clickable { showRearrangeSheet = false }) // DYNAMIC TEXT
+                            val placesTabStr = stringResource(R.string.itinerary_places_tab)
+                            val daysTabStr = stringResource(R.string.itinerary_days_tab)
+                            var rearrangeTab by remember { mutableStateOf(placesTabStr) }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(stringResource(R.string.itinerary_rearrange), color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.align(Alignment.CenterVertically)) // DYNAMIC TEXT
+                                Text(stringResource(R.string.itinerary_done), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.align(Alignment.CenterVertically).clickable { showRearrangeSheet = false }) // DYNAMIC TEXT
                             }
 
-                            // Segmented Button Mock
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Segmented Control
                             Surface(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                                shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant // DYNAMIC BACKGROUND
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant, // DYNAMIC BACKGROUND
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
                             ) {
-                                Row(modifier = Modifier.fillMaxWidth()) {
-                                    // Days Tab
+                                Row(modifier = Modifier.padding(4.dp)) {
                                     Surface(
-                                        modifier = Modifier.weight(1f).padding(4.dp).clickable { rearrangeTab = "Days" },
-                                        shape = RoundedCornerShape(4.dp),
-                                        color = if (rearrangeTab == "Days") MaterialTheme.colorScheme.surface else Color.Transparent, // DYNAMIC BACKGROUND
-                                        shadowElevation = if (rearrangeTab == "Days") 1.dp else 0.dp
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.weight(1f).padding(4.dp).clickable { rearrangeTab = daysTabStr },
+                                        color = if (rearrangeTab == daysTabStr) MaterialTheme.colorScheme.surface else Color.Transparent, // DYNAMIC BACKGROUND
+                                        shadowElevation = if (rearrangeTab == daysTabStr) 1.dp else 0.dp
                                     ) {
-                                        Box(modifier = Modifier.padding(vertical = 6.dp), contentAlignment = Alignment.Center) {
-                                            Text("Days", color = if (rearrangeTab == "Days") MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp) // DYNAMIC TEXT
+                                        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(vertical = 8.dp)) {
+                                            Text(daysTabStr, color = if (rearrangeTab == daysTabStr) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp) // DYNAMIC TEXT
                                         }
                                     }
-
-                                    // Places Tab
                                     Surface(
-                                        modifier = Modifier.weight(1f).padding(4.dp).clickable { rearrangeTab = "Places" },
-                                        shape = RoundedCornerShape(4.dp),
-                                        color = if (rearrangeTab == "Places") MaterialTheme.colorScheme.surface else Color.Transparent, // DYNAMIC BACKGROUND
-                                        shadowElevation = if (rearrangeTab == "Places") 1.dp else 0.dp
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.weight(1f).padding(4.dp).clickable { rearrangeTab = placesTabStr },
+                                        color = if (rearrangeTab == placesTabStr) MaterialTheme.colorScheme.surface else Color.Transparent, // DYNAMIC BACKGROUND
+                                        shadowElevation = if (rearrangeTab == placesTabStr) 1.dp else 0.dp
                                     ) {
                                         Box(modifier = Modifier.padding(vertical = 6.dp), contentAlignment = Alignment.Center) {
-                                            Text("Places", color = if (rearrangeTab == "Places") MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp) // DYNAMIC TEXT
+                                            Text(stringResource(R.string.itinerary_places_tab), color = if (rearrangeTab == stringResource(R.string.itinerary_places_tab)) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp) // DYNAMIC TEXT
                                         }
                                     }
                                 }
                             }
 
-                            if (rearrangeTab == "Places") {
+                            if (rearrangeTab == stringResource(R.string.itinerary_places_tab)) {
                                 // Date Title
                                 val dateStr = if (trip != null) {
                                     val instant = Instant.ofEpochMilli(trip!!.startDate).atZone(ZoneId.systemDefault()).toLocalDate()
@@ -1057,13 +1066,13 @@ fun ItineraryScreen(
 
                                                 // Functional Up/Down arrows + Visual Drag handle
                                                 if (index > 0) {
-                                                    Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Up", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp).clickable { viewModel.swapPlaceOrder(place, places[index - 1]) }.padding(2.dp)) // DYNAMIC ICON
+                                                    Icon(Icons.Filled.KeyboardArrowUp, contentDescription = stringResource(R.string.itinerary_up_cd), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp).clickable { viewModel.swapPlaceOrder(place, places[index - 1]) }.padding(2.dp)) // DYNAMIC ICON
                                                 } else {
                                                     Spacer(modifier = Modifier.size(24.dp))
                                                 }
                                                 Spacer(modifier = Modifier.width(4.dp))
                                                 if (index < places.size - 1) {
-                                                    Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Down", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp).clickable { viewModel.swapPlaceOrder(place, places[index + 1]) }.padding(2.dp)) // DYNAMIC ICON
+                                                    Icon(Icons.Filled.KeyboardArrowDown, contentDescription = stringResource(R.string.itinerary_down_cd), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp).clickable { viewModel.swapPlaceOrder(place, places[index + 1]) }.padding(2.dp)) // DYNAMIC ICON
                                                 } else {
                                                     Spacer(modifier = Modifier.size(24.dp))
                                                 }
@@ -1071,7 +1080,7 @@ fun ItineraryScreen(
                                         }
                                     }
                                 }
-                            } else if (rearrangeTab == "Days") {
+                            } else if (rearrangeTab == stringResource(R.string.itinerary_days_tab)) {
                                 Text(
                                     text = "All Days",
                                     color = MaterialTheme.colorScheme.onSurface, // DYNAMIC TEXT
@@ -1106,18 +1115,18 @@ fun ItineraryScreen(
                                                 val placesSummary = if (placesForThisDay.isEmpty()) "Free day" else placesForThisDay.joinToString(", ") { it.name }
 
                                                 Column(modifier = Modifier.weight(1f)) {
-                                                    Text("Day $dayNum - $dateStr", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 15.sp, fontWeight = if (dayNum == selectedDay) FontWeight.Bold else FontWeight.Normal) // DYNAMIC TEXT
+                                                    Text(String.format(stringResource(R.string.itinerary_day_format), dayNum, dateStr), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 15.sp, fontWeight = if (dayNum == selectedDay) FontWeight.Bold else FontWeight.Normal) // DYNAMIC TEXT
                                                     Text(placesSummary, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f), maxLines = 1, overflow = TextOverflow.Ellipsis) // DYNAMIC TEXT
                                                 }
 
                                                 if (index > 0) {
-                                                    Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "Up", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp).clickable { viewModel.swapDays(tripId, dayNum, daysList[index - 1]) }.padding(2.dp)) // DYNAMIC ICON
+                                                    Icon(Icons.Filled.KeyboardArrowUp, contentDescription = stringResource(R.string.itinerary_up_cd), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp).clickable { viewModel.swapDays(tripId, dayNum, daysList[index - 1]) }.padding(2.dp)) // DYNAMIC ICON
                                                 } else {
                                                     Spacer(modifier = Modifier.size(24.dp))
                                                 }
                                                 Spacer(modifier = Modifier.width(4.dp))
                                                 if (index < daysList.size - 1) {
-                                                    Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Down", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp).clickable { viewModel.swapDays(tripId, dayNum, daysList[index + 1]) }.padding(2.dp)) // DYNAMIC ICON
+                                                    Icon(Icons.Filled.KeyboardArrowDown, contentDescription = stringResource(R.string.itinerary_down_cd), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp).clickable { viewModel.swapDays(tripId, dayNum, daysList[index + 1]) }.padding(2.dp)) // DYNAMIC ICON
                                                 } else {
                                                     Spacer(modifier = Modifier.size(24.dp))
                                                 }
@@ -1160,7 +1169,7 @@ fun ItineraryScreen(
                                     ) {
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                            contentDescription = "Back",
+                                            contentDescription = stringResource(R.string.itinerary_back_cd),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC ICON
                                             modifier = Modifier.clickable { viewModel.clearSelectedPlaceDetails() }
                                         )
@@ -1177,7 +1186,7 @@ fun ItineraryScreen(
                                         Spacer(modifier = Modifier.width(32.dp))
                                         Icon(
                                             imageVector = Icons.Filled.Share,
-                                            contentDescription = "Share",
+                                            contentDescription = stringResource(R.string.itinerary_share_cd),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant // DYNAMIC ICON
                                         )
                                     }
@@ -1240,10 +1249,10 @@ fun ItineraryScreen(
                                                     if (details.formattedHours != null) {
                                                         Column(modifier = Modifier.padding(vertical = 20.dp, horizontal = 16.dp).weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                                                             Box(modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) { // DYNAMIC BACKGROUND
-                                                                Icon(Icons.Filled.Schedule, contentDescription = "Hours", tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(24.dp)) // DYNAMIC ICON
+                                                                Icon(Icons.Filled.Schedule, contentDescription = stringResource(R.string.itinerary_hours_cd), modifier = Modifier.size(24.dp)) // DYNAMIC ICON
                                                             }
                                                             Spacer(modifier = Modifier.height(12.dp))
-                                                            Text("Hours", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                                                            Text(stringResource(R.string.itinerary_hours), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                                                             Text(
                                                                 text = details.formattedHours,
                                                                 fontSize = 14.sp,
@@ -1261,10 +1270,10 @@ fun ItineraryScreen(
                                                     if (details.price != null) {
                                                         Column(modifier = Modifier.padding(vertical = 20.dp, horizontal = 16.dp).weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                                                             Box(modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) { // DYNAMIC BACKGROUND
-                                                                Icon(Icons.Filled.Payments, contentDescription = "Price", tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(24.dp)) // DYNAMIC ICON
+                                                                Icon(Icons.Filled.Payments, contentDescription = stringResource(R.string.itinerary_price_cd), modifier = Modifier.size(24.dp)) // DYNAMIC ICON
                                                             }
                                                             Spacer(modifier = Modifier.height(12.dp))
-                                                            Text("Price", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                                                            Text(stringResource(R.string.itinerary_price), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                                                             Text(
                                                                 text = details.price,
                                                                 fontSize = 14.sp,
@@ -1282,7 +1291,7 @@ fun ItineraryScreen(
 
                                         // About
                                         details.aiDescription?.let { desc ->
-                                            Text("About", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) // DYNAMIC TEXT
+                                            Text(stringResource(R.string.itinerary_about), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) // DYNAMIC TEXT
                                             Spacer(modifier = Modifier.height(12.dp))
                                             Text(desc, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, lineHeight = 20.sp) // DYNAMIC TEXT
                                             Spacer(modifier = Modifier.height(24.dp))
@@ -1298,10 +1307,10 @@ fun ItineraryScreen(
                                             ) {
                                                 Box {
                                                     Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
-                                                        Icon(Icons.Filled.Lightbulb, contentDescription = "Tip", tint = MaterialTheme.colorScheme.onSecondaryContainer) // DYNAMIC ICON
+                                                        Icon(Icons.Filled.Lightbulb, contentDescription = stringResource(R.string.itinerary_tip_cd), tint = MaterialTheme.colorScheme.onSecondaryContainer) // DYNAMIC ICON
                                                         Spacer(modifier = Modifier.width(12.dp))
                                                         Column {
-                                                            Text("Local Tip", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer) // DYNAMIC TEXT
+                                                            Text(stringResource(R.string.itinerary_local_tip), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer) // DYNAMIC TEXT
                                                             Spacer(modifier = Modifier.height(4.dp))
                                                             Text(tip, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f), lineHeight = 18.sp) // DYNAMIC TEXT
                                                         }
@@ -1332,14 +1341,14 @@ fun ItineraryScreen(
 
                                                     Image(
                                                         painter = rememberAsyncImagePainter(mapUrl),
-                                                        contentDescription = "Map",
+                                                        contentDescription = stringResource(R.string.itinerary_map_cd),
                                                         contentScale = ContentScale.Crop,
                                                         modifier = Modifier.fillMaxWidth().height(150.dp)
                                                     )
                                                 } else {
                                                     Image(
                                                         painter = rememberAsyncImagePainter("https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"), // Vintage map placeholder
-                                                        contentDescription = "Map Placeholder",
+                                                        contentDescription = stringResource(R.string.itinerary_map_placeholder_cd),
                                                         contentScale = ContentScale.Crop,
                                                         modifier = Modifier.fillMaxWidth().height(120.dp)
                                                     )
@@ -1365,7 +1374,7 @@ fun ItineraryScreen(
                                                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary), // DYNAMIC BUTTON
                                                         shape = RoundedCornerShape(50)
                                                     ) {
-                                                        Text("Directions", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary) // DYNAMIC TEXT
+                                                        Text(stringResource(R.string.itinerary_directions), fontSize = 12.sp, fontWeight = FontWeight.Bold) // DYNAMIC TEXT
                                                     }
                                                 }
                                             }
@@ -1411,8 +1420,8 @@ fun TripDatesCalendar(
         Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = 24.dp, vertical = 8.dp)) {
             // Header: Title and Done
             Box(modifier = Modifier.fillMaxWidth()) {
-                Text("Trip dates", fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
-                Text("Done", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.align(Alignment.CenterEnd).clickable { onDismiss() }) // DYNAMIC TEXT
+                Text(stringResource(R.string.itinerary_trip_dates), fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
+                Text(stringResource(R.string.itinerary_done), color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.align(Alignment.CenterEnd).clickable { onDismiss() }) // DYNAMIC TEXT
             }
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -1421,14 +1430,14 @@ fun TripDatesCalendar(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Filled.KeyboardArrowLeft,
-                        contentDescription = "Previous",
+                        contentDescription = stringResource(R.string.itinerary_prev_cd),
                         modifier = Modifier.size(24.dp).clickable { currentMonth = currentMonth.minusMonths(1) },
                         tint = MaterialTheme.colorScheme.primary // DYNAMIC ICON
                     )
                     Text(currentMonth.format(formatter), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                     Icon(
                         Icons.Filled.KeyboardArrowRight,
-                        contentDescription = "Next",
+                        contentDescription = stringResource(R.string.itinerary_next_cd),
                         modifier = Modifier.size(24.dp).clickable { currentMonth = currentMonth.plusMonths(1) },
                         tint = MaterialTheme.colorScheme.primary // DYNAMIC ICON
                     )

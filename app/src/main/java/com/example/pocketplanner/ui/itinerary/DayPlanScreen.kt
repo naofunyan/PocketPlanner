@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,12 +29,12 @@ fun DayPlanScreen(
         containerColor = MaterialTheme.colorScheme.background, // DYNAMIC BACKGROUND
         topBar = {
             TopAppBar(
-                title = { Text("Day $dayNumber", color = MaterialTheme.colorScheme.onBackground) }, // DYNAMIC TEXT
+                title = { Text(String.format(stringResource(R.string.day_plan_title), dayNumber), color = MaterialTheme.colorScheme.onBackground) }, // DYNAMIC TEXT
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.day_plan_back_cd),
                             tint = MaterialTheme.colorScheme.onBackground // DYNAMIC ICON
                         )
                     }
@@ -48,7 +50,7 @@ fun DayPlanScreen(
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
                 contentAlignment = Alignment.Center // Centers the loading text nicely
             ) {
-                Text("Loading places from AI...", color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                Text(stringResource(R.string.day_plan_loading), color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
             }
         } else {
             LazyColumn(

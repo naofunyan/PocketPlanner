@@ -21,6 +21,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 import com.example.pocketplanner.core.offline.NetworkMonitor
 
 @Composable
@@ -46,9 +48,9 @@ fun OfflineBannerWrapper(content: @Composable () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                Icon(Icons.Filled.WifiOff, contentDescription = "Offline", tint = MaterialTheme.colorScheme.onError, modifier = Modifier.size(16.dp))
+                Icon(Icons.Filled.WifiOff, contentDescription = stringResource(R.string.offline_banner_cd), tint = MaterialTheme.colorScheme.onError, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("You're offline. Changes will sync later.", color = MaterialTheme.colorScheme.onError, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.offline_banner_message), color = MaterialTheme.colorScheme.onError, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
 

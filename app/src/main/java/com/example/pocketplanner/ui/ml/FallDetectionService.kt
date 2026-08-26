@@ -164,8 +164,8 @@ class FallDetectionService : Service(), SensorEventListener {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Safety Guard Active")
-            .setContentText("Monitoring for falls in the background.")
+            .setContentTitle(getString(R.string.fall_detection_service_title))
+            .setContentText(getString(R.string.fall_detection_service_desc))
             .setSmallIcon(R.drawable.logo)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -178,17 +178,17 @@ class FallDetectionService : Service(), SensorEventListener {
 
             val serviceChannel = NotificationChannel(
                 CHANNEL_ID,
-                "Fall Detection Service",
+                getString(R.string.fall_detection_channel_name),
                 NotificationManager.IMPORTANCE_LOW
             )
             manager.createNotificationChannel(serviceChannel)
 
             val alarmChannel = NotificationChannel(
                 ALARM_CHANNEL_ID,
-                "Emergency Fall Alerts",
+                getString(R.string.fall_alarm_channel_name),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Triggers the full-screen emergency countdown"
+                description = getString(R.string.fall_alarm_channel_desc)
             }
             manager.createNotificationChannel(alarmChannel)
         }

@@ -37,6 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,7 +62,7 @@ fun EmergencySharingScreen(
                 if (contactData != null) {
                     viewModel.addEmergencyContact(contactData)
                 } else {
-                    Toast.makeText(context, "Could not retrieve phone number", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.emergency_toast_no_phone), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -72,7 +74,7 @@ fun EmergencySharingScreen(
     ) { isGranted ->
         viewModel.updateAttachPictures(isGranted)
         if (!isGranted) {
-            Toast.makeText(context, "Camera permission required for this feature", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.emergency_toast_camera_permission), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -81,7 +83,7 @@ fun EmergencySharingScreen(
     ) { isGranted ->
         viewModel.updateAttachAudio(isGranted)
         if (!isGranted) {
-            Toast.makeText(context, "Microphone permission required for this feature", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.emergency_toast_mic_permission), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -89,15 +91,15 @@ fun EmergencySharingScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text("Emergency sharing", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(id = R.string.emergency_sharing_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(id = R.string.settings_cd_back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(id = R.string.emergency_cd_more_options))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -164,12 +166,12 @@ fun EmergencySharingScreen(
             // 2. Explanatory Texts
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(
-                    text = "Share your location and other info with your emergency contacts to let them know you need help.",
+                    text = stringResource(id = R.string.emergency_sharing_desc1),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "※Messages won't be sent if you've reached the message limit imposed by the country or region you're in.",
+                    text = stringResource(id = R.string.emergency_sharing_desc2),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -178,7 +180,7 @@ fun EmergencySharingScreen(
             // 3. Share With Section
             Column {
                 Text(
-                    text = "Share with",
+                    text = stringResource(id = R.string.emergency_share_with_label),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
@@ -199,7 +201,7 @@ fun EmergencySharingScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "Emergency contacts",
+                                text = stringResource(id = R.string.emergency_contacts_title),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.Medium
@@ -210,13 +212,13 @@ fun EmergencySharingScreen(
                                     contactPickerLauncher.launch(intent)
                                 }
                             ) {
-                                Text("Add", fontWeight = FontWeight.Bold)
+                                Text(stringResource(id = R.string.emergency_add_button), fontWeight = FontWeight.Bold)
                             }
                         }
 
                         if (contacts.isEmpty()) {
                             Text(
-                                text = "No contacts added yet.",
+                                text = stringResource(id = R.string.emergency_no_contacts),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 20.dp, top = 4.dp)
@@ -224,7 +226,7 @@ fun EmergencySharingScreen(
                         } else {
                             contacts.forEachIndexed { index, contactData ->
                                 val parts = contactData.split("|")
-                                val name = parts.getOrElse(0) { "Unknown" }
+                                val name = parts.getOrElse(0) { stringResource(id = R.string.emergency_unknown_contact) }
                                 val number = parts.getOrElse(1) { "" }
 
                                 Row(
@@ -251,7 +253,7 @@ fun EmergencySharingScreen(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Close,
-                                            contentDescription = "Remove contact",
+                                            contentDescription = stringResource(id = R.string.emergency_cd_remove_contact),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
@@ -265,7 +267,7 @@ fun EmergencySharingScreen(
             // 4. Share Surroundings Section
             Column(modifier = Modifier.padding(bottom = 120.dp)) {
                 Text(
-                    text = "Share your surroundings",
+                    text = stringResource(id = R.string.emergency_share_surroundings_label),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
@@ -283,14 +285,14 @@ fun EmergencySharingScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Attach pictures",
+                                    text = stringResource(id = R.string.emergency_attach_pictures),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurface,
                                     fontWeight = FontWeight.Medium
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Take pictures with the front and rear cameras and include them in your messages.",
+                                    text = stringResource(id = R.string.emergency_attach_pictures_desc),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     lineHeight = 20.sp
@@ -322,14 +324,14 @@ fun EmergencySharingScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Attach audio recording",
+                                    text = stringResource(id = R.string.emergency_attach_audio),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurface,
                                     fontWeight = FontWeight.Medium
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "Record 5 seconds of audio and include it in your messages.",
+                                    text = stringResource(id = R.string.emergency_attach_audio_desc),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     lineHeight = 20.sp
@@ -360,13 +362,13 @@ fun EmergencySharingScreen(
 
 @SuppressLint("Range")
 private fun resolvePhoneNumber(context: Context, uri: Uri): String? {
-    var contactName = "Unknown"
+    var contactName = context.getString(R.string.emergency_unknown_contact)
     var contactNumber: String? = null
 
     val cursor = context.contentResolver.query(uri, null, null, null, null)
     cursor?.use {
         if (it.moveToFirst()) {
-            contactName = it.getString(it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)) ?: "Unknown"
+            contactName = it.getString(it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)) ?: context.getString(R.string.emergency_unknown_contact)
             contactNumber = it.getString(it.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
         }
     }

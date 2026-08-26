@@ -140,8 +140,12 @@ fun CreateTripDetailsScreen(
     val startMillis = getCombinedMillis(startDatePickerState.selectedDateMillis, startTimePickerState.hour, startTimePickerState.minute)
     val endMillis = getCombinedMillis(endDatePickerState.selectedDateMillis, endTimePickerState.hour, endTimePickerState.minute)
 
-    val startDateText = startMillis?.let { dateTimeFormatter.format(Date(it)) } ?: "Set date & time"
-    val endDateText = endMillis?.let { dateTimeFormatter.format(Date(it)) } ?: "Optional"
+    val setDateTimeStr = androidx.compose.ui.res.stringResource(R.string.create_trip_set_datetime)
+    val optionalStr = androidx.compose.ui.res.stringResource(R.string.create_trip_optional)
+    val defaultTripName = String.format(androidx.compose.ui.res.stringResource(R.string.create_trip_default_name), destinations)
+    
+    val startDateText = startMillis?.let { dateTimeFormatter.format(Date(it)) } ?: setDateTimeStr
+    val endDateText = endMillis?.let { dateTimeFormatter.format(Date(it)) } ?: optionalStr
 
     val overlappingTripName = remember(startMillis, endMillis, existingTrips, editTripId) {
         if (startMillis == null || endMillis == null) return@remember null
@@ -156,7 +160,7 @@ fun CreateTripDetailsScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = if (editTripId != null) "Edit trip" else "New trip",
+                        text = if (editTripId != null) androidx.compose.ui.res.stringResource(R.string.create_trip_edit_title) else androidx.compose.ui.res.stringResource(R.string.create_trip_new_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground // DYNAMIC
@@ -174,7 +178,7 @@ fun CreateTripDetailsScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = androidx.compose.ui.res.stringResource(R.string.create_trip_back_cd),
                             tint = MaterialTheme.colorScheme.primary, // DYNAMIC
                             modifier = Modifier.size(20.dp)
                         )
@@ -202,7 +206,7 @@ fun CreateTripDetailsScreen(
                             val photoUrlToPass = if (customImageUri != null) customImageUri.toString() else coverPhotoUrl
                             val bAmt = budgetAmount.toDoubleOrNull()
                             val bCurr = if (bAmt != null) selectedCurrency else null
-                            val finalTripName = if (tripName.isNotBlank()) tripName else "Trip to $destinations"
+                            val finalTripName = if (tripName.isNotBlank()) tripName else defaultTripName
                             onCreateTrip(days, finalTripName, startMillis, finalEndMillis, photoUrlToPass, bAmt, bCurr, false, "None", isOpenEnded)
                         }
                     },
@@ -214,18 +218,18 @@ fun CreateTripDetailsScreen(
                     shape = RoundedCornerShape(28.dp)
                 ) {
                     if (isGenerating) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp)) // DYNAMIC
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp)) // DYNAMIC
                         Spacer(modifier = Modifier.width(12.dp))
-                        val loadingText = if (editTripId != null) "Saving Settings..." else "Generating Trip..."
-                        Text(loadingText, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary) // DYNAMIC
+                        val loadingText = if (editTripId != null) androidx.compose.ui.res.stringResource(R.string.create_trip_saving) else androidx.compose.ui.res.stringResource(R.string.create_trip_generating)
+                        Text(loadingText, fontSize = 18.sp, fontWeight = FontWeight.Bold) // DYNAMIC
                     } else {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             if (editTripId != null) {
-                                Text("Save Settings", fontSize = 18.sp, fontWeight = FontWeight.Bold) // DYNAMIC
+                                Text(androidx.compose.ui.res.stringResource(R.string.create_trip_save_settings), fontSize = 18.sp, fontWeight = FontWeight.Bold) // DYNAMIC
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Icon(imageVector = Icons.Filled.Save, contentDescription = null, modifier = Modifier.size(24.dp)) // DYNAMIC
                             } else {
-                                Text("Create Trip with AI", fontSize = 18.sp, fontWeight = FontWeight.Bold) // DYNAMIC
+                                Text(androidx.compose.ui.res.stringResource(R.string.create_trip_create_ai), fontSize = 18.sp, fontWeight = FontWeight.Bold) // DYNAMIC
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Icon(painter = painterResource(id = R.drawable.ai), contentDescription = null, modifier = Modifier.size(24.dp))
                             }
@@ -251,7 +255,7 @@ fun CreateTripDetailsScreen(
                 val imageUrl = customImageUri ?: coverPhotoUrl ?: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=800&auto=format&fit=crop"
                 Image(
                     painter = rememberAsyncImagePainter(imageUrl),
-                    contentDescription = "Cover Image",
+                    contentDescription = androidx.compose.ui.res.stringResource(R.string.create_trip_cover_cd),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -276,7 +280,7 @@ fun CreateTripDetailsScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Change Cover",
+                            text = androidx.compose.ui.res.stringResource(R.string.create_trip_change_cover),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface // DYNAMIC
@@ -303,7 +307,7 @@ fun CreateTripDetailsScreen(
                         onValueChange = { if (it.length <= 50) tripName = it },
                         placeholder = {
                             Text(
-                                "Name your trip",
+                                androidx.compose.ui.res.stringResource(R.string.create_trip_name_placeholder),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC
                                 fontWeight = FontWeight.Bold
                             )
@@ -360,7 +364,7 @@ fun CreateTripDetailsScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    "Trip dates",
+                                    androidx.compose.ui.res.stringResource(R.string.create_trip_dates),
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                     color = MaterialTheme.colorScheme.onSurface // DYNAMIC
                                 )
@@ -383,18 +387,18 @@ fun CreateTripDetailsScreen(
                                         .weight(1f)
                                         .clickable { showStartDatePicker = true }
                                 ) {
-                                    Text("Start date", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                                    Text(androidx.compose.ui.res.stringResource(R.string.create_trip_start_date), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         startDateText,
                                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                        color = if (startDateText == "Set date & time") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, // DYNAMIC
+                                        color = if (startDateText == setDateTimeStr) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, // DYNAMIC
                                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                     )
                                 }
 
                                 // Arrow sitting over the dashed line
-                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "To", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(20.dp)) // DYNAMIC
+                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = androidx.compose.ui.res.stringResource(R.string.create_trip_to_cd), tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(20.dp)) // DYNAMIC
 
                                 // End Date
                                 Column(
@@ -403,12 +407,12 @@ fun CreateTripDetailsScreen(
                                         .weight(1f)
                                         .clickable { showEndDatePicker = true }
                                 ) {
-                                    Text("End date", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                                    Text(androidx.compose.ui.res.stringResource(R.string.create_trip_end_date), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         endDateText,
                                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                        color = if (endDateText == "Optional") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, // DYNAMIC
+                                        color = if (endDateText == optionalStr) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, // DYNAMIC
                                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                     )
                                 }
@@ -429,13 +433,13 @@ fun CreateTripDetailsScreen(
                             ) {
                                 Icon(
                                     androidx.compose.material.icons.Icons.Default.Warning,
-                                    contentDescription = "Warning",
+                                    contentDescription = androidx.compose.ui.res.stringResource(R.string.create_trip_warning_cd),
                                     tint = MaterialTheme.colorScheme.onErrorContainer, // DYNAMIC
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    "Warning: This trip overlaps with your existing trip \"$overlappingTripName\".",
+                                    String.format(androidx.compose.ui.res.stringResource(R.string.create_trip_overlap_warning), overlappingTripName),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onErrorContainer, // DYNAMIC
                                     lineHeight = 16.sp
@@ -452,19 +456,19 @@ fun CreateTripDetailsScreen(
                         onValueChange = { budgetAmount = it },
                         placeholder = {
                             Text(
-                                "Budget (Optional)",
+                                androidx.compose.ui.res.stringResource(R.string.create_trip_budget_placeholder),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC
                                 fontWeight = FontWeight.Bold
                             )
                         },
                         leadingIcon = {
-                            Icon(painter = painterResource(id = R.drawable.ntbudget), contentDescription = "Budget", modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
+                            Icon(painter = painterResource(id = R.drawable.ntbudget), contentDescription = androidx.compose.ui.res.stringResource(R.string.create_trip_budget_cd), modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC
                         },
                         trailingIcon = {
                             Box {
                                 TextButton(onClick = { currencyDropdownExpanded = true }) {
                                     Text(selectedCurrency, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold) // DYNAMIC
-                                    Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select Currency", tint = MaterialTheme.colorScheme.primary) // DYNAMIC
+                                    Icon(Icons.Filled.ArrowDropDown, contentDescription = androidx.compose.ui.res.stringResource(R.string.create_trip_select_curr_cd), tint = MaterialTheme.colorScheme.primary) // DYNAMIC
                                 }
                                 DropdownMenu(
                                     expanded = currencyDropdownExpanded,
@@ -557,15 +561,15 @@ fun CreateTripDetailsScreen(
                         showStartTimePicker = true
                     },
                     enabled = startDatePickerState.selectedDateMillis != null
-                ) { Text("Next") }
+                ) { Text(androidx.compose.ui.res.stringResource(R.string.create_trip_next)) }
             },
             dismissButton = {
-                TextButton(onClick = { showStartDatePicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showStartDatePicker = false }) { Text(androidx.compose.ui.res.stringResource(R.string.create_trip_cancel)) }
             }
         ) {
             DatePicker(
                 state = startDatePickerState,
-                title = { Text(text = "Select Start Date", modifier = Modifier.padding(start = 24.dp, top = 24.dp)) },
+                title = { Text(text = androidx.compose.ui.res.stringResource(R.string.create_trip_select_start_date), modifier = Modifier.padding(start = 24.dp, top = 24.dp)) },
                 showModeToggle = false
             )
         }
@@ -575,14 +579,14 @@ fun CreateTripDetailsScreen(
         AlertDialog(
             onDismissRequest = { showStartTimePicker = false },
             confirmButton = {
-                TextButton(onClick = { showStartTimePicker = false }) { Text("OK") }
+                TextButton(onClick = { showStartTimePicker = false }) { Text(androidx.compose.ui.res.stringResource(R.string.create_trip_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showStartTimePicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showStartTimePicker = false }) { Text(androidx.compose.ui.res.stringResource(R.string.create_trip_cancel)) }
             },
             text = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Select Start Time", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 16.dp))
+                    Text(androidx.compose.ui.res.stringResource(R.string.create_trip_select_start_time), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 16.dp))
                     TimePicker(state = startTimePickerState)
                 }
             }
@@ -600,15 +604,15 @@ fun CreateTripDetailsScreen(
                         showEndTimePicker = true
                     },
                     enabled = endDatePickerState.selectedDateMillis != null
-                ) { Text("Next") }
+                ) { Text(androidx.compose.ui.res.stringResource(R.string.create_trip_next)) }
             },
             dismissButton = {
-                TextButton(onClick = { showEndDatePicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showEndDatePicker = false }) { Text(androidx.compose.ui.res.stringResource(R.string.create_trip_cancel)) }
             }
         ) {
             DatePicker(
                 state = endDatePickerState,
-                title = { Text(text = "Select End Date", modifier = Modifier.padding(start = 24.dp, top = 24.dp)) },
+                title = { Text(text = androidx.compose.ui.res.stringResource(R.string.create_trip_select_end_date), modifier = Modifier.padding(start = 24.dp, top = 24.dp)) },
                 showModeToggle = false
             )
         }
@@ -618,14 +622,14 @@ fun CreateTripDetailsScreen(
         AlertDialog(
             onDismissRequest = { showEndTimePicker = false },
             confirmButton = {
-                TextButton(onClick = { showEndTimePicker = false }) { Text("OK") }
+                TextButton(onClick = { showEndTimePicker = false }) { Text(androidx.compose.ui.res.stringResource(R.string.create_trip_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showEndTimePicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showEndTimePicker = false }) { Text(androidx.compose.ui.res.stringResource(R.string.create_trip_cancel)) }
             },
             text = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Select End Time", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 16.dp))
+                    Text(androidx.compose.ui.res.stringResource(R.string.create_trip_select_end_time), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 16.dp))
                     TimePicker(state = endTimePickerState)
                 }
             }

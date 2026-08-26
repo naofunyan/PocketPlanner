@@ -31,6 +31,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,7 +76,7 @@ fun SearchScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "New trip",
+                        stringResource(R.string.search_new_trip),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
@@ -99,7 +101,7 @@ fun SearchScreen(
                         ) {
                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
+                                contentDescription = stringResource(R.string.search_back_cd),
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -125,7 +127,7 @@ fun SearchScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(28.dp)
                 ) {
-                    Text("Continue", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary) // DYNAMIC TEXT
+                    Text(stringResource(R.string.search_continue), fontSize = 18.sp, fontWeight = FontWeight.Bold) // DYNAMIC TEXT
                 }
             }
         }
@@ -140,7 +142,7 @@ fun SearchScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Where are you going?",
+                text = stringResource(R.string.search_where_going),
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground, // DYNAMIC TEXT
@@ -170,14 +172,14 @@ fun SearchScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Search,
-                        contentDescription = "Search",
+                        contentDescription = stringResource(R.string.search_search_cd),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(28.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
 
                     Text(
-                        text = "Search for destinations",
+                        text = stringResource(R.string.search_for_destinations),
                         color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC TEXT
                         fontSize = 18.sp,
                         modifier = Modifier.weight(1f)
@@ -195,7 +197,7 @@ fun SearchScreen(
                 if (selectedDestinations.isEmpty()) {
                     Spacer(modifier = Modifier.height(32.dp))
                     Text(
-                        text = "Add the destinations you want to visit.\nYou can always add more later.",
+                        text = stringResource(R.string.search_add_dest_desc),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC TEXT
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -243,7 +245,7 @@ fun SearchScreen(
 
                                 Icon(
                                     imageVector = Icons.Filled.Close,
-                                    contentDescription = "Remove",
+                                    contentDescription = stringResource(R.string.search_remove_cd),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant, // DYNAMIC ICON
                                     modifier = Modifier
                                         .size(20.dp)
@@ -296,7 +298,7 @@ fun FullScreenAutocomplete(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = onClose) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC ICON
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.search_back_cd), tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC ICON
                         }
 
                         TextField(
@@ -312,14 +314,14 @@ fun FullScreenAutocomplete(
                                 unfocusedIndicatorColor = Color.Transparent,
                                 cursorColor = MaterialTheme.colorScheme.primary
                             ),
-                            placeholder = { Text("Search for destinations", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) }, // DYNAMIC TEXT
+                            placeholder = { Text(stringResource(R.string.search_for_destinations), color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)) }, // DYNAMIC TEXT
                             singleLine = true,
                             textStyle = TextStyle(fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                         )
 
                         if (searchQuery.isNotEmpty()) {
                             IconButton(onClick = { viewModel.clearSearch() }) {
-                                Icon(Icons.Filled.Close, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC ICON
+                                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.search_clear_cd), tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC ICON
                             }
                         }
                     }

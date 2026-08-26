@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -42,30 +43,31 @@ fun ImmersiveExperienceScreen(
 ) {
     var isFullscreen by remember { mutableStateOf(false) }
 
-    val tracks = remember(placeName) {
+    val context = LocalContext.current
+    val tracks = remember(placeName, context) {
         if (placeName == "War Remnants Museum") {
             listOf(
-                Track("1. Introduction", "Overview of the museum", R.raw.wrm_1_introduction),
-                Track("2. Tiger Cage System", "Reconstructed prison cells", R.raw.wrm_2_tigercagesystem),
-                Track("3. Guillotine", "French colonial execution tool", R.raw.wrm_3_guillotine),
-                Track("4. Agent Orange", "Impact of chemical warfare", R.raw.wrm_4_agentorange),
-                Track("5. Son My Massacre", "The My Lai tragedy", R.raw.wrm_5_sonmymassacre)
+                Track(context.getString(R.string.wrm_1_title), context.getString(R.string.wrm_1_subtitle), R.raw.wrm_1_introduction),
+                Track(context.getString(R.string.wrm_2_title), context.getString(R.string.wrm_2_subtitle), R.raw.wrm_2_tigercagesystem),
+                Track(context.getString(R.string.wrm_3_title), context.getString(R.string.wrm_3_subtitle), R.raw.wrm_3_guillotine),
+                Track(context.getString(R.string.wrm_4_title), context.getString(R.string.wrm_4_subtitle), R.raw.wrm_4_agentorange),
+                Track(context.getString(R.string.wrm_5_title), context.getString(R.string.wrm_5_subtitle), R.raw.wrm_5_sonmymassacre)
             )
         } else if (placeName == "The Independence Palace") {
             listOf(
-                Track("1. Architecture of the Independence Palace", "Introduction to Architecture", R.raw.tip_1_architecture),
-                Track("2. Outside Architecture", "Exterior design", R.raw.tip_2_outsidearchitecture),
-                Track("3. Inside Architecture", "Interior design", R.raw.tip_3_insidearchitecture),
-                Track("4. Conference Hall", "Main meeting hall", R.raw.tip_4_conferencehall),
-                Track("5. Cabinet Room", "Government meetings", R.raw.tip_5_cabinetroom),
-                Track("6. State Banqueting Hall", "Official dinners", R.raw.tip_6_statebanquetinghall),
-                Track("7. Ambassador's Chamber", "Diplomatic reception", R.raw.tip_7_ambassadorschamber),
-                Track("8. Presidential Office", "Working space", R.raw.tip_8_presidentialoffice),
-                Track("9. Vice President's Office", "Working space", R.raw.tip_9_vicepresidentoffice),
-                Track("10. Presidential Reception Rooms", "Receiving guests", R.raw.tip_10_presidentialreceptionrooms),
-                Track("11. Central Staircase", "Main staircase", R.raw.tip_11_centralstaircase),
-                Track("12. Rooftop", "Heliport & views", R.raw.tip_12_rooftop),
-                Track("13. Bunker", "Underground command center", R.raw.tip_13_bunker)
+                Track(context.getString(R.string.tip_1_title), context.getString(R.string.tip_1_subtitle), R.raw.tip_1_architecture),
+                Track(context.getString(R.string.tip_2_title), context.getString(R.string.tip_2_subtitle), R.raw.tip_2_outsidearchitecture),
+                Track(context.getString(R.string.tip_3_title), context.getString(R.string.tip_3_subtitle), R.raw.tip_3_insidearchitecture),
+                Track(context.getString(R.string.tip_4_title), context.getString(R.string.tip_4_subtitle), R.raw.tip_4_conferencehall),
+                Track(context.getString(R.string.tip_5_title), context.getString(R.string.tip_5_subtitle), R.raw.tip_5_cabinetroom),
+                Track(context.getString(R.string.tip_6_title), context.getString(R.string.tip_6_subtitle), R.raw.tip_6_statebanquetinghall),
+                Track(context.getString(R.string.tip_7_title), context.getString(R.string.tip_7_subtitle), R.raw.tip_7_ambassadorschamber),
+                Track(context.getString(R.string.tip_8_title), context.getString(R.string.tip_8_subtitle), R.raw.tip_8_presidentialoffice),
+                Track(context.getString(R.string.tip_9_title), context.getString(R.string.tip_9_subtitle), R.raw.tip_9_vicepresidentoffice),
+                Track(context.getString(R.string.tip_10_title), context.getString(R.string.tip_10_subtitle), R.raw.tip_10_presidentialreceptionrooms),
+                Track(context.getString(R.string.tip_11_title), context.getString(R.string.tip_11_subtitle), R.raw.tip_11_centralstaircase),
+                Track(context.getString(R.string.tip_12_title), context.getString(R.string.tip_12_subtitle), R.raw.tip_12_rooftop),
+                Track(context.getString(R.string.tip_13_title), context.getString(R.string.tip_13_subtitle), R.raw.tip_13_bunker)
             )
         } else {
             emptyList()
@@ -73,8 +75,6 @@ fun ImmersiveExperienceScreen(
     }
     
     var selectedTrackIndex by remember { mutableIntStateOf(0) }
-    
-    val context = LocalContext.current
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     var isPlaying by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
@@ -124,10 +124,10 @@ fun ImmersiveExperienceScreen(
         topBar = {
             if (!isFullscreen) {
                 CenterAlignedTopAppBar(
-                    title = { Text("Absolute Experience", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) },
+                    title = { Text(stringResource(R.string.explore_immersive_title), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) },
                     navigationIcon = {
                         IconButton(onClick = onNavigateBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.explore_immersive_back), tint = MaterialTheme.colorScheme.primary)
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -166,7 +166,7 @@ fun ImmersiveExperienceScreen(
                 if (staticMaps.containsKey(placeName)) {
                     AsyncImage(
                         model = staticMaps[placeName],
-                        contentDescription = "Static Map",
+                        contentDescription = stringResource(R.string.explore_immersive_static_map),
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxSize().background(Color.White)
                     )
@@ -216,7 +216,7 @@ fun ImmersiveExperienceScreen(
                             
                             AsyncImage(
                                 model = imgUrl,
-                                contentDescription = "Static Map",
+                                contentDescription = stringResource(R.string.explore_immersive_static_map),
                                 contentScale = ContentScale.Fit, // Using Fit so the entire map is visible
                                 modifier = Modifier.fillMaxSize().background(Color.White) // Added white background for transparent PNG maps
                             )
@@ -236,7 +236,7 @@ fun ImmersiveExperienceScreen(
                         ) {
                             Icon(
                                 Icons.Filled.Refresh, 
-                                contentDescription = "Reload",
+                                contentDescription = stringResource(R.string.explore_immersive_reload),
                                 modifier = Modifier.padding(8.dp),
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
@@ -252,7 +252,7 @@ fun ImmersiveExperienceScreen(
                             .padding(12.dp)
                     ) {
                         Row(modifier = Modifier.padding(2.dp)) {
-                            listOf("360 VR", "Map 1", "Map 2").forEachIndexed { index, title ->
+                            listOf(stringResource(R.string.explore_immersive_tab_360vr), stringResource(R.string.explore_immersive_tab_map1), stringResource(R.string.explore_immersive_tab_map2)).forEachIndexed { index, title ->
                                 val isSelected = pagerState.currentPage == index
                                 Surface(
                                     shape = RoundedCornerShape(12.dp),
@@ -286,7 +286,7 @@ fun ImmersiveExperienceScreen(
                 ) {
                     Icon(
                         Icons.Filled.Fullscreen,
-                        contentDescription = if (isFullscreen) "Exit Fullscreen" else "Fullscreen",
+                        contentDescription = if (isFullscreen) stringResource(R.string.explore_immersive_exit_fullscreen) else stringResource(R.string.explore_immersive_fullscreen),
                         modifier = Modifier.padding(12.dp),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
@@ -295,7 +295,7 @@ fun ImmersiveExperienceScreen(
 
             if (!isFullscreen) {
                 Spacer(modifier = Modifier.height(24.dp))
-                Text("Audio guide", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onBackground)
+                Text(stringResource(R.string.explore_immersive_audio_guide), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onBackground)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (tracks.isEmpty()) {
@@ -304,7 +304,7 @@ fun ImmersiveExperienceScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Audio Guide is not supported for this location.",
+                            text = stringResource(R.string.explore_immersive_no_audio),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -438,8 +438,8 @@ fun BottomPlayer(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Filled.SkipPrevious, contentDescription = "Previous Track", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp).clickable { onPreviousClick() })
-                Icon(Icons.Filled.Replay10, contentDescription = "Rewind 10s", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp).clickable { onRewindClick() })
+                Icon(Icons.Filled.SkipPrevious, contentDescription = stringResource(R.string.explore_immersive_prev_track), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp).clickable { onPreviousClick() })
+                Icon(Icons.Filled.Replay10, contentDescription = stringResource(R.string.explore_immersive_rewind), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp).clickable { onRewindClick() })
                 
                 Surface(
                     shape = CircleShape,
@@ -449,14 +449,14 @@ fun BottomPlayer(
                 ) {
                     Icon(
                         if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                        contentDescription = "Play/Pause",
+                        contentDescription = stringResource(R.string.explore_immersive_play_pause),
                         tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.padding(12.dp)
                     )
                 }
                 
-                Icon(Icons.Filled.Forward10, contentDescription = "Forward 10s", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp).clickable { onFastForwardClick() })
-                Icon(Icons.Filled.SkipNext, contentDescription = "Next Track", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp).clickable { onNextClick() })
+                Icon(Icons.Filled.Forward10, contentDescription = stringResource(R.string.explore_immersive_forward), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp).clickable { onFastForwardClick() })
+                Icon(Icons.Filled.SkipNext, contentDescription = stringResource(R.string.explore_immersive_next_track), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp).clickable { onNextClick() })
             }
         }
     }
@@ -513,7 +513,7 @@ fun TrackItem(track: Track, isSelected: Boolean, onClick: () -> Unit) {
                 ) {
                     Icon(
                         Icons.Filled.Pause, // Indicating it's active
-                        contentDescription = "Playing",
+                        contentDescription = stringResource(R.string.explore_immersive_playing),
                         tint = Color.White,
                         modifier = Modifier.padding(8.dp)
                     )
@@ -521,7 +521,7 @@ fun TrackItem(track: Track, isSelected: Boolean, onClick: () -> Unit) {
             } else {
                  Icon(
                     Icons.Filled.PlayArrow,
-                    contentDescription = "Play",
+                    contentDescription = stringResource(R.string.explore_immersive_play),
                     tint = playPauseColor,
                     modifier = Modifier.size(24.dp)
                 )

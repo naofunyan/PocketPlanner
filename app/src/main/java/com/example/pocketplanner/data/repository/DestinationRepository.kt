@@ -2,6 +2,9 @@ package com.example.pocketplanner.data.repository
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 // --- 1. THE DATA CLASSES ---
 
@@ -22,7 +25,8 @@ data class Subplace(
     val highlights: List<PlaceHighlight>,
     val openingTime: String,
     val ticketPrice: String,
-    val theme: String // Required for your ExploreScreen filters!
+    val theme: String, // Required for your ExploreScreen filters!
+    val displayName: String = name
 )
 
 data class City(
@@ -33,7 +37,8 @@ data class City(
     val flagEmoji: String,
     val heroImageUrl: String,
     val theme: String, // Required for your ExploreScreen filters!
-    val topPlaces: List<Subplace> // The Parent holds the Children
+    val topPlaces: List<Subplace>, // The Parent holds the Children
+    val displayTitle: String = title
 )
 
 
@@ -362,9 +367,177 @@ object DestinationRepository {
         )
     )
 
+
+
     // --- HELPER FUNCTION FOR EXPLORE SCREEN ---
     // This magically flattens every Subplace from every City into one giant list!
     // It allows your "Under the radar", "Search", and "Saved" sections to easily grab the individual places.
     val allSubplaces: List<Subplace>
         get() = cities.flatMap { it.topPlaces }
+}
+
+@Composable
+fun City.localized(): City {
+    val titleRes = when(id) {
+        "Ho Chi Minh City" -> R.string.city_hcmc_title
+        "Hanoi" -> R.string.city_hanoi_title
+        "Da Nang" -> R.string.city_danang_title
+        "Hue" -> R.string.city_hue_title
+        else -> null
+    }
+    val taglineRes = when(id) {
+        "Ho Chi Minh City" -> R.string.city_hcmc_tagline
+        "Hanoi" -> R.string.city_hanoi_tagline
+        "Da Nang" -> R.string.city_danang_tagline
+        "Hue" -> R.string.city_hue_tagline
+        else -> null
+    }
+    val descRes = when(id) {
+        "Ho Chi Minh City" -> R.string.city_hcmc_desc
+        "Hanoi" -> R.string.city_hanoi_desc
+        "Da Nang" -> R.string.city_danang_desc
+        "Hue" -> R.string.city_hue_desc
+        else -> null
+    }
+    
+    return this.copy(
+        displayTitle = titleRes?.let { stringResource(it) } ?: title,
+        tagline = taglineRes?.let { stringResource(it) } ?: tagline,
+        description = descRes?.let { stringResource(it) } ?: description,
+        topPlaces = topPlaces.map { it.localized() }
+    )
+}
+
+@Composable
+fun Subplace.localized(): Subplace {
+    val nameRes = when(name) {
+        "The Independence Palace" -> R.string.subplace_tip_name
+        "War Remnants Museum" -> R.string.subplace_wrm_name
+        "Cu Chi Tunnels" -> R.string.subplace_cuchi_name
+        "Saigon Zoo & Botanical Gardens" -> R.string.subplace_zoo_name
+        "Banh Mi Huynh Hoa" -> R.string.subplace_banhmi_name
+        "Hoa Lo Prison" -> R.string.subplace_hoalo_name
+        "Ho Chi Minh Mausoleum" -> R.string.subplace_mausoleum_name
+        "St. Joseph's Cathedral" -> R.string.subplace_stjoseph_name
+        "Hoan Kiem Walking Street" -> R.string.subplace_hoankiem_name
+        "Bun Cha Huong Lien" -> R.string.subplace_buncha_name
+        "Ba Na Hills SunWorld" -> R.string.subplace_bana_name
+        "Son Tra Beach" -> R.string.subplace_sontra_name
+        "Golden Bridge" -> R.string.subplace_golden_name
+        "Hue Imperial City (The Citadel)" -> R.string.subplace_citadel_name
+        "Thien Mu Pagoda" -> R.string.subplace_thienmu_name
+        "Lang Co Beach" -> R.string.subplace_langco_name
+        "Bach Ma National Park" -> R.string.subplace_bachma_name
+        else -> null
+    }
+    
+    val subtitleRes = when(name) {
+        "The Independence Palace" -> R.string.subplace_tip_subtitle
+        "War Remnants Museum" -> R.string.subplace_wrm_subtitle
+        "Cu Chi Tunnels" -> R.string.subplace_cuchi_subtitle
+        "Saigon Zoo & Botanical Gardens" -> R.string.subplace_zoo_subtitle
+        "Banh Mi Huynh Hoa" -> R.string.subplace_banhmi_subtitle
+        "Hoa Lo Prison" -> R.string.subplace_hoalo_subtitle
+        "Ho Chi Minh Mausoleum" -> R.string.subplace_mausoleum_subtitle
+        "St. Joseph's Cathedral" -> R.string.subplace_stjoseph_subtitle
+        "Hoan Kiem Walking Street" -> R.string.subplace_hoankiem_subtitle
+        "Bun Cha Huong Lien" -> R.string.subplace_buncha_subtitle
+        "Ba Na Hills SunWorld" -> R.string.subplace_bana_subtitle
+        "Son Tra Beach" -> R.string.subplace_sontra_subtitle
+        "Golden Bridge" -> R.string.subplace_golden_subtitle
+        "Hue Imperial City (The Citadel)" -> R.string.subplace_citadel_subtitle
+        "Thien Mu Pagoda" -> R.string.subplace_thienmu_subtitle
+        "Lang Co Beach" -> R.string.subplace_langco_subtitle
+        "Bach Ma National Park" -> R.string.subplace_bachma_subtitle
+        else -> null
+    }
+    
+    val descRes = when(name) {
+        "The Independence Palace" -> R.string.subplace_tip_desc
+        "War Remnants Museum" -> R.string.subplace_wrm_desc
+        "Cu Chi Tunnels" -> R.string.subplace_cuchi_desc
+        "Saigon Zoo & Botanical Gardens" -> R.string.subplace_zoo_desc
+        "Banh Mi Huynh Hoa" -> R.string.subplace_banhmi_desc
+        "Hoa Lo Prison" -> R.string.subplace_hoalo_desc
+        "Ho Chi Minh Mausoleum" -> R.string.subplace_mausoleum_desc
+        "St. Joseph's Cathedral" -> R.string.subplace_stjoseph_desc
+        "Hoan Kiem Walking Street" -> R.string.subplace_hoankiem_desc
+        "Bun Cha Huong Lien" -> R.string.subplace_buncha_desc
+        "Ba Na Hills SunWorld" -> R.string.subplace_bana_desc
+        "Son Tra Beach" -> R.string.subplace_sontra_desc
+        "Golden Bridge" -> R.string.subplace_golden_desc
+        "Hue Imperial City (The Citadel)" -> R.string.subplace_citadel_desc
+        "Thien Mu Pagoda" -> R.string.subplace_thienmu_desc
+        "Lang Co Beach" -> R.string.subplace_langco_desc
+        "Bach Ma National Park" -> R.string.subplace_bachma_desc
+        else -> null
+    }
+    
+    val openingRes = when(openingTime) {
+        "7:00 AM - 6:00 PM" -> R.string.opening_time_1
+        "7:30 AM - 5:30 PM" -> R.string.opening_time_2
+        "7:00 AM – 5:00 PM" -> R.string.opening_time_3
+        "7:00 AM – 6:30 PM" -> R.string.opening_time_4
+        "6:00 AM – 10:00 PM" -> R.string.opening_time_5
+        "8:00 AM - 5:00 PM" -> R.string.opening_time_6
+        "7:30 AM - 10:30 AM (From April 1 - October 31) / 8:00 AM - 11:00 AM (From November 1 - March 31). Every Tuesday, Wednesday, Thursday, Saturday, and Sunday)" -> R.string.opening_time_7
+        "5:00 AM - 11:30 AM / 2:00 PM - 7:30 PM" -> R.string.opening_time_8
+        "7:00 PM on Friday - Sunday midnight." -> R.string.opening_time_9
+        "8:30 AM - 2:30 PM / 5:00 PM - 8:30 PM" -> R.string.opening_time_10
+        "8:00 AM - 10:00 PM" -> R.string.opening_time_11
+        "Open 24/7" -> R.string.opening_time_12
+        "8:00 AM - 7:00 PM" -> R.string.opening_time_13
+        "7:30 AM - 5:00 PM" -> R.string.opening_time_14
+        else -> null
+    }
+    
+    val priceRes = when(ticketPrice) {
+        "80,000 VND" -> R.string.ticket_price_1
+        "40,000 VND" -> R.string.ticket_price_2
+        "90,000 - 110,000 VND" -> R.string.ticket_price_3
+        "60,000 VND" -> R.string.ticket_price_4
+        "28,000 - 78,000 VND" -> R.string.ticket_price_5
+        "50,000 VND" -> R.string.ticket_price_6
+        "25,000 VND" -> R.string.ticket_price_7
+        "130,000 VND" -> R.string.ticket_price_8
+        "650,000 - 1,050,000 VND (Includes cable car)" -> R.string.ticket_price_9
+        "150,000 VND" -> R.string.ticket_price_12
+        "65,000 VND" -> R.string.ticket_price_13
+        "Free" -> R.string.ticket_price_free
+        "Free Entry" -> R.string.ticket_price_10
+        "Access is included with your general admission ticket to Sun World Ba Na Hills" -> R.string.ticket_price_11
+        else -> null
+    }
+    
+    val countryRes = when(countryName) {
+        "Vietnam" -> R.string.country_vietnam
+        else -> null
+    }
+
+    val highlightsLocal = highlights.map { hl -> 
+        hl.copy(
+            title = when(hl.title) {
+                "ARCHITECTURE" -> stringResource(R.string.highlight_architecture)
+                "HISTORY" -> stringResource(R.string.highlight_history)
+                "MILITARY EQUIPMENT" -> stringResource(R.string.highlight_military)
+                "ANIMAL" -> stringResource(R.string.highlight_animal)
+                "FOOD" -> stringResource(R.string.highlight_food)
+                "NATURE" -> stringResource(R.string.highlight_nature)
+                "SCENERY" -> stringResource(R.string.highlight_scenery)
+                "RELAX" -> stringResource(R.string.highlight_relax)
+                "HIKING" -> stringResource(R.string.highlight_hiking)
+                else -> hl.title
+            }
+        )
+    }
+
+    return this.copy(
+        displayName = nameRes?.let { stringResource(it) } ?: name,
+        subtitle = subtitleRes?.let { stringResource(it) } ?: subtitle,
+        description = descRes?.let { stringResource(it) } ?: description,
+        openingTime = openingRes?.let { stringResource(it) } ?: openingTime,
+        ticketPrice = priceRes?.let { stringResource(it) } ?: ticketPrice,
+        countryName = countryRes?.let { stringResource(it) } ?: countryName,
+        highlights = highlightsLocal
+    )
 }

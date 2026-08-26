@@ -1,5 +1,7 @@
 package com.example.pocketplanner.ui.explore
 
+import com.example.pocketplanner.data.repository.localized
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.res.painterResource
@@ -57,12 +59,12 @@ fun PlaceDetailsScreen(
 ) {
     val savedNames by exploreViewModel.savedPlaces.collectAsState()
 
-    val place = com.example.pocketplanner.data.repository.DestinationRepository.allSubplaces.find { it.name == placeName }
+    val place = com.example.pocketplanner.data.repository.DestinationRepository.allSubplaces.find { it.name == placeName }?.localized()
         ?: com.example.pocketplanner.data.repository.Subplace(
-            name = placeName, subtitle = "Discover $placeName", description = "No description available yet.",
-            countryName = "Global", flagEmoji = "🌍", heroImageUrl = "https://picsum.photos/seed/${placeName.replace(" ", "")}hero/800/1000",
+            name = placeName, subtitle = String.format(androidx.compose.ui.res.stringResource(R.string.place_details_fallback_subtitle), placeName), description = androidx.compose.ui.res.stringResource(R.string.place_details_fallback_desc),
+            countryName = androidx.compose.ui.res.stringResource(R.string.place_details_fallback_country), flagEmoji = "🌍", heroImageUrl = "https://picsum.photos/seed/${placeName.replace(" ", "")}hero/800/1000",
             mapImageUrl = "https://picsum.photos/seed/${placeName.replace(" ", "")}map/1000/1200", highlights = emptyList(),
-            openingTime = "Check local times", ticketPrice = "Varies", theme = "Saved"
+            openingTime = androidx.compose.ui.res.stringResource(R.string.place_details_fallback_time), ticketPrice = androidx.compose.ui.res.stringResource(R.string.place_details_fallback_price), theme = androidx.compose.ui.res.stringResource(R.string.place_details_fallback_theme)
         )
 
     val subplaceCoordinates = mapOf(
@@ -108,6 +110,9 @@ fun PlaceDetailsScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    
+    val placeDetailsAddedSnackbarTemplate = androidx.compose.ui.res.stringResource(R.string.place_details_added_snackbar)
+    val placeDetailsViewActionText = androidx.compose.ui.res.stringResource(R.string.place_details_view_action)
 
     LaunchedEffect(place.name) {
         val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
@@ -181,7 +186,7 @@ fun PlaceDetailsScreen(
                             modifier = Modifier.size(44.dp).clickable { onNavigateBack() }
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(22.dp)) // DYNAMIC ICON
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, androidx.compose.ui.res.stringResource(R.string.place_details_back_cd), tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(22.dp)) // DYNAMIC ICON
                             }
                         }
 
@@ -196,7 +201,7 @@ fun PlaceDetailsScreen(
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = if (isSaved) Icons.Filled.Bookmark else Icons.Default.BookmarkBorder,
-                                    contentDescription = "Bookmark", tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(22.dp) // DYNAMIC ICON
+                                    contentDescription = androidx.compose.ui.res.stringResource(R.string.place_details_bookmark_cd), tint = if (isSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(22.dp) // DYNAMIC ICON
                                 )
                             }
                         }
@@ -252,7 +257,7 @@ fun PlaceDetailsScreen(
                                     Row(modifier = Modifier.padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                                         Icon(painter = painterResource(id = R.drawable.impression), null, tint = MaterialTheme.colorScheme.onSecondary, modifier = Modifier.size(18.dp))
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Absolute Experience", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondary))
+                                        Text(androidx.compose.ui.res.stringResource(R.string.place_details_immersive), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondary))
                                     }
                                 }
                             }
@@ -280,7 +285,7 @@ fun PlaceDetailsScreen(
 
                     if (selectedTripForPlan == null) {
                         Text(
-                            text = "Add to which trip?",
+                            text = androidx.compose.ui.res.stringResource(R.string.place_details_add_to_which_trip),
                             color = MaterialTheme.colorScheme.onSurface, // DYNAMIC TEXT
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
@@ -288,7 +293,7 @@ fun PlaceDetailsScreen(
 
                         if (trips.isEmpty()) {
                             Text(
-                                text = "You don't have any upcoming trips yet.",
+                                text = androidx.compose.ui.res.stringResource(R.string.place_details_no_trips),
                                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant // DYNAMIC TEXT
                             )
@@ -315,12 +320,12 @@ fun PlaceDetailsScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back",
+                                Icons.AutoMirrored.Filled.ArrowBack, contentDescription = androidx.compose.ui.res.stringResource(R.string.place_details_back_cd),
                                 tint = MaterialTheme.colorScheme.onSurface, // DYNAMIC ICON
                                 modifier = Modifier.clickable { selectedTripForPlan = null }.padding(8.dp)
                             )
                             Text(
-                                text = "Select Day", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                text = androidx.compose.ui.res.stringResource(R.string.place_details_select_day), style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.onSurface, // DYNAMIC TEXT
                                 modifier = Modifier.padding(start = 8.dp)
                             )
@@ -346,17 +351,21 @@ fun PlaceDetailsScreen(
                                         val savedTripId = selectedTripForPlan!!.id
                                         val savedTripName = selectedTripForPlan!!.name
                                         selectedTripForPlan = null
+                                        
+                                        // Hoisted strings for coroutine scope
+                                        val addedMessage = String.format(placeDetailsAddedSnackbarTemplate, savedTripName, targetDay)
+                                        val viewAction = placeDetailsViewActionText
 
                                         scope.launch {
                                             val result = snackbarHostState.showSnackbar(
-                                                message = "Added to $savedTripName, Day $targetDay", actionLabel = "View", duration = SnackbarDuration.Short
+                                                message = addedMessage, actionLabel = viewAction, duration = SnackbarDuration.Short
                                             )
                                             if (result == SnackbarResult.ActionPerformed) { onViewTrip(savedTripId) }
                                         }
                                     }.padding(horizontal = 24.dp, vertical = 16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("Day $targetDay - ${targetDate.format(formatter)}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
+                                    Text(String.format(androidx.compose.ui.res.stringResource(R.string.place_details_day_format), targetDay, targetDate.format(formatter)), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                                 }
                             }
                         }
@@ -374,7 +383,7 @@ private fun PlaceHeroBanner(place: com.example.pocketplanner.data.repository.Sub
 
     Box(modifier = Modifier.fillMaxWidth().height(340.dp + topPadding).clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))) {
         AsyncImage(
-            model = place.heroImageUrl, contentDescription = place.name,
+            model = place.heroImageUrl, contentDescription = place.displayName,
             contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
         )
         Box(modifier = Modifier.fillMaxSize().background(
@@ -401,7 +410,7 @@ private fun PlaceHeroBanner(place: com.example.pocketplanner.data.repository.Sub
 
         Column(modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 24.dp, vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = place.name, color = Color.White, textAlign = TextAlign.Center, // Kept white
+                text = place.displayName, color = Color.White, textAlign = TextAlign.Center, // Kept white
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold, fontSize = 42.sp, shadow = Shadow(Color.Black.copy(alpha = 0.8f), Offset(0f, 2f), 12f))
             )
             Spacer(modifier = Modifier.height(4.dp))
@@ -415,9 +424,9 @@ private fun PlaceHeroBanner(place: com.example.pocketplanner.data.repository.Sub
                 onClick = onAddToPlan, shape = CircleShape, color = MaterialTheme.colorScheme.primary, shadowElevation = 8.dp, modifier = Modifier.height(48.dp) // DYNAMIC BACKGROUND
             ) {
                 Row(modifier = Modifier.padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                    Icon(Icons.Filled.Add, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp)) // DYNAMIC ICON
+                    Icon(Icons.Filled.Add, null, modifier = Modifier.size(18.dp)) // DYNAMIC ICON
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Add to plan", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)) // DYNAMIC TEXT
+                    Text(androidx.compose.ui.res.stringResource(R.string.place_details_add_to_plan), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)) // DYNAMIC TEXT
                 }
             }
         }
@@ -479,13 +488,13 @@ fun PlaceDescriptionSection(place: com.example.pocketplanner.data.repository.Sub
                         modifier = Modifier.size(44.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.Schedule, contentDescription = "Time", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp)) // DYNAMIC ICON
+                            Icon(Icons.Default.Schedule, contentDescription = androidx.compose.ui.res.stringResource(R.string.place_details_time_cd), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp)) // DYNAMIC ICON
                         }
                     }
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = "Opening Hours", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                        Text(text = androidx.compose.ui.res.stringResource(R.string.place_details_opening_hours), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(text = place.openingTime, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                     }
@@ -504,13 +513,13 @@ fun PlaceDescriptionSection(place: com.example.pocketplanner.data.repository.Sub
                         modifier = Modifier.size(44.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.Info, contentDescription = "Price", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp)) // DYNAMIC ICON
+                            Icon(Icons.Default.Info, contentDescription = androidx.compose.ui.res.stringResource(R.string.place_details_price_cd), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp)) // DYNAMIC ICON
                         }
                     }
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = "Price", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                        Text(text = androidx.compose.ui.res.stringResource(R.string.place_details_price), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(text = place.ticketPrice, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                     }

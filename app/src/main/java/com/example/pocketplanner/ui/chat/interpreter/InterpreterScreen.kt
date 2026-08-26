@@ -35,11 +35,15 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.activity.compose.BackHandler
 
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
+
+@Composable
 fun getLanguageDisplayName(code: String): String {
     return when (code) {
-        "vi" -> "Vietnamese"
-        "en" -> "English"
-        else -> "Unknown"
+        "vi" -> stringResource(R.string.interpreter_lang_vi)
+        "en" -> stringResource(R.string.interpreter_lang_en)
+        else -> stringResource(R.string.interpreter_lang_unknown)
     }
 }
 
@@ -152,14 +156,14 @@ fun InterpreterScreen(
                         onClick = { isTopPanelFlipped = !isTopPanelFlipped },
                         modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape).size(48.dp) // DYNAMIC BACKGROUND
                     ) {
-                        Icon(painter = painterResource(id = com.example.pocketplanner.R.drawable.flip), contentDescription = "Rotate Screen", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp)) // DYNAMIC ICON
+                        Icon(painter = painterResource(id = com.example.pocketplanner.R.drawable.flip), contentDescription = stringResource(R.string.interpreter_rotate_cd), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp)) // DYNAMIC ICON
                     }
 
                     IconButton(
                         onClick = { showHistory = true },
                         modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape).size(48.dp) // DYNAMIC BACKGROUND
                     ) {
-                        Icon(Icons.Default.History, contentDescription = "History", tint = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC ICON
+                        Icon(Icons.Default.History, contentDescription = stringResource(R.string.interpreter_history_cd), tint = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC ICON
                     }
                 }
 
@@ -196,7 +200,7 @@ fun InterpreterScreen(
                         // Tiny offline indicator if needed
                         if (mode == ConnectionMode.OFFLINE_MLKIT) {
                             Text(
-                                text = "Offline Mode",
+                                text = stringResource(R.string.interpreter_offline_mode),
                                 color = MaterialTheme.colorScheme.error, // DYNAMIC TEXT
                                 fontSize = 10.sp,
                                 modifier = Modifier.padding(16.dp).align(Alignment.TopEnd)
@@ -216,14 +220,14 @@ fun InterpreterScreen(
         ) {
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 32.dp)) {
                 Text(
-                    text = "Translation History",
+                    text = stringResource(R.string.interpreter_history_title),
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface, // DYNAMIC TEXT
                     fontSize = 20.sp,
                     modifier = Modifier.padding(bottom = 16.dp, top = 8.dp)
                 )
                 if (messages.isEmpty()) {
-                    Text("No history yet.", color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                    Text(stringResource(R.string.interpreter_history_empty), color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                 } else {
                     messages.forEach { msg ->
                         Column(modifier = Modifier.padding(bottom = 16.dp)) {
@@ -265,10 +269,10 @@ fun LanguagePickerBottomSheet(
     onLanguageSelected: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val title = if (isForMe) "My language" else "Other person's language"
+    val title = if (isForMe) stringResource(R.string.interpreter_my_language) else stringResource(R.string.interpreter_other_language)
     val languages = listOf(
-        "vi" to "Vietnamese",
-        "en" to "English"
+        "vi" to stringResource(R.string.interpreter_lang_vi),
+        "en" to stringResource(R.string.interpreter_lang_en)
     )
 
     ModalBottomSheet(
@@ -383,7 +387,7 @@ fun SpeakerPanel(
                     onClick = onReplayPress,
                     modifier = Modifier.size(48.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape) // DYNAMIC BORDER
                 ) {
-                    Icon(Icons.Default.Replay, contentDescription = "Replay", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                    Icon(Icons.Default.Replay, contentDescription = stringResource(R.string.interpreter_replay_cd), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                 }
 
                 IconButton(
@@ -392,7 +396,7 @@ fun SpeakerPanel(
                 ) {
                     val icon = if (isMuted) Icons.Default.VolumeOff else Icons.Default.VolumeUp
                     val tint = if (isMuted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary // DYNAMIC ICON
-                    Icon(icon, contentDescription = "Mute Toggle", tint = tint, modifier = Modifier.size(24.dp))
+                    Icon(icon, contentDescription = stringResource(R.string.interpreter_mute_cd), tint = tint, modifier = Modifier.size(24.dp))
                 }
             }
 
@@ -403,7 +407,7 @@ fun SpeakerPanel(
                         Text(text = subLanguageName, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp) // DYNAMIC TEXT
                     }
                 }
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Select Language", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 4.dp)) // DYNAMIC ICON
+                Icon(Icons.Default.KeyboardArrowDown, contentDescription = stringResource(R.string.interpreter_select_lang_cd), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 4.dp)) // DYNAMIC ICON
             }
 
             Box(
@@ -421,7 +425,7 @@ fun SpeakerPanel(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Mic, contentDescription = "Speak", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                Icon(Icons.Default.Mic, contentDescription = stringResource(R.string.interpreter_speak_cd), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
             }
         }
     }

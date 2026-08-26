@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,11 +48,11 @@ fun FallDetectionSettingsScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Hard fall detection", fontWeight = FontWeight.Bold)
+                    Text(stringResource(id = R.string.fall_detection_title), fontWeight = FontWeight.Bold)
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(id = R.string.settings_cd_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -81,7 +83,7 @@ fun FallDetectionSettingsScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = if (isEnabled) "On" else "Off",
+                        text = if (isEnabled) stringResource(id = R.string.fall_detection_on) else stringResource(id = R.string.fall_detection_off),
                         style = MaterialTheme.typography.titleLarge,
                         color = if (isEnabled) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Medium
@@ -139,7 +141,7 @@ fun FallDetectionSettingsScreen(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        text = "After a fall, your phone will alert you for 30 seconds with a full-screen popup, sound, and heavy vibration. You can cancel the alert or swipe to send SOS messages right away.",
+                        text = stringResource(id = R.string.fall_detection_info_1),
                         fontSize = 15.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Start,
@@ -149,7 +151,7 @@ fun FallDetectionSettingsScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "If you don't respond for 30 seconds, SOS messages will be sent to the emergency contacts you set. The message will include your current location.",
+                        text = stringResource(id = R.string.fall_detection_info_2),
                         fontSize = 15.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Start,
@@ -173,14 +175,14 @@ fun FallDetectionSettingsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "High sensitivity",
+                            text = stringResource(id = R.string.fall_detection_high_sensitivity),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Medium
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "More falls will be detected, but sudden movements or dropping your phone may also trigger false alarms. Best for people who have a high risk of falling.",
+                            text = stringResource(id = R.string.fall_detection_high_sensitivity_desc),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 20.sp
@@ -213,7 +215,7 @@ fun FallDetectionSettingsScreen(
                         .padding(24.dp)
                 ) {
                     Text(
-                        text = "Emergency number to call",
+                        text = stringResource(id = R.string.fall_detection_emergency_number),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Medium
@@ -243,14 +245,14 @@ fun FallDetectionSettingsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Send SOS to emergency contacts",
+                                text = stringResource(id = R.string.fall_detection_send_sos),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.Medium
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Text your location and an SOS message to your emergency contacts.",
+                                text = stringResource(id = R.string.fall_detection_send_sos_desc),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 lineHeight = 20.sp
@@ -265,7 +267,7 @@ fun FallDetectionSettingsScreen(
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Emergency sharing settings",
+                        text = stringResource(id = R.string.fall_detection_emergency_sharing_settings),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary, // Blue interactive text
                         fontWeight = FontWeight.Medium,
@@ -283,7 +285,7 @@ fun FallDetectionSettingsScreen(
                 containerColor = MaterialTheme.colorScheme.surface,
                 title = {
                     Text(
-                        text = "Emergency number",
+                        text = stringResource(id = R.string.fall_detection_dialog_title),
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -298,7 +300,7 @@ fun FallDetectionSettingsScreen(
                                     tempNumber = newValue
                                 }
                             },
-                            label = { Text("Number to call") },
+                            label = { Text(stringResource(id = R.string.fall_detection_dialog_label)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
@@ -310,7 +312,7 @@ fun FallDetectionSettingsScreen(
                             contentPadding = PaddingValues(0.dp),
                             modifier = Modifier.padding(top = 8.dp)
                         ) {
-                            Text("Revert to default (113)", color = MaterialTheme.colorScheme.primary)
+                            Text(stringResource(id = R.string.fall_detection_dialog_revert), color = MaterialTheme.colorScheme.primary)
                         }
                     }
                 },
@@ -323,12 +325,12 @@ fun FallDetectionSettingsScreen(
                             showNumberDialog = false
                         }
                     ) {
-                        Text("Save", fontWeight = FontWeight.Bold)
+                        Text(stringResource(id = R.string.fall_detection_dialog_save), fontWeight = FontWeight.Bold)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showNumberDialog = false }) {
-                        Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(id = R.string.fall_detection_dialog_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             )

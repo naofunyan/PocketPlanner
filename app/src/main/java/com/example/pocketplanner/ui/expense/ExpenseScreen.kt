@@ -84,6 +84,8 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.*
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,7 +121,7 @@ fun ExpenseScreen(
                 shape = CircleShape,
                 modifier = Modifier.padding(bottom = 92.dp)
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add Expense")
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.expense_add_fab_cd))
             }
         }
     ) { innerPadding ->
@@ -138,10 +140,12 @@ fun ExpenseScreen(
                             .padding(horizontal = 24.dp)
                             .padding(bottom = 24.dp)
                     ) {
+                        val tripTo = stringResource(R.string.expense_trip_to, trip?.destination ?: "")
+                        val loading = stringResource(R.string.expense_loading)
                         Text(
                             text = trip?.let {
-                                if (it.name.isNotBlank()) it.name else "Trip to ${it.destination}"
-                            } ?: "Loading...",
+                                if (it.name.isNotBlank()) it.name else tripTo
+                            } ?: loading,
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground // DYNAMIC TEXT
@@ -149,10 +153,11 @@ fun ExpenseScreen(
                         Spacer(modifier = Modifier.height(4.dp))
                         if (trip != null) {
                             val startStr = dateFormatter.format(Date(trip!!.startDate))
-                            val endStr = if (trip!!.isOpenEnded) "Ongoing" else dateFormatter.format(Date(trip!!.endDate))
+                            val ongoing = stringResource(R.string.expense_ongoing)
+                            val endStr = if (trip!!.isOpenEnded) ongoing else dateFormatter.format(Date(trip!!.endDate))
                             val days = if (trip!!.isOpenEnded) ((System.currentTimeMillis() - trip!!.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1 else ((trip!!.endDate - trip!!.startDate) / 86400000L).toInt().coerceAtLeast(0) + 1
                             Text(
-                                text = "$startStr - $endStr • $days Days",
+                                text = stringResource(R.string.expense_duration_format, startStr, endStr, days),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant // DYNAMIC TEXT
                             )
@@ -203,7 +208,7 @@ fun ExpenseScreen(
                         .size(40.dp)
                         .clickable(onClick = onNavigateBack)
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", modifier = Modifier.padding(8.dp), tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC ICON
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.expense_back_cd), modifier = Modifier.padding(8.dp), tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC ICON
                 }
             }
 
@@ -224,8 +229,8 @@ fun ExpenseScreen(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        BottomNavPill("Plan", false, Modifier.weight(1f)) { onPlanClick() }
-                        BottomNavPill("Expense", true, Modifier.weight(1f)) { }
+                        BottomNavPill(stringResource(R.string.expense_nav_plan), false, Modifier.weight(1f)) { onPlanClick() }
+                        BottomNavPill(stringResource(R.string.expense_nav_expense), true, Modifier.weight(1f)) { }
                     }
                 }
             }
@@ -298,18 +303,18 @@ fun TransactionRow(
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             containerColor = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
-            title = { Text("Delete Expense", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) }, // DYNAMIC TEXT
-            text = { Text("Are you sure you want to delete '${expense.description}'? This cannot be undone.", color = MaterialTheme.colorScheme.onSurfaceVariant) }, // DYNAMIC TEXT
+            title = { Text(stringResource(R.string.expense_delete_title), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) }, // DYNAMIC TEXT
+            text = { Text(stringResource(R.string.expense_delete_message, expense.description), color = MaterialTheme.colorScheme.onSurfaceVariant) }, // DYNAMIC TEXT
             confirmButton = {
                 TextButton(onClick = {
                     showDeleteDialog = false
                     onDelete(expense)
                 }) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) // DYNAMIC TEXT
+                    Text(stringResource(R.string.expense_delete_confirm), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) // DYNAMIC TEXT
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel", color = MaterialTheme.colorScheme.primary) } // DYNAMIC TEXT
+                TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.expense_delete_cancel), color = MaterialTheme.colorScheme.primary) } // DYNAMIC TEXT
             }
         )
     }
@@ -503,7 +508,7 @@ fun AddExpenseForm(
                 if (foundCat != null) category = foundCat.name
                 if (result.notes.isNotEmpty()) notes = result.notes
             } else {
-                android.widget.Toast.makeText(context, "Failed to analyze receipt. Please try again.", android.widget.Toast.LENGTH_SHORT).show()
+                android.widget.Toast.makeText(context, context.getString(R.string.expense_scan_failed), android.widget.Toast.LENGTH_SHORT).show()
             }
             isScanning = false
         }
@@ -542,10 +547,10 @@ fun AddExpenseForm(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onDismiss) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground) // DYNAMIC ICON
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.expense_back_cd), tint = MaterialTheme.colorScheme.onBackground) // DYNAMIC ICON
             }
             Text(
-                "Add Expense",
+                stringResource(R.string.expense_add_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground, // DYNAMIC TEXT
@@ -572,7 +577,7 @@ fun AddExpenseForm(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(24.dp)
                 ) {
-                    Text("AMOUNT", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                    Text(stringResource(R.string.expense_amount_label), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                     Spacer(modifier = Modifier.height(16.dp))
 
                     val numberFormatter = remember { java.text.DecimalFormat("#,###") }
@@ -686,7 +691,7 @@ fun AddExpenseForm(
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
 
-                    Text("Category", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                    Text(stringResource(R.string.expense_category_label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                     Spacer(modifier = Modifier.height(12.dp))
 
                     @OptIn(ExperimentalLayoutApi::class)
@@ -719,13 +724,13 @@ fun AddExpenseForm(
                                 ) {
                                     Icon(
                                         imageVector = cat.icon,
-                                        contentDescription = cat.name,
+                                        contentDescription = getTranslatedCategory(cat.name),
                                         tint = cat.color,
                                         modifier = Modifier.size(18.dp)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = cat.name,
+                                        text = getTranslatedCategory(cat.name),
                                         style = MaterialTheme.typography.labelMedium,
                                         color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface, // DYNAMIC TEXT
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
@@ -737,14 +742,16 @@ fun AddExpenseForm(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Text("Date", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                    val dateLabel = stringResource(R.string.expense_date_label)
+                    Text(dateLabel, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                     Spacer(modifier = Modifier.height(8.dp))
                     Box(modifier = Modifier.fillMaxWidth()) {
                         OutlinedTextField(
                             value = displayDate,
                             onValueChange = {},
                             readOnly = true,
-                            leadingIcon = { Icon(Icons.Filled.DateRange, contentDescription = "Date", tint = MaterialTheme.colorScheme.onSurfaceVariant) }, // DYNAMIC ICON
+                            leadingIcon = { Icon(Icons.Filled.DateRange, contentDescription = dateLabel, tint = MaterialTheme.colorScheme.onSurfaceVariant) }, // DYNAMIC ICON
+
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
@@ -766,7 +773,7 @@ fun AddExpenseForm(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Text("Receipt / Image", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                    Text(stringResource(R.string.expense_receipt_label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if (receiptUri == null) {
@@ -793,10 +800,10 @@ fun AddExpenseForm(
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(40.dp)) { // DYNAMIC BACKGROUND
-                                    Icon(Icons.Filled.CameraAlt, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.padding(8.dp)) // DYNAMIC ICON
+                                    Icon(Icons.Filled.CameraAlt, contentDescription = null, modifier = Modifier.padding(8.dp)) // DYNAMIC ICON
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text("Tap to upload receipt", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                                Text(stringResource(R.string.expense_tap_upload), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                             }
                         }
                         Spacer(modifier = Modifier.height(12.dp))
@@ -808,7 +815,7 @@ fun AddExpenseForm(
                             Icon(Icons.Filled.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Upload a receipt to auto-fill with AI",
+                                text = stringResource(R.string.expense_upload_autofill_hint),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -818,7 +825,7 @@ fun AddExpenseForm(
                             Box(modifier = Modifier.fillMaxWidth().height(200.dp)) {
                                 AsyncImage(
                                     model = receiptUri,
-                                    contentDescription = "Receipt",
+                                    contentDescription = stringResource(R.string.expense_receipt_cd),
                                     contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                                     modifier = Modifier
                                         .fillMaxSize()
@@ -835,7 +842,7 @@ fun AddExpenseForm(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Filled.Close,
-                                            contentDescription = "Remove",
+                                            contentDescription = stringResource(R.string.expense_remove_cd),
                                             tint = Color.White,
                                             modifier = Modifier.padding(4.dp).size(20.dp)
                                         )
@@ -852,7 +859,7 @@ fun AddExpenseForm(
                                         ) {
                                             CircularProgressIndicator(color = Color.White)
                                             Spacer(modifier = Modifier.height(8.dp))
-                                            Text("Scanning receipt...", color = Color.White, style = MaterialTheme.typography.labelMedium)
+                                            Text(stringResource(R.string.expense_scanning), color = Color.White, style = MaterialTheme.typography.labelMedium)
                                         }
                                     }
                                 }
@@ -868,13 +875,13 @@ fun AddExpenseForm(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 if (isScanning) {
-                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), color = MaterialTheme.colorScheme.onPrimary)
+                                    CircularProgressIndicator(modifier = Modifier.size(16.dp))
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Scanning...", color = MaterialTheme.colorScheme.onPrimary)
+                                    Text(stringResource(R.string.expense_scanning_btn))
                                 } else {
-                                    Icon(Icons.Filled.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+                                    Icon(Icons.Filled.AutoAwesome, contentDescription = null)
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Auto-fill with AI", color = MaterialTheme.colorScheme.onPrimary)
+                                    Text(stringResource(R.string.expense_autofill_btn))
                                 }
                             }
                         }
@@ -882,12 +889,12 @@ fun AddExpenseForm(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Text("Notes (Optional)", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
+                    Text(stringResource(R.string.expense_notes_label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) // DYNAMIC TEXT
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = notes,
                         onValueChange = { notes = it },
-                        placeholder = { Text("Add any extra details here...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) }, // DYNAMIC TEXT
+                        placeholder = { Text(stringResource(R.string.expense_notes_placeholder), color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) }, // DYNAMIC TEXT
                         modifier = Modifier.fillMaxWidth().height(100.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -907,15 +914,16 @@ fun AddExpenseForm(
                     val finalDescription = if (notes.isNotBlank()) "$category - $notes" else category
                     onSave(rawVndAmount, category, finalDescription, selectedMillis)
                 },
+                enabled = rawVndAmount > 0.0,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary) // DYNAMIC BACKGROUND
             ) {
-                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary) // DYNAMIC ICON
+                Icon(Icons.Filled.CheckCircle, contentDescription = null) // DYNAMIC ICON
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Save Expense", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary) // DYNAMIC TEXT
+                Text(stringResource(R.string.expense_save_btn), fontSize = 16.sp, fontWeight = FontWeight.Bold) // DYNAMIC TEXT
             }
         }
     }
@@ -924,10 +932,10 @@ fun AddExpenseForm(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("OK") }
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.expense_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.expense_cancel)) }
             }
         ) {
             DatePicker(state = datePickerState, showModeToggle = false)
@@ -938,7 +946,7 @@ fun AddExpenseForm(
         AlertDialog(
             onDismissRequest = { showImageSourceDialog = false },
             containerColor = MaterialTheme.colorScheme.surface, // DYNAMIC BACKGROUND
-            title = { Text("Upload Receipt", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) }, // DYNAMIC TEXT
+            title = { Text(stringResource(R.string.expense_upload_receipt_title), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) }, // DYNAMIC TEXT
             text = {
                 Column {
                     TextButton(
@@ -951,7 +959,7 @@ fun AddExpenseForm(
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Start, modifier = Modifier.fillMaxWidth()) {
                             Icon(Icons.Filled.PhotoLibrary, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC ICON
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text("Choose from Gallery", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
+                            Text(stringResource(R.string.expense_choose_gallery), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                         }
                     }
                     TextButton(
@@ -967,13 +975,13 @@ fun AddExpenseForm(
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Start, modifier = Modifier.fillMaxWidth()) {
                             Icon(Icons.Filled.PhotoCamera, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) // DYNAMIC ICON
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text("Take a Photo", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
+                            Text(stringResource(R.string.expense_take_photo), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface) // DYNAMIC TEXT
                         }
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showImageSourceDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showImageSourceDialog = false }) { Text(stringResource(R.string.expense_cancel)) }
             }
         )
     }

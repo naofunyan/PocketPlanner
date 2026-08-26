@@ -1,5 +1,9 @@
 package com.example.pocketplanner.ui.navigation
 
+import androidx.compose.ui.res.stringResource
+
+import androidx.compose.ui.unit.sp
+
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -73,7 +77,8 @@ fun MainScreen() {
                         currentDestination?.route?.contains("EmergencySharingRoute") == false &&
                         currentDestination?.route?.contains("MedicalInfoRoute") == false &&
                         currentDestination?.route?.contains("ImmersiveExperienceRoute") == false &&
-                        currentDestination?.route?.contains("TripSummaryRoute") == false
+                        currentDestination?.route?.contains("TripSummaryRoute") == false &&
+                        currentDestination?.route?.contains("TravelStatsRoute") == false
 
     OfflineBannerWrapper {
         Scaffold(
@@ -106,20 +111,21 @@ fun MainScreen() {
                             .weight(1f)
                             .height(72.dp),
                         shape = androidx.compose.foundation.shape.RoundedCornerShape(36.dp),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.surface,
                         shadowElevation = 8.dp
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                                .padding(horizontal = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             val isHome = currentDestination?.hierarchy?.any { it.route?.contains("HomeRoute") == true } == true
                             BottomNavTab(
-                                iconResId = com.example.pocketplanner.R.drawable.navhome,
-                                label = "Home",
+                                modifier = Modifier.weight(1f),
+                                  iconResId = com.example.pocketplanner.R.drawable.navhome,
+                                label = stringResource(com.example.pocketplanner.R.string.nav_home),
                                 isSelected = isHome,
                                 onClick = {
                                     navController.navigate(HomeRoute) {
@@ -132,8 +138,9 @@ fun MainScreen() {
 
                             val isExplore = currentDestination?.hierarchy?.any { it.route?.contains("ExploreRoute") == true } == true
                             BottomNavTab(
-                                iconResId = com.example.pocketplanner.R.drawable.navexplore,
-                                label = "Explore",
+                                modifier = Modifier.weight(1f),
+                                  iconResId = com.example.pocketplanner.R.drawable.navexplore,
+                                label = stringResource(com.example.pocketplanner.R.string.nav_explore),
                                 isSelected = isExplore,
                                 onClick = {
                                     navController.navigate(ExploreRoute) {
@@ -146,8 +153,9 @@ fun MainScreen() {
 
                             val isWallet = currentDestination?.hierarchy?.any { it.route?.contains("GlobalWalletRoute") == true } == true
                             BottomNavTab(
-                                iconResId = com.example.pocketplanner.R.drawable.navwallet,
-                                label = "Wallet",
+                                modifier = Modifier.weight(1f),
+                                  iconResId = com.example.pocketplanner.R.drawable.navwallet,
+                                label = stringResource(com.example.pocketplanner.R.string.nav_wallet),
                                 isSelected = isWallet,
                                 onClick = {
                                     navController.navigate(GlobalWalletRoute) {
@@ -160,8 +168,9 @@ fun MainScreen() {
 
                             val isSettings = currentDestination?.hierarchy?.any { it.route?.contains("SettingsRoute") == true } == true
                             BottomNavTab(
-                                iconResId = com.example.pocketplanner.R.drawable.navsettings,
-                                label = "Settings",
+                                modifier = Modifier.weight(1f),
+                                  iconResId = com.example.pocketplanner.R.drawable.navsettings,
+                                label = stringResource(com.example.pocketplanner.R.string.nav_settings),
                                 isSelected = isSettings,
                                 onClick = {
                                     navController.navigate(SettingsRoute) {
@@ -176,7 +185,7 @@ fun MainScreen() {
                         Surface(
                             modifier = Modifier.size(72.dp),
                             shape = androidx.compose.foundation.shape.CircleShape,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.surface,
                             shadowElevation = 8.dp
                         ) {
                             Column(
@@ -286,7 +295,8 @@ fun MainScreen() {
                         }
                     },
                     onEditTripClick = { tripId -> navController.navigate(EditTripDetailsRoute(tripId)) },
-                    onAddTripClick = { navController.navigate(SearchRoute) }
+                    onAddTripClick = { navController.navigate(SearchRoute) },
+                    onStatsClick = { navController.navigate(TravelStatsRoute) }
                 )
             }
 
@@ -365,9 +375,7 @@ fun MainScreen() {
                 )
             }
 
-            composable<AlertsRoute> {
-                com.example.pocketplanner.ui.alerts.AlertsScreen()
-            }
+
 
             composable<SearchRoute> {
                 com.example.pocketplanner.ui.search.SearchScreen(
@@ -548,6 +556,12 @@ fun MainScreen() {
                 )
             }
 
+            composable<TravelStatsRoute> {
+                com.example.pocketplanner.ui.summary.TravelStatsScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
             composable<SettingsRoute> {
                 com.example.pocketplanner.ui.settings.SettingsScreen(
                     onNavigateBack = { navController.popBackStack() },
@@ -604,28 +618,36 @@ fun MainScreen() {
 }
 
 @Composable
-fun BottomNavTab(iconResId: Int, label: String, isSelected: Boolean, onClick: () -> Unit) {
+fun BottomNavTab(iconResId: Int, label: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp, vertical = 8.dp)
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier
+            .clickable(
+                interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
+            .padding(horizontal = 2.dp, vertical = 8.dp)
     ) {
-        // Center the icon by providing consistent top padding, removing the active dot
-        Spacer(modifier = Modifier.height(4.dp))
-
         androidx.compose.foundation.Image(
             painter = androidx.compose.ui.res.painterResource(id = iconResId),
             contentDescription = label,
             modifier = Modifier.size(24.dp),
-            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray)
+            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray,
-            maxLines = 1
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontSize = 10.sp,
+                lineHeight = 12.sp,
+                letterSpacing = 0.sp
+            ),
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Visible,
+            softWrap = false
         )
     }
 }

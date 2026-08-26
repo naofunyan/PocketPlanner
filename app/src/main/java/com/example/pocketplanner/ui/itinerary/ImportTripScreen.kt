@@ -12,6 +12,8 @@ import kotlinx.coroutines.launch
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -75,13 +77,13 @@ fun ImportTripScreen(
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) // DYNAMIC COLOR
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Importing Trip...",
+                    text = stringResource(R.string.import_trip_importing),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onBackground // DYNAMIC TEXT
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Please wait while we download the itinerary details.",
+                    text = stringResource(R.string.import_trip_wait_msg),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -89,19 +91,19 @@ fun ImportTripScreen(
             } else if (errorMessage != null) {
                 Icon(
                     imageVector = Icons.Filled.Error,
-                    contentDescription = "Error",
+                    contentDescription = stringResource(R.string.import_trip_error_cd),
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(64.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Failed to Import Trip",
+                    text = stringResource(R.string.import_trip_failed_title),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onBackground // DYNAMIC TEXT
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = errorMessage ?: "Unknown error",
+                    text = errorMessage ?: stringResource(R.string.import_trip_unknown_error),
                     color = MaterialTheme.colorScheme.error,
                     textAlign = TextAlign.Center
                 )
@@ -113,7 +115,7 @@ fun ImportTripScreen(
                         contentColor = MaterialTheme.colorScheme.onPrimary // DYNAMIC TEXT
                     )
                 ) {
-                    Text("Go Home")
+                    Text(stringResource(R.string.import_trip_go_home))
                 }
             }
         }

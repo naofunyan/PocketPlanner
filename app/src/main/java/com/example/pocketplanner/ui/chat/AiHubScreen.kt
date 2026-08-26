@@ -37,6 +37,8 @@ import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.res.stringResource
+import com.example.pocketplanner.R
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -78,7 +80,12 @@ fun AiHubScreen(
         }
     }
 
-    val tabs = listOf("CHAT", "LIVE", "TRANSLATE", "INTERPRETER")
+    val tabs = listOf(
+        stringResource(R.string.ai_hub_tab_chat), 
+        stringResource(R.string.ai_hub_tab_live), 
+        stringResource(R.string.ai_hub_tab_translate), 
+        stringResource(R.string.ai_hub_tab_interpreter)
+    )
     var tabWidths by remember { mutableStateOf(List(tabs.size) { 0.dp }) }
     var tabOffsets by remember { mutableStateOf(List(tabs.size) { 0.dp }) }
     var tabHeight by remember { mutableStateOf(32.dp) }
@@ -120,7 +127,7 @@ fun AiHubScreen(
                     exit = fadeOut()
                 ) {
                     Text(
-                        text = "Swipe for more AI tools ➔",
+                        text = stringResource(R.string.ai_hub_swipe_hint),
                         color = Color.Gray,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
