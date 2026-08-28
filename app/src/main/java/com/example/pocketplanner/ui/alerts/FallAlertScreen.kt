@@ -19,10 +19,16 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowRight
 import androidx.compose.material.icons.filled.PhoneInTalk
 import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material.icons.filled.FlashlightOn
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import android.hardware.camera2.CameraManager
+import android.media.MediaPlayer
+import android.media.RingtoneManager
+import android.net.Uri
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -138,6 +144,64 @@ fun FallAlertScreen(
         }
     }
 
+    // Flashlight & Sound State
+    var isFlashlightOn by remember { mutableStateOf(false) }
+    var isSoundPlaying by remember { mutableStateOf(false) }
+    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+    
+    val cameraManager = remember { context.getSystemService(Context.CAMERA_SERVICE) as? CameraManager }
+    val cameraId = remember { 
+        try { 
+            cameraManager?.cameraIdList?.firstOrNull() 
+        } catch (e: Exception) { 
+            null 
+        } 
+    }
+
+    fun toggleFlashlight() {
+        try {
+            if (cameraId != null) {
+                isFlashlightOn = !isFlashlightOn
+                cameraManager?.setTorchMode(cameraId, isFlashlightOn)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun toggleSound() {
+        if (isSoundPlaying) {
+            mediaPlayer?.stop()
+            mediaPlayer?.release()
+            mediaPlayer = null
+            isSoundPlaying = false
+        } else {
+            try {
+                val alarmUri: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                    ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+                mediaPlayer = MediaPlayer.create(context, alarmUri).apply {
+                    isLooping = true
+                    start()
+                }
+                isSoundPlaying = true
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    // Cleanup resources
+    DisposableEffect(Unit) {
+        onDispose {
+            mediaPlayer?.release()
+            try {
+                if (cameraId != null) {
+                    cameraManager?.setTorchMode(cameraId, false)
+                }
+            } catch (e: Exception) {}
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -207,7 +271,43 @@ fun FallAlertScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Flashlight and Alarm Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Button(
+                    onClick = { toggleFlashlight() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isFlashlightOn) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.surface,
+                        contentColor = if (isFlashlightOn) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onSurface
+                    ),
+                    modifier = Modifier.weight(1f).height(56.dp),
+                    shape = CircleShape
+                ) {
+                    Icon(Icons.Default.FlashlightOn, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(if (isFlashlightOn) stringResource(R.string.fall_alert_flash_off) else stringResource(R.string.fall_alert_flash_on), fontWeight = FontWeight.Bold)
+                }
+
+                Button(
+                    onClick = { toggleSound() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isSoundPlaying) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.surface,
+                        contentColor = if (isSoundPlaying) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onSurface
+                    ),
+                    modifier = Modifier.weight(1f).height(56.dp),
+                    shape = CircleShape
+                ) {
+                    Icon(Icons.Default.VolumeUp, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(if (isSoundPlaying) stringResource(R.string.fall_alert_sound_stop) else stringResource(R.string.fall_alert_sound_play), fontWeight = FontWeight.Bold)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Swipe to Cancel Button
             SwipeToActionButton(

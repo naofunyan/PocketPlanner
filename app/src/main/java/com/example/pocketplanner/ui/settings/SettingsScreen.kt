@@ -64,7 +64,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val user = FirebaseAuth.getInstance().currentUser
-    val userName = user?.displayName?.takeIf { it.isNotBlank() } ?: "naofunyan"
+    val userName = user?.displayName?.takeIf { it.isNotBlank() } ?: stringResource(id = R.string.settings_default_username)
     val userEmail = user?.email ?: stringResource(id = R.string.settings_not_logged_in)
 
     val safeUserName = userName.replace(" ", "+")

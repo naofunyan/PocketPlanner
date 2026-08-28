@@ -27,6 +27,11 @@
     <string name="fall_alert_summary_allergies">Dị ứng</string>
     <string name="fall_alert_summary_conditions">Tình trạng bệnh</string>
     <string name="fall_alert_summary_notes">Ghi chú</string>
+    <string name="fall_alert_flash_on">Bật đèn Flash</string>
+    <string name="fall_alert_flash_off">Tắt đèn Flash</string>
+    <string name="fall_alert_sound_play">Phát âm thanh</string>
+    <string name="fall_alert_sound_stop">Tắt âm thanh</string>
+    <string name="fall_detection_test_button">Kiểm tra Màn hình Cảnh báo</string>
 
     <!-- AuthScreen -->
     <string name="auth_logo_desc">Biểu trưng</string>
@@ -609,6 +614,7 @@
     <!-- SettingsScreen -->
     <string name="settings_title">Cài đặt</string>
     <string name="settings_not_logged_in">Chưa đăng nhập</string>
+    <string name="settings_default_username">Người dùng</string>
     <string name="settings_language_english">Tiếng Anh</string>
     <string name="settings_language_vietnamese">Tiếng Việt</string>
     <string name="settings_permission_notification">Cần cấp quyền thông báo để nhận cảnh báo.</string>
@@ -811,5 +817,6 @@
     <string name="subplace_thienmu_name">Chùa Thiên Mụ</string>
     <string name="subplace_langco_name">Biển Lăng Cô</string>
     <string name="subplace_bachma_name">Vườn quốc gia Bạch Mã</string>
+
 </resources>
 

@@ -276,6 +276,27 @@ fun FallDetectionSettingsScreen(
                 }
             }
 
+            // 6. Test Fall Alert Button
+            Button(
+                onClick = {
+                    val intent = android.content.Intent(context, com.example.pocketplanner.ui.alerts.EmergencyAlertActivity::class.java)
+                    context.startActivity(intent)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                )
+            ) {
+                Icon(Icons.Default.WarningAmber, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(id = R.string.fall_detection_test_button), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            }
+
         }
 
         // --- DIALOG FOR EDITING NUMBER ---

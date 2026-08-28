@@ -29,6 +29,11 @@
     <string name="fall_alert_summary_allergies">Allergies</string>
     <string name="fall_alert_summary_conditions">Medical Conditions</string>
     <string name="fall_alert_summary_notes">Notes</string>
+    <string name="fall_alert_flash_on">Flash On</string>
+    <string name="fall_alert_flash_off">Flash Off</string>
+    <string name="fall_alert_sound_play">Play Sound</string>
+    <string name="fall_alert_sound_stop">Stop Sound</string>
+    <string name="fall_detection_test_button">Test Fall Alert Screen</string>
 
     <!-- AuthScreen -->
     <string name="auth_logo_desc">Logo Desc</string>
@@ -611,6 +616,7 @@
     <!-- SettingsScreen -->
     <string name="settings_title">Settings</string>
     <string name="settings_not_logged_in">Not logged in</string>
+    <string name="settings_default_username">User</string>
     <string name="settings_language_english">English</string>
     <string name="settings_language_vietnamese">Vietnamese</string>
     <string name="settings_permission_notification">Notification permission is required to receive alerts.</string>
@@ -813,5 +819,5 @@
     <string name="subplace_thienmu_name">Thien Mu Pagoda</string>
     <string name="subplace_langco_name">Lang Co Beach</string>
     <string name="subplace_bachma_name">Bach Ma National Park</string>
-</resources>
 
+</resources>
