@@ -82,6 +82,9 @@ class EmergencyActionManager(private val context: Context) {
                     sendSmsToContacts(phoneNumbers, message)
                 }
 
+                // 5. Initiate emergency phone call
+                makeEmergencyCall(emergencyNumber)
+
             } catch (e: Exception) {
                 Log.e("EmergencyActionManager", "SOS Sequence Failed", e)
             }
