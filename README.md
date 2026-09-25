@@ -10,27 +10,23 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
 [![GitHub License](https://img.shields.io/github/license/naofunyan/PocketPlanner?style=for-the-badge&color=DF7D46&v=1)](https://github.com/naofunyan/PocketPlanner/blob/main/LICENSE)
-[![GitHub Release](https://img.shields.io/github/v/release/naofunyan/PocketPlanner?style=for-the-badge&color=D25252&v=1)](https://github.com/naofunyan/PocketPlanner/releases)
 [![GitHub Repo stars](https://img.shields.io/github/stars/naofunyan/PocketPlanner?style=for-the-badge&color=D49F3E&v=1)](https://github.com/naofunyan/PocketPlanner/stargazers)
 
 ⭐️ If you find PocketPlanner useful, consider leaving a star to support the project ⭐️
 
-<br/>
-
-<a href="https://github.com/naofunyan/PocketPlanner/releases/latest" target="_self"><img src="https://img.shields.io/badge/Download-APK-2ea44f?style=for-the-badge&logo=android&logoColor=white" height="42" alt="Download APK" /></a>&nbsp;&nbsp;<a href="https://github.com/naofunyan/PocketPlanner/releases" target="_self"><img src="https://img.shields.io/badge/GitHub-Releases-181717?style=for-the-badge&logo=github&logoColor=white" height="42" alt="GitHub Releases" /></a>
 
 </div>
 
 ## ℹ️ About
 
-**PocketPlanner** is an open-source, offline-first travel planning and personal safety companion application for Android. Designed to streamline every stage of your journey, PocketPlanner pairs an intelligent itinerary manager and multi-currency expense tracker with next-generation Google Gemini AI capabilities — including real-time multimodal live voice/vision streaming and face-to-face interpretation.
+**PocketPlanner** is an open-source, offline-first travel planning and personal safety companion application for Android. Designed to streamline every stage of your journey, PocketPlanner pairs an intelligent itinerary manager and multi-currency expense tracker with next-generation Google Gemini AI capabilities - including real-time multimodal live voice/vision streaming and face-to-face interpretation.
 
 Beyond seamless trip organization, PocketPlanner acts as a reliable guardian on the go: featuring an **on-device TensorFlow Lite machine learning model** that continuously monitors device accelerometer sensors at 50 Hz to detect falls and trigger automated emergency SOS dispatches with live GPS coordinates, ambient audio, and emergency calling.
 
 Plan. Track. Explore. Spend less time organizing and more time experiencing, while traveling with complete peace of mind.
 
 > [!IMPORTANT]
-> * **Active Development:** PocketPlanner is currently in active development. Features and APIs are regularly updated. If you encounter any bugs, please report them in the [Issues](https://github.com/naofunyan/PocketPlanner/issues) tab.
+> * **Project Status:** This project was developed as a competition submission and is no longer actively maintained now that the competition has concluded. The codebase remains open for reference, demonstration, and educational purposes.
 > * **Safety & Emergency Notice:** While the automated fall detection and SOS alert system is designed to provide rapid assistance in critical moments, it relies on mobile device sensors and telecommunication networks. It should complement, rather than replace, standard emergency procedures and services.
 
 ## 🛠️ Technologies
@@ -53,16 +49,15 @@ Plan. Track. Explore. Spend less time organizing and more time experiencing, whi
 
 Here's what you can do with PocketPlanner:
 
-- **🗺️ Smart Itinerary & Day Planning:** Organize your trips into detailed, day-by-day itineraries. Add points of interest with estimated costs, categories, scheduled visit times, user ratings, and personal notes.
-- **📍 Proximity Geofencing Alerts:** Enable background trip tracking to automatically receive push notifications whenever you arrive within 200 meters of a planned destination.
-- **🤖 Gemini AI Travel Assistant:** Consult a context-aware travel copilot for city guides, local dining tips, packing advice, and customized activity itineraries.
-- **🎙️ Gemini Live Multimodal Assistant:** Engage in real-time, hands-free conversational voice chats with visual understanding via live camera streaming over WebSockets.
-- **🗣️ Face-to-Face Interpreter & Live Translate:** Flip your phone around in dual-screen mode for fluid two-way conversations with locals, or scan street signs and menus instantly using camera OCR translation.
-- **🧾 Smart Expense Tracker & Receipt Scanner:** Snap receipts to automatically parse merchants, dates, and amounts with OCR. Track trip budgets with visual category breakdowns and real-time multi-currency conversions.
-- **🎟️ Digital Ticket & Pass Wallet:** Stash boarding passes, bus vouchers, and event tickets in one secure place with integrated QR/barcode scanning and on-device QR code regeneration.
-- **🚨 On-Device Fall Detection & SOS:** Protect yourself with an on-device 50 Hz accelerometer AI classifier. If a fall is detected, PocketPlanner initiates an emergency siren, flashlight strobe, full-screen lockscreen bypass, automated SMS dispatch with exact GPS coordinates (Google Maps link), ambient audio, emergency photo, and automated phone calls.
-- **🧭 Explore & Immersive Audio Guides:** Discover top-rated attractions, browse stunning destination photography, and listen to immersive audio guides.
-- **💾 Offline-First Architecture:** Never get stranded without signal. All trips, tickets, itineraries, and logged expenses work seamlessly offline through local Room caching and sync automatically when internet connectivity resumes.
+- **Smart Itinerary & Day Planning:** Organize your trips into detailed, day-by-day itineraries. Add points of interest with estimated costs, categories, scheduled visit times, user ratings, and personal notes.
+- **Gemini AI Travel Assistant:** Consult a context-aware travel copilot for city guides, local dining tips, packing advice, and customized activity itineraries.
+- **Gemini Live Multimodal Assistant:** Engage in real-time, hands-free conversational voice chats with visual understanding via live camera streaming over WebSockets.
+- **Face-to-Face Interpreter & Live Translate:** Flip your phone around in dual-screen mode for fluid two-way conversations with locals, or scan street signs and menus instantly using camera OCR translation.
+- **Smart Expense Tracker & Receipt Scanner:** Snap receipts to automatically parse merchants, dates, and amounts with OCR. Track trip budgets with visual category breakdowns and real-time multi-currency conversions.
+- **Digital Ticket & Pass Wallet:** Stash boarding passes, bus vouchers, and event tickets in one secure place with integrated QR/barcode scanning and on-device QR code regeneration.
+- **On-Device Fall Detection & SOS:** Protect yourself with an on-device 50 Hz accelerometer AI classifier. If a fall is detected, PocketPlanner initiates an emergency siren, flashlight strobe, full-screen lockscreen bypass, automated SMS dispatch with exact GPS coordinates (Google Maps link), ambient audio, emergency photo, and automated phone calls.
+- **Explore & Immersive Audio Guides:** Discover top-rated attractions, browse stunning destination photography, and listen to immersive audio guides.
+- **Offline-First Architecture:** Never get stranded without signal. All trips, tickets, itineraries, and logged expenses work seamlessly offline through local Room caching and sync automatically when internet connectivity resumes.
 
 ---
 
@@ -147,7 +142,7 @@ Store and access your essential travel documents without internet access:
 
 | Pass Type | Supported Formats | Features |
 | :--- | :--- | :--- |
-| ✈️ Flight Boarding Passes | QR Code, PDF417, Aztec, Code 128 | Flight number, gate, departure time, seat number |
+| ✈️ Flight Boarding Passes | QR Code, PDF | Flight number, gate, departure time, seat number |
 | 🚆 Train & Bus Tickets | QR Code, Data Matrix, Barcode | Booking reference, platform, validity dates |
 | 🏨 Hotel & Stay Bookings | Text, Confirmation Code, Images | Check-in/out times, address, confirmation details |
 | 🎟️ Museum & Event Tickets | QR Code, Barcode, Images | On-device QR regeneration for easy terminal scanning |
@@ -162,19 +157,9 @@ PocketPlanner features full internationalization with dynamic runtime language s
 - 🇬🇧 **English** (Default)
 - 🇻🇳 **Vietnamese** (Tiếng Việt)
 
-*Want to help translate PocketPlanner into your language? Feel free to open a Pull Request!*
-
 ---
 
 ## 🎯 How Can It Be Improved?
-
-- [x] Implement on-device Fall Detection with TensorFlow Lite & Foreground Service
-- [x] Integrate Gemini Live bidirectional voice & camera video streaming
-- [x] Build smart receipt scanner with OCR and multi-currency expense tracking
-- [x] Create digital ticket & boarding pass wallet with QR/barcode scanning and generation
-- [x] Implement background destination proximity alerts (200m geofencing)
-- [x] Support full offline-first mode with Room database and WorkManager cloud sync
-- [x] Implement full bilingual localization (English & Vietnamese)
 - [ ] Add AI-powered automated itinerary generation from imported confirmation emails
 - [ ] Develop Wear OS companion app for smartwatch fall alerts and quick itinerary glance
 - [ ] Enable collaborative multi-user itinerary sharing and live sync
@@ -186,7 +171,7 @@ PocketPlanner features full internationalization with dynamic runtime language s
 
 ### Prerequisites
 
-- **Android Studio:** Koala (2024.1.1) or Ladybug (2024.2.1+)
+- **Android Studio:** Latest stable version
 - **JDK:** Java 17
 - **Android SDK:** Minimum SDK 26 (Android 8.0 Oreo), Target SDK 34 (Android 14)
 - **Device / Emulator:** Google Play Services enabled device with camera and sensors for full feature testing
@@ -230,25 +215,6 @@ PocketPlanner features full internationalization with dynamic runtime language s
    # Install directly onto connected ADB device
    ./gradlew installDebug
    ```
-
----
-
-## 🎬 PocketPlanner in Motion
-
-<table width="100%">
-  <tr>
-    <td align="center" width="48%">
-      <img src="app/src/main/res/drawable/wsbg.jpg" width="100%" alt="Welcome & Onboarding" />
-      <br />
-      <b>1. Welcome & Itinerary Management</b>
-    </td>
-    <td align="center" width="48%">
-      <img src="app/src/main/res/drawable/cardbg.jpg" width="100%" alt="AI Hub & Live Assistant" />
-      <br />
-      <b>2. AI Hub & Multimodal Assistant</b>
-    </td>
-  </tr>
-</table>
 
 ---
 
