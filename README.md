@@ -35,33 +35,19 @@ Plan. Track. Explore. Spend less time organizing and more time experiencing, whi
 
 ## 🛠️ Technologies
 
-PocketPlanner is built with a modern Android architecture and cutting-edge mobile technologies:
-
-- **Language & UI:**
-  - `Kotlin 2.0` — modern, expressive, type-safe programming language
-  - `Jetpack Compose & Material 3` — modern declarative UI toolkit with adaptive theming (Light & Dark modes)
-  - `Accompanist` — runtime permission flows in Jetpack Compose
-- **Artificial Intelligence & Machine Learning:**
-  - `Google Gemini / Vertex AI` — contextual travel suggestions and smart recommendations
-  - `Gemini Live Multimodal API (OkHttp WebSockets)` — real-time bidirectional streaming of live audio and camera video
-  - `Google ML Kit` — on-device Language Identification, Text Translation, and Optical Character Recognition (OCR)
-  - `TensorFlow Lite (INT8 Quantized)` — efficient on-device fall detection neural network running at 50 Hz
-- **Mapping & Location Services:**
-  - `Mapbox Android SDK` — interactive, customizable vector maps
-  - `Google Play Services Location & Geofencing` — high-accuracy GPS tracking and background proximity alerts
-  - `Google Places & Foursquare APIs` — points of interest, reviews, and destination metadata
-  - `Unsplash API` — curated high-resolution destination photography
-- **Data Persistence & Backend:**
-  - `Room Database` — robust local database powering the offline-first experience
-  - `DataStore Preferences` — reactive key-value storage for application preferences
-  - `Firebase Suite` — Firebase Authentication (Google Sign-In via Credential Manager & Email/Password), Cloud Firestore, Cloud Storage, and Cloud Functions
-  - `Android WorkManager` — reliable deferred background data synchronization between Room and Cloud Firestore
-  - `Foreground Services` — persistent foreground execution for health sensor tracking and background location geofencing
-- **Media & Utilities:**
-  - `CameraX` — high-performance camera capture for live AI vision, OCR translation, and emergency snapshots
-  - `uCrop` — precise cropping for tickets and receipts
-  - `ZXing & ML Kit Barcode Scanning` — digital pass QR generation and barcode scanning
-  - `Dagger Hilt` — dependency injection across ViewModels, Repositories, and Services
+- `Kotlin 2.0`
+- `Jetpack Compose & Material 3`
+- `Google Gemini / Vertex AI`
+- `Gemini Live Multimodal API`
+- `TensorFlow Lite (INT8 Quantized)`
+- `Google ML Kit (OCR & Translation)`
+- `Mapbox Android SDK`
+- `Google Play Services (Location & Geofencing)`
+- `Room Database & DataStore`
+- `Firebase (Auth, Firestore, Cloud Storage)`
+- `Dagger Hilt`
+- `Android WorkManager & Foreground Services`
+- `CameraX`
 
 ## ✨ Features
 
@@ -97,22 +83,57 @@ The AI Hub brings together four specialized travel assistants accessible with a 
 
 PocketPlanner prioritizes traveler safety, especially for solo explorers and outdoor adventurers:
 
+<p align="center">
+  <img src="docs/assets/fall_detection_pipeline.svg" width="100%" alt="PocketPlanner Safety & Fall Detection System" />
+</p>
+
+<details>
+<summary><b>📐 View Interactive Flowchart (Mermaid)</b></summary>
+
+```mermaid
+flowchart TD
+    %% Styling Classes
+    classDef sensor fill:#1E293B,stroke:#38BDF8,stroke-width:2px,color:#F8FAFC;
+    classDef model fill:#1E293B,stroke:#A855F7,stroke-width:2px,color:#F8FAFC;
+    classDef check fill:#1E293B,stroke:#F59E0B,stroke-width:2px,color:#F8FAFC;
+    classDef alert fill:#3B1219,stroke:#EF4444,stroke-width:2px,color:#FEE2E2;
+    classDef cancel fill:#064E3B,stroke:#10B981,stroke-width:2px,color:#ECFDF5;
+    classDef action fill:#1C0A10,stroke:#F43F5E,stroke-width:2px,color:#FFE4E6;
+
+    subgraph INGESTION["📡 On-Device Sensing & Edge Inference"]
+        ACC["<b>3-Axis Accelerometer</b><br/>Continuous 50 Hz Hardware Sampling (20ms)"]:::sensor
+        BUFFER["<b>Sliding Window Buffer</b><br/>128 Samples • 50% Step Overlap (64 samples)"]:::sensor
+        MODEL["<b>TFLite Neural Network</b><br/><code>fall_model_int8.tflite</code><br/><i>Dual-Thread INT8 Quantized Inference</i>"]:::model
+
+        ACC --> BUFFER
+        BUFFER --> MODEL
+    end
+
+    subgraph VERIFY["🛡️ Dual-Window Impact Verification"]
+        CHECK{"<b>Confidence Threshold Check</b><br/>Probability &gt; 0.95 <i>(0.85 High-Sens)</i><br/>2 Consecutive Overlapping Windows Agree"}:::check
+    end
+
+    subgraph ALARM["🚨 Emergency Alarm & Verification Window"]
+        ALERT_UI["<b>Emergency Alert Screen Active</b><br/>• Full-screen lockscreen bypass <code>(FLAG_SHOW_WHEN_LOCKED)</code><br/>• Max-volume audio siren & continuous vibration waveform<br/>• Camera LED flashlight strobe<br/>• <b>30-second cancellation countdown</b>"]:::alert
+    end
+
+    subgraph RESOLUTION["⚡ Incident Resolution"]
+        CANCEL["✅ <b>User Swipes to Cancel ('I am OK')</b><br/>• Siren silenced & torch strobe released<br/>• Sensor buffer cleared & 50 Hz monitoring resumes<br/>• Zero false alarm emergency dispatches"]:::cancel
+
+        subgraph SOS["🚨 Automated Emergency SOS Dispatch (Countdown Expires)"]
+            SMS["📱 <b>Automated Emergency SMS Dispatch</b><br/>📍 High-accuracy GPS pin <i>(Google Maps link)</i><br/>🎙️ 5-second ambient audio recording clip<br/>📷 Silent front & rear camera photo snapshot<br/>🩺 Emergency medical profile <i>(Blood type, allergies)</i>"]:::action
+            CALL["📞 <b>Auto Emergency Dial</b><br/>Direct dial to local emergency responder<br/><i>(e.g., 112, 911, or 115)</i> or designated contact<br/>Automatic hands-free speakerphone"]:::action
+        end
+    end
+
+    MODEL -->|"Sigmoid Score [0.0 - 1.0]"| CHECK
+    CHECK -->|"Fall Confirmed (2x Agreement)"| ALERT_UI
+    ALERT_UI -->|"Swipe within 30s"| CANCEL
+    ALERT_UI -->|"No response (Countdown expires)"| SMS
+    ALERT_UI -->|"No response (Countdown expires)"| CALL
 ```
-[3-Axis Accelerometer @ 50 Hz] ──► [TFLite Neural Network (fall_model_int8)]
-                                                  │
-                                                  ▼ (Fall Detected)
-                                   [Emergency Alert Screen & Siren]
-                                   [Flashing Strobe & 30s Countdown]
-                                                  │
-                                                  ▼ (No Cancellation)
-                          ┌───────────────────────┴───────────────────────┐
-                          ▼                                               ▼
-         [Automated Emergency SMS Dispatch]                      [Auto Emergency Dial]
-  • High-accuracy GPS coordinates (Google Maps)             • Dials local emergency responder
-  • 5-second ambient audio recording clip                    (e.g., 112, 911, or 115)
-  • Optional emergency front/rear photo snapshot
-  • Emergency medical profile (blood type, allergies)
-```
+
+</details>
 
 - **Zero-Cloud Sensor Processing:** Raw sensor data is evaluated locally on the device at 50 Hz by `fall_model_int8.tflite` to ensure rapid detection without latency or privacy concerns.
 - **Lockscreen Override:** Launches full-screen alerts even when your device is locked, giving you a quick swipe gesture to cancel false alarms or instantly call for help.

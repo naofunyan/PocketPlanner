@@ -24,3 +24,9 @@ app/build/
 service_account.json
 service-account*.json
 *-service-account.json
+
+# AI agent skills & lockfiles
+.agents/
+.claude/
+skills-lock.json
+
