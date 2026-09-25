@@ -3,6 +3,7 @@
 
   <h1>PocketPlanner</h1>
   <p><b>Your AI-Powered Travel Planning & Safety Companion for Android</b></p>
+  <p>🏆 <i>Recognized as a Top 500 Project at Google Developer Group's AI Riser Vietnam 2026</i> 🏆</p>
 
 <br/>
 
@@ -13,6 +14,7 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/naofunyan/PocketPlanner?style=for-the-badge&color=D49F3E&v=1)](https://github.com/naofunyan/PocketPlanner/stargazers)
 
 ⭐️ If you find PocketPlanner useful, consider leaving a star to support the project ⭐️
+</div>
 
 
 </div>
