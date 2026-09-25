@@ -14,3 +14,13 @@
 .cxx
 local.properties
 app/build/
+
+# Keystores & signing keys
+*.jks
+*.keystore
+*.p12
+
+# Service account & credentials
+service_account.json
+service-account*.json
+*-service-account.json

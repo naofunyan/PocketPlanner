@@ -1,0 +1,21 @@
+## This file is a template for local.properties.
+## Copy this file to 'local.properties' and fill in your actual credentials.
+## NOTE: 'local.properties' is ignored by Git and should NEVER be committed to version control.
+
+# Android SDK Location (automatically configured by Android Studio)
+# sdk.dir=C\:\\Users\\username\\AppData\\Local\\Android\\Sdk
+
+# Google Gemini / Vertex AI API Key
+VERTEX_API_KEY=YOUR_GEMINI_VERTEX_API_KEY
+
+# Unsplash API Key (used for destination banner photos)
+UNSPLASH_API_KEY=YOUR_UNSPLASH_ACCESS_KEY
+
+# Mapbox Access Token (used for interactive maps and turn-by-turn routing)
+MAPBOX_ACCESS_TOKEN=YOUR_MAPBOX_ACCESS_TOKEN
+
+# Foursquare Places API Key (used for nearby attractions and place search)
+FOURSQUARE_API_KEY=YOUR_FOURSQUARE_API_KEY
+
+# Google Places API Key (optional fallback for location lookup)
+GOOGLE_PLACES_API_KEY=YOUR_GOOGLE_PLACES_API_KEY
